@@ -1,0 +1,9 @@
+{
+  "timestamp": "2025-01-15T10:30:00Z",
+  "level": "WARN",
+  "event": "auth.login_failed",
+  "user_id": "u_abc123",
+  "ip": "203.0.113.42",
+  "user_agent": "Mozilla/5.0...",
+  "attempt_count": 3
+}

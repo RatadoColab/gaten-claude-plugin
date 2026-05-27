@@ -1,0 +1,34 @@
+<!-- Referência: domains/ui-components/SKILL.md — Seção Acessibilidade WCAG 2.2 -->
+<!-- Quando usar: exemplos de HTML acessível para modal e form field -->
+
+<!-- Good: accessible modal dialog -->
+<!-- <dialog> has implicit role="dialog" — do not add it explicitly -->
+<dialog
+  aria-modal="true"
+  aria-labelledby="dialog-title"
+  aria-describedby="dialog-desc"
+>
+  <h2 id="dialog-title">Confirmar exclusão</h2>
+  <p id="dialog-desc">Esta ação não pode ser desfeita.</p>
+  <!-- focus trap must be implemented -->
+</dialog>
+
+<!-- Good: accessible form field -->
+<div class="form-field">
+  <label :for="inputId">{{ label }}</label>
+  <input
+    :id="inputId"
+    :aria-describedby="errorId"
+    :aria-invalid="hasError"
+    v-bind="$attrs"
+  />
+  <span v-if="hasError" :id="errorId" role="alert">{{ errorMessage }}</span>
+</div>
+
+<!-- Good: visible focus ring using tokens -->
+<style>
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+</style>

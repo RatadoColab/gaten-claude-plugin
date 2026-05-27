@@ -1,0 +1,20 @@
+<!-- Referência: domains/forms/SKILL.md — Seção Estrutura HTML Semântica -->
+<!-- Quando usar: template base de formulário acessível com label/hint/erro -->
+
+<form novalidate autocomplete="on">
+  <div class="field-group">
+    <label for="email">E-mail <span aria-hidden="true">*</span></label>
+    <input
+      id="email"
+      type="email"
+      name="email"
+      autocomplete="email"
+      aria-required="true"
+      aria-describedby="email-error email-hint"
+    />
+    <span id="email-hint" class="hint">Ex: usuario@dominio.com.br</span>
+    <span id="email-error" role="alert" class="error" hidden></span>
+  </div>
+
+  <button type="submit" aria-disabled="false">Enviar</button>
+</form>
