@@ -1,6 +1,6 @@
 {
   "name": "gaten-marketplace",
-  "owner": { "name": "IBGE - DTI/COPTE/GATEN" },
+  "owner": { "name": "Equipe GATEN" },
   "plugins": [
     {
       "name": "fullstack-development",
