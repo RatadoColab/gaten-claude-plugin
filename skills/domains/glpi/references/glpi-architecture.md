@@ -1,20 +1,72 @@
 # Arquitetura GLPI 10.0.x — Referência Técnica
 
+## Licença Obrigatória
+
+Todo arquivo PHP deve conter o cabeçalho abaixo como comentário de licença GPLv3:
+
+```php
+<?php
+
+/**
+ * ---------------------------------------------------------------------
+ *
+ * [nomedoplugin] plugin for GLPI
+ *
+ * http://glpi-project.org
+ *
+ * @copyright 2024-2026 IBGE GLPI Development Team.
+ * @copyright 2015-2026 Teclib' and contributors.
+ * @licence   https://www.gnu.org/licenses/gpl-3.0.html
+ *
+ * ---------------------------------------------------------------------
+ *
+ * LICENSE
+ *
+ * This file is part of GLPI.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * ---------------------------------------------------------------------
+ */
+
+declare(strict_types=1);
+```
+
+---
+
 ## CommonDBTM — Model + Repository Unificado
 
 `CommonDBTM` é a classe base de todos os objetos de dados no GLPI. Ela combina as responsabilidades de model e repositório.
 
 ```php
+<?php
+
+/**
+ * [License header aqui]
+ */
+
+declare(strict_types=1);
+
 class MeuItem extends CommonDBTM
 {
-    // Nome da chave no sistema de permissões
-    static $rightname = 'meuitem';
+    /** @var string */
+    static $rightname = 'plugin_meuplugin_meuitem';
 
-    // Tabela é derivada automaticamente: glpi_meuitem -> nao; usualmente glpi_plugin_<plugin>_<item>
-    // Para definir explicitamente:
+    /** @var string */
     static $table = 'glpi_plugin_meuplugin_meuitem';
 
     /**
+     * @param int $nb
      * @return string
      */
     public static function getTypeName($nb = 0): string
@@ -23,6 +75,16 @@ class MeuItem extends CommonDBTM
     }
 }
 ```
+
+### Hierarquia de herança
+
+| Tipo | Classe base | Uso |
+|---|---|---|
+| Entidade comum | `CommonDBTM` | Objetos independentes |
+| Dropdown | `CommonDropdown` | Listas de seleção (Category, Status, etc.) |
+| Filho de entidade | `CommonDBChild` | Relacionamento 1:N com pai |
+| Relação entre entidades | `CommonDBRelation` | Relacionamento N:N |
+| Interface sem dados | `CommonGLPI` | Abas, páginas sem tabela própria |
 
 ### Métodos de acesso a dados (herdados de CommonDBTM)
 
@@ -56,12 +118,11 @@ public function post_updateItem(array $history = []): void
 /** Executado ao deletar — limpar dados relacionados */
 public function cleanDBonPurge(): void
 {
-    // Remover registros filhos para evitar órfãos
     $relation = new MeuItemRelacao();
     $relation->deleteByCriteria(['meuitem_id' => $this->getID()]);
 }
 
-/** Executado antes de deletar — pode abortar com $this->input = false */
+/** Executado antes de deletar — pode abortar com retorno false */
 public function pre_deleteItem(): bool
 {
     return true; // retornar false cancela a exclusão
@@ -134,41 +195,96 @@ $DB->queryOrDie(
 Verificar permissões **no início** de todo arquivo `front/` e `ajax/`:
 
 ```php
-// Verificação simples
-Session::haveRight('meuitem', READ);     // lança exceção se não tiver acesso
-Session::haveRight('meuitem', UPDATE);
-Session::haveRight('meuitem', CREATE);
-Session::haveRight('meuitem', DELETE);
-Session::haveRight('meuitem', PURGE);
+// Lança exceção se não autorizado (uso preferencial)
+Session::checkRight('plugin_meuplugin_meuitem', READ);
+Session::checkRight('plugin_meuplugin_meuitem', UPDATE);
+Session::checkRight('plugin_meuplugin_meuitem', CREATE);
 
-// Múltiplas permissões (qualquer uma basta)
-Session::haveRightsOr('meuitem', [CREATE, UPDATE]);
-
-// Retorna bool em vez de lançar exceção
-if (!Session::haveRight('meuitem', READ)) {
+// Retorna bool para tratamento manual
+if (!Session::haveRight('plugin_meuplugin_meuitem', READ)) {
     Html::displayRightError();
     exit;
 }
+
+// Múltiplas permissões (qualquer uma basta)
+Session::haveRightsOr('plugin_meuplugin_meuitem', [CREATE, UPDATE]);
 ```
 
 ### Registro do direito
 
-Em `setup.php`, dentro de `plugin_init_<nome>()`:
+Em `install/install.php`, registrar direitos para todos os perfis:
 
 ```php
-Plugin::addCapacity(new PluginMeupluginCapacity());
-// ou registro manual de direitos em ProfileRight
-```
-
-Em `hook.php`, na função `plugin_meuplugin_install()`:
-
-```php
-// Inserir direitos padrão para todos os perfis
 $profileRight = new ProfileRight();
 foreach (Profile::getProfiles() as $profileId) {
-    $profileRight->updateProfileRights($profileId, ['meuitem' => ALLSTANDARDRIGHT]);
+    $profileRight->updateProfileRights($profileId, ['plugin_meuplugin_meuitem' => ALLSTANDARDRIGHT]);
 }
 ```
+
+---
+
+## Hooks GLPI 10.x
+
+### Grupo 1 — CRUD (`item_add`, `item_update`, `pre_item_add`, `item_purge`, etc.)
+
+Registro indexado por itemtype em `plugin_init_<nome>()`:
+
+```php
+$PLUGIN_HOOKS['item_update']['meuplugin'] = [
+    'Location' => [MinhaClasse::class, 'onItemUpdate'],
+];
+```
+
+Receptor: método estático em `src/`, recebe o objeto diretamente:
+
+```php
+// src/MinhaClasse.php
+public static function onItemUpdate(CommonDBTM $item): void
+{
+    // pre-hooks: ler/escrever $item->input
+    // post-hooks: ler $item->fields
+}
+```
+
+### Grupo 2 — Formulário/exibição (`post_show_item`, `post_item_form`, `item_transfer`, etc.)
+
+Registro com callable direto (sem indexação por itemtype):
+
+```php
+$PLUGIN_HOOKS['post_show_item']['meuplugin'] = 'plugin_meuplugin_post_show_item';
+```
+
+Receptor: função em `hook.php`, filtrar itemtype manualmente:
+
+```php
+// hook.php
+function plugin_meuplugin_post_show_item(array $params): void
+{
+    if (!($params['item'] instanceof Computer)) {
+        return;
+    }
+    // processar
+}
+```
+
+Na dúvida sobre o grupo de um hook, tratar como Grupo 2.
+
+### Tabela de hooks disponíveis em `$PLUGIN_HOOKS`
+
+| Hook | Grupo | Quando dispara |
+|---|---|---|
+| `item_add` | 1 | Após adicionar qualquer item |
+| `item_update` | 1 | Após atualizar qualquer item |
+| `item_delete` | 1 | Após mover item para lixeira |
+| `item_purge` | 1 | Após purgar item definitivamente |
+| `pre_item_add` | 1 | Antes de adicionar (pode alterar `$item->input`) |
+| `pre_item_update` | 1 | Antes de atualizar |
+| `post_show_item` | 2 | Após exibir item |
+| `post_item_form` | 2 | Após renderizar formulário |
+| `item_transfer` | 2 | Ao transferir item entre entidades |
+| `menu_toadd` | — | Adicionar entrada ao menu lateral |
+| `use_massive_action` | — | Registrar ações em massa |
+| `csrf_compliant` | — | Marcar plugin como compatível com CSRF (obrigatório) |
 
 ---
 
@@ -177,6 +293,14 @@ foreach (Profile::getProfiles() as $profileId) {
 ### Funções obrigatórias
 
 ```php
+<?php
+
+/**
+ * [License header aqui]
+ */
+
+declare(strict_types=1);
+
 /**
  * @return array
  */
@@ -208,6 +332,7 @@ function plugin_meuplugin_check_prerequisites(): bool
 }
 
 /**
+ * @param bool $verbose
  * @return bool
  */
 function plugin_meuplugin_check_config(bool $verbose = false): bool
@@ -222,30 +347,35 @@ function plugin_init_meuplugin(): void
 
     $PLUGIN_HOOKS['csrf_compliant']['meuplugin'] = true;
 
-    // Registrar classe principal
-    Plugin::registerClass('PluginMeupluginMeuitem', [
-        // Adicionar aba no Computer
+    Plugin::registerClass('MeuItem', [
         'addtabon' => ['Computer'],
     ]);
 
-    // Adicionar hook global
-    $PLUGIN_HOOKS['item_update']['meuplugin'] = 'plugin_meuplugin_item_update';
+    $PLUGIN_HOOKS['item_update']['meuplugin'] = [
+        'Computer' => ['MeuItem', 'onComputerUpdate'],
+    ];
 }
 ```
 
-### Hooks disponíveis em `$PLUGIN_HOOKS`
+---
 
-| Hook | Quando dispara |
-|---|---|
-| `item_add` | Após adicionar qualquer item |
-| `item_update` | Após atualizar qualquer item |
-| `item_delete` | Após mover item para lixeira |
-| `item_purge` | Após purgar item definitivamente |
-| `pre_item_add` | Antes de adicionar (pode alterar `$item->input`) |
-| `pre_item_update` | Antes de atualizar |
-| `menu_toadd` | Adicionar entrada ao menu lateral |
-| `use_massive_action` | Registrar ações em massa |
-| `csrf_compliant` | Marcar plugin como compatível com CSRF (obrigatório) |
+## Segurança
+
+Aplicar sempre que houver input de usuário:
+
+```php
+// Cast explícito em IDs — obrigatório
+$id = (int) $_POST['id'];
+
+// Sanitização de strings
+$name = Toolbox::addslashes_deep($_POST['name']);
+
+// Remoção de HTML indesejado
+$description = strip_tags($_POST['description']);
+
+// Salvar HTML no banco (preserva formatação de forma segura)
+$content = Sanitizer::sanitize($_POST['content']);
+```
 
 ---
 

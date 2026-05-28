@@ -10,15 +10,16 @@ meuplugin/
 │   └── meuitem.php                    # Página de listagem/formulário
 ├── ajax/
 │   └── meuitem.php                    # Handler AJAX
-├── inc/
-│   └── meuitem.class.php              # Classe principal (CommonDBTM)
+├── src/
+│   └── MeuItem.php                    # Classe principal (CommonDBTM)
 ├── install/
 │   ├── install.php                    # Criação de tabelas
 │   └── update.php                     # Atualizações de schema
 ├── locales/
-│   └── pt_BR.po                       # Traduções (opcional)
-└── pics/
-    └── meuitem.png                    # Ícone do item (opcional, 16x16)
+│   └── pt_BR.po                       # Traduções
+└── tests/
+    └── units/
+        └── MeuItemTest.php            # Testes PHPUnit
 ```
 
 ---
@@ -29,6 +30,40 @@ meuplugin/
 <?php
 
 /**
+ * ---------------------------------------------------------------------
+ *
+ * meuplugin plugin for GLPI
+ *
+ * http://glpi-project.org
+ *
+ * @copyright 2024-2026 IBGE GLPI Development Team.
+ * @copyright 2015-2026 Teclib' and contributors.
+ * @licence   https://www.gnu.org/licenses/gpl-3.0.html
+ *
+ * ---------------------------------------------------------------------
+ *
+ * LICENSE
+ *
+ * This file is part of GLPI.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * ---------------------------------------------------------------------
+ */
+
+declare(strict_types=1);
+
+/**
  * @return array
  */
 function plugin_version_meuplugin(): array
@@ -36,7 +71,7 @@ function plugin_version_meuplugin(): array
     return [
         'name'         => 'Meu Plugin',
         'version'      => '1.0.0',
-        'author'       => 'Autor do Plugin',
+        'author'       => 'IBGE GLPI Development Team',
         'license'      => 'GPLv3+',
         'homepage'     => 'https://exemplo.com',
         'requirements' => [
@@ -72,22 +107,22 @@ function plugin_init_meuplugin(): void
 {
     global $PLUGIN_HOOKS;
 
-    // Obrigatório: marcar compatibilidade CSRF
     $PLUGIN_HOOKS['csrf_compliant']['meuplugin'] = true;
 
-    // Registrar classe principal
-    // 'addtabon' adiciona aba nas telas dos itens listados
-    Plugin::registerClass('PluginMeupluginMeuitem', [
+    Plugin::registerClass('MeuItem', [
         'addtabon' => ['Computer', 'User'],
     ]);
 
-    // Hooks globais (implementados em hook.php)
-    $PLUGIN_HOOKS['item_add']['meuplugin']    = 'plugin_meuplugin_item_add';
-    $PLUGIN_HOOKS['item_update']['meuplugin'] = 'plugin_meuplugin_item_update';
+    // Hooks Grupo 1 — indexados por itemtype, receptor em src/
+    $PLUGIN_HOOKS['item_update']['meuplugin'] = [
+        'Computer' => ['MeuItem', 'onComputerUpdate'],
+    ];
 
-    // Adicionar entrada no menu lateral
-    if (Session::haveRight('pluginmeupluginmeuitem', READ)) {
-        $PLUGIN_HOOKS['menu_toadd']['meuplugin'] = ['tools' => 'PluginMeupluginMeuitem'];
+    // Hooks Grupo 2 — callable direto, receptor em hook.php
+    $PLUGIN_HOOKS['post_show_item']['meuplugin'] = 'plugin_meuplugin_post_show_item';
+
+    if (Session::haveRight('plugin_meuplugin_meuitem', READ)) {
+        $PLUGIN_HOOKS['menu_toadd']['meuplugin'] = ['tools' => 'MeuItem'];
     }
 }
 ```
@@ -100,31 +135,24 @@ function plugin_init_meuplugin(): void
 <?php
 
 /**
- * @param CommonDBTM $item
+ * [License header]
+ */
+
+declare(strict_types=1);
+
+/**
+ * @param array $params
  * @return void
  */
-function plugin_meuplugin_item_add(CommonDBTM $item): void
+function plugin_meuplugin_post_show_item(array $params): void
 {
-    if (!($item instanceof Computer)) {
+    if (!($params['item'] instanceof Computer)) {
         return;
     }
-    // Reagir à criação de um Computer
+    // Reagir à exibição de um Computer
 }
 
 /**
- * @param CommonDBTM $item
- * @return void
- */
-function plugin_meuplugin_item_update(CommonDBTM $item): void
-{
-    if (!($item instanceof Computer)) {
-        return;
-    }
-    // Reagir à atualização de um Computer
-}
-
-/**
- * Chamado durante instalação do plugin
  * @return bool
  */
 function plugin_meuplugin_install(): bool
@@ -134,7 +162,6 @@ function plugin_meuplugin_install(): bool
 }
 
 /**
- * Chamado durante desinstalação do plugin
  * @return bool
  */
 function plugin_meuplugin_uninstall(): bool
@@ -146,9 +173,8 @@ function plugin_meuplugin_uninstall(): bool
         'Erro ao remover tabela do plugin'
     );
 
-    // Remover direitos registrados
     $profileRight = new ProfileRight();
-    $profileRight->deleteByCriteria(['name' => 'pluginmeupluginmeuitem']);
+    $profileRight->deleteByCriteria(['name' => 'plugin_meuplugin_meuitem']);
 
     return true;
 }
@@ -156,18 +182,24 @@ function plugin_meuplugin_uninstall(): bool
 
 ---
 
-## `inc/meuitem.class.php` — Classe Principal
+## `src/MeuItem.php` — Classe Principal
 
 ```php
 <?php
 
 /**
+ * [License header]
+ */
+
+declare(strict_types=1);
+
+/**
  * Classe principal do plugin Meu Plugin
  */
-class PluginMeupluginMeuitem extends CommonDBTM
+class MeuItem extends CommonDBTM
 {
     /** @var string */
-    static $rightname = 'pluginmeupluginmeuitem';
+    static $rightname = 'plugin_meuplugin_meuitem';
 
     /**
      * @param int $nb
@@ -204,7 +236,19 @@ class PluginMeupluginMeuitem extends CommonDBTM
      */
     public static function getIcon(): string
     {
-        return 'fas fa-box'; // ícone FontAwesome
+        return 'fas fa-box';
+    }
+
+    // --- Hook Grupo 1: receptor de item_update ---
+
+    /**
+     * @param CommonDBTM $item
+     * @return void
+     */
+    public static function onComputerUpdate(CommonDBTM $item): void
+    {
+        // Reagir à atualização de um Computer
+        // Ler $item->fields para valores atuais
     }
 
     // --- Abas em outros objetos GLPI ---
@@ -249,22 +293,19 @@ class PluginMeupluginMeuitem extends CommonDBTM
     {
         global $DB;
 
-        Session::haveRight(static::$rightname, READ);
+        Session::checkRight(static::$rightname, READ);
 
         $iter = $DB->request([
             'FROM'  => static::getTable(),
             'WHERE' => ['computers_id' => $computer->getID(), 'is_deleted' => 0],
         ]);
 
-        // Renderizar conteúdo da aba
         echo '<table class="tab_cadre_fixehov">';
         foreach ($iter as $row) {
             echo '<tr><td>' . htmlspecialchars($row['name']) . '</td></tr>';
         }
         echo '</table>';
     }
-
-    // --- Hooks de ciclo de vida ---
 
     /** @return void */
     public function post_addItem(): void
@@ -288,45 +329,49 @@ class PluginMeupluginMeuitem extends CommonDBTM
 <?php
 
 /**
+ * [License header]
+ */
+
+declare(strict_types=1);
+
+/**
  * @return bool
  */
 function plugin_meuplugin_install_tables(): bool
 {
     global $DB;
 
-    // Criar tabela principal somente se não existir
     if (!$DB->tableExists('glpi_plugin_meuplugin_meuitem')) {
         $DB->queryOrDie(
             "CREATE TABLE `glpi_plugin_meuplugin_meuitem` (
-                `id`           INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                `name`         VARCHAR(255) NOT NULL DEFAULT '',
-                `comment`      TEXT,
-                `entities_id`  INT NOT NULL DEFAULT 0,
-                `is_recursive` TINYINT NOT NULL DEFAULT 0,
-                `is_deleted`   TINYINT NOT NULL DEFAULT 0,
-                `computers_id` INT NOT NULL DEFAULT 0,
-                `date_mod`     TIMESTAMP NULL DEFAULT NULL,
+                `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `name`          VARCHAR(255) NOT NULL DEFAULT '',
+                `comment`       TEXT,
+                `entities_id`   INT NOT NULL DEFAULT 0,
+                `is_recursive`  TINYINT NOT NULL DEFAULT 0,
+                `is_deleted`    TINYINT NOT NULL DEFAULT 0,
+                `computers_id`  INT NOT NULL DEFAULT 0,
+                `date_mod`      TIMESTAMP NULL DEFAULT NULL,
                 `date_creation` TIMESTAMP NULL DEFAULT NULL,
                 PRIMARY KEY (`id`),
-                KEY `name`         (`name`),
-                KEY `entities_id`  (`entities_id`),
-                KEY `computers_id` (`computers_id`),
-                KEY `is_deleted`   (`is_deleted`)
+                KEY `name`          (`name`),
+                KEY `entities_id`   (`entities_id`),
+                KEY `computers_id`  (`computers_id`),
+                KEY `is_deleted`    (`is_deleted`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
             'Erro ao criar tabela glpi_plugin_meuplugin_meuitem'
         );
     }
 
-    // Registrar direitos de acesso em todos os perfis existentes
     $profileRight = new ProfileRight();
     foreach (Profile::getProfiles() as $profileId => $profileName) {
         if (!countElementsInTable('glpi_profilerights', [
             'profiles_id' => $profileId,
-            'name'        => 'pluginmeupluginmeuitem',
+            'name'        => 'plugin_meuplugin_meuitem',
         ])) {
             $profileRight->add([
                 'profiles_id' => $profileId,
-                'name'        => 'pluginmeupluginmeuitem',
+                'name'        => 'plugin_meuplugin_meuitem',
                 'rights'      => 0,
             ]);
         }
@@ -343,31 +388,35 @@ function plugin_meuplugin_install_tables(): bool
 ```php
 <?php
 
+/**
+ * [License header]
+ */
+
+declare(strict_types=1);
+
 include('../../../inc/includes.php');
 
-// Verificar permissão antes de qualquer output
-Session::haveRight('pluginmeupluginmeuitem', READ);
+Session::checkLoginUser();
+Session::checkRight('plugin_meuplugin_meuitem', READ);
 
-$item = new PluginMeupluginMeuitem();
+$item = new MeuItem();
 
-// Processar ações POST (add, update, delete, purge)
 if (isset($_POST['add'])) {
     $item->check(-1, CREATE, $_POST);
     $item->add($_POST);
     Html::back();
 } elseif (isset($_POST['update'])) {
-    $item->check($_POST['id'], UPDATE, $_POST);
+    $item->check((int) $_POST['id'], UPDATE, $_POST);
     $item->update($_POST);
     Html::back();
 } elseif (isset($_POST['delete'])) {
-    $item->check($_POST['id'], DELETE, $_POST);
+    $item->check((int) $_POST['id'], DELETE, $_POST);
     $item->delete($_POST);
-    Html::redirect(PluginMeupluginMeuitem::getSearchURL());
+    Html::redirect(MeuItem::getSearchURL());
 }
 
-// Exibir página
-Html::header(PluginMeupluginMeuitem::getTypeName(Session::getPluralNumber()), $_SERVER['PHP_SELF']);
-Search::show('PluginMeupluginMeuitem');
+Html::header(MeuItem::getTypeName(Session::getPluralNumber()), $_SERVER['PHP_SELF']);
+Search::show('MeuItem');
 Html::footer();
 ```
 
@@ -378,19 +427,24 @@ Html::footer();
 ```php
 <?php
 
+/**
+ * [License header]
+ */
+
+declare(strict_types=1);
+
 include('../../../inc/includes.php');
 
-// Verificar permissão — obrigatório em todo handler AJAX
-Session::haveRight('pluginmeupluginmeuitem', READ);
+Session::checkLoginUser();
+Session::checkRight('plugin_meuplugin_meuitem', READ);
 
-// Validar ação recebida
 $action = $_REQUEST['action'] ?? '';
 
 header('Content-Type: application/json');
 
 switch ($action) {
     case 'getList':
-        $items = (new PluginMeupluginMeuitem())->find(
+        $items = (new MeuItem())->find(
             ['is_deleted' => 0],
             ['name ASC']
         );
@@ -399,17 +453,17 @@ switch ($action) {
 
     case 'getOne':
         $id   = (int) ($_REQUEST['id'] ?? 0);
-        $item = new PluginMeupluginMeuitem();
+        $item = new MeuItem();
         if ($item->getFromDB($id)) {
             echo json_encode($item->fields);
         } else {
             http_response_code(404);
-            echo json_encode(['error' => 'Item não encontrado']);
+            echo json_encode(['error' => __('Item não encontrado', 'meuplugin')]);
         }
         break;
 
     default:
         http_response_code(400);
-        echo json_encode(['error' => 'Ação inválida']);
+        echo json_encode(['error' => __('Ação inválida', 'meuplugin')]);
 }
 ```
