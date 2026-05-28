@@ -1,6 +1,6 @@
 # gaten-claude-plugin
 
-Marketplace local de plugins Claude Code mantido pela equipe **IBGE - DTI/COPTE/GATEN**.
+Marketplace local de plugins Claude Code mantido pela equipe **Equipe GATEN**.
 
 ## O que é isso?
 
