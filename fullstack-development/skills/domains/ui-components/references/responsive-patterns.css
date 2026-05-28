@@ -1,0 +1,13 @@
+/* Referência: domains/ui-components/SKILL.md — Seção Responsividade */
+/* Quando usar: media queries mobile-first com design tokens */
+
+/* Mobile-first with design token breakpoints */
+.card {
+  padding: var(--spacing-component-padding-sm);
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: var(--spacing-component-padding-md);
+  }
+}

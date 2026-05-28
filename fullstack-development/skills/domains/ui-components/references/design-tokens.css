@@ -1,0 +1,24 @@
+/* Referência: domains/ui-components/SKILL.md — Seção Design Tokens */
+/* Quando usar: estrutura de tokens primitivos/semânticos e variantes de componente */
+
+/* --- Tokens primitivos — valores brutos --- */
+:root {
+  --color-blue-500: #2563eb;
+  --color-red-500: #dc2626;
+  --spacing-4: 1rem;
+}
+
+/* --- Tokens semânticos — baseados em intenção --- */
+:root {
+  --color-action-primary: var(--color-blue-500);
+  --color-feedback-danger: var(--color-red-500);
+  --spacing-component-gap: var(--spacing-4);
+}
+
+/* --- Variantes via props mapeadas para tokens --- */
+/* Map prop values to CSS classes that use tokens — no inline styles */
+/* computed in Vue: const variantClass = computed(() => `btn--${props.variant}`) */
+
+.btn--primary   { background: var(--color-action-primary); }
+.btn--danger    { background: var(--color-feedback-danger); }
+.btn--secondary { background: var(--color-action-secondary); }

@@ -1,0 +1,11 @@
+{
+  "name": "gaten-marketplace",
+  "owner": { "name": "IBGE - DTI/COPTE/GATEN" },
+  "plugins": [
+    {
+      "name": "fullstack-development",
+      "source": "./fullstack-development",
+      "description": "Plugin for fullstack development with several languages"
+    }
+  ]
+}

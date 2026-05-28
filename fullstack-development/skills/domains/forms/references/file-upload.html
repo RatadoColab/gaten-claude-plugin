@@ -1,0 +1,29 @@
+<!-- Referência: domains/forms/SKILL.md — Seção Upload de Arquivos -->
+<!-- Quando usar: drag-and-drop acessível com fallback de botão e feedback de progresso -->
+
+<!-- Always provide both drag-drop and button click -->
+<div
+  id="drop-zone"
+  role="region"
+  aria-label="Área de upload"
+  tabindex="0"
+  aria-describedby="upload-instructions"
+>
+  <p id="upload-instructions">
+    Arraste arquivos aqui ou clique no botão abaixo.<br>
+    Formatos aceitos: PDF, PNG, JPG. Tamanho máximo: 10 MB.
+  </p>
+  <label for="file-input" class="btn">Selecionar arquivo</label>
+  <input id="file-input" type="file" accept=".pdf,.png,.jpg" multiple hidden />
+</div>
+
+<div role="status" aria-live="polite" id="upload-status"></div>
+
+<script>
+// Show progress bar per file
+function updateProgress(file, percent) {
+  const statusEl = document.getElementById('upload-status');
+  statusEl.textContent = `Enviando ${file.name}: ${percent}%`;
+  // also update visual progress bar
+}
+</script>
