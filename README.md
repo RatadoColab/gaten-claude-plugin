@@ -92,7 +92,7 @@ gaten-claude-plugin/
 ```json
 {
   "name": "gaten-marketplace",
-  "owner": { "name": "IBGE - DTI/COPTE/GATEN" },
+  "owner": { "name": "Equipe GATEN" },
   "plugins": [
     {
       "name": "nome-do-plugin",
