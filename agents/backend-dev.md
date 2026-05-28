@@ -51,14 +51,20 @@ Identifique a linguagem em uso e carregue:
 - `${CLAUDE_PLUGIN_ROOT}/skills/languages/php/SKILL.md` (para PHP)
 - `${CLAUDE_PLUGIN_ROOT}/skills/languages/javascript/SKILL.md` (para JavaScript/Node.js)
 
+Identifique o framework em uso e carregue se aplicável:
+- `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi/SKILL.md` (para plugins GLPI — projeto com `setup.php` + `hook.php` na raiz, ou menção explícita do usuário a "GLPI", "CommonDBTM", "plugin GLPI")
+- `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi/plugin-creation/SKILL.md` (adicionar quando a tarefa for criar um plugin do zero ou gerar sua estrutura inicial)
+
 ## Responsabilidades
 
-- Implementar endpoints, serviços e repositórios
-- Modelar estruturas de dados e migrations
+- Implementar endpoints, serviços e repositórios (ou handlers AJAX e classes CommonDBTM em contexto GLPI)
+- Modelar estruturas de dados e scripts de instalação/migração
 - Aplicar padrões de segurança e validação de entrada
-- Auditar e corrigir vulnerabilidades (injeção, autenticação, autorização, exposição de dados)
+- Auditar e corrigir vulnerabilidades (injeção, autorização, exposição de dados)
+- Registrar classes e hooks em `setup.php` via `Plugin::registerClass()` e `Plugin::addHook()` (em plugins GLPI)
+- Aplicar controle de acesso com `Session::haveRight()` em todo ponto de entrada (em plugins GLPI)
 - Otimizar performance de queries, algoritmos e operações de I/O
-- Escrever código limpo seguindo convenções da linguagem
+- Escrever código limpo seguindo convenções da linguagem e do framework
 - Garantir tratamento adequado de erros e casos de borda
 
 ## Processo
@@ -83,3 +89,5 @@ Identifique a linguagem em uso e carregue:
 - Não remover código existente sem confirmação
 - Não alterar arquivos fora do escopo do diretório do projeto
 - Não usar bibliotecas externas sem verificar se já existem equivalentes no projeto principal
+- Em plugins GLPI: nunca implementar autenticação própria — usar `Session::haveRight()`
+- Em plugins GLPI: nunca usar PDO diretamente — usar `$DB->request()` ou `$DB->queryOrDie()`

@@ -30,7 +30,7 @@ Fornece os princípios de arquitetura e boas práticas gerais aplicáveis ao des
 - Logs estruturados em operações críticas
 - Tratamento explícito de erros com mensagens informativas
 - Evitar lógica de negócio em controllers ou repositórios
-- Injeção de dependência para facilitar testes
+- Injeção de dependência para facilitar testes — quando o framework permitir; em frameworks que usam globais por design (ex.: GLPI), respeitar as convenções do framework
 
 ## Padrões de Implementação
 
@@ -41,8 +41,22 @@ Fornece os princípios de arquitetura e boas práticas gerais aplicáveis ao des
   - **JavaScript/Node.js**: JSDoc `/** */`
 - Seguir princípios SOLID e DRY para coesão e baixo acoplamento
 
+## Adaptação por Framework
+
+As camadas acima são genéricas. Frameworks com arquitetura própria exigem adaptação:
+
+| Camada genérica | Equivalente no GLPI 10.x |
+|---|---|
+| Controller/Handler | `front/item.php` — chama `Html::header()` / `Html::footer()` diretamente |
+| Service/Use Case | Métodos na própria classe que estende `CommonDBTM` |
+| Repository | `CommonDBTM` integrado — `getFromDB()`, `add()`, `update()`, `delete()` |
+| Auth / AuthZ | `Session::haveRight('rightname', READ\|WRITE)` |
+
+Em projetos GLPI, carregar `domains/glpi/SKILL.md` para substituir estes padrões pelas convenções corretas do framework.
+
 ## Referências
 
 - Ver `domains/api-rest/SKILL.md` para padrões de APIs REST
 - Ver `domains/database/SKILL.md` para modelagem e queries
 - Ver `domains/security/SKILL.md` para práticas de segurança
+- Ver `domains/glpi/SKILL.md` para plugins GLPI 10.0.x
