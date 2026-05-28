@@ -34,7 +34,7 @@ Diretrizes para design e implementação de APIs REST consistentes, previsíveis
 | HEAD    | Metadados sem corpo           | Sim         | Sim    |
 | OPTIONS | Capacidades do endpoint       | Sim         | Sim    |
 
-> *PATCH pode ser tornado idempotente com uso de `Idempotency-Key`.
+> *PATCH não é idempotente por definição; o uso de Idempotency-Key garante segurança contra reenvio, mas não altera sua semântica HTTP.
 
 ---
 
@@ -46,7 +46,7 @@ Diretrizes para design e implementação de APIs REST consistentes, previsíveis
 - Sempre plural para coleções: `/users`, `/orders`, `/products`
 - Letras minúsculas com hífens: `/user-profiles`, não `/userProfiles` nem `/user_profiles`
 - Sem trailing slash: `/users`, não `/users/`
-- Profundidade máxima de 3 níveis: `/resources/{id}/sub-resources/{sub-id}`
+- Evitar profundidade excessiva (geralmente >3 níveis), salvo quando necessário para clareza semântica: `/resources/{id}/sub-resources/{sub-id}`
 - Ações não mapeáveis em CRUD devem usar substantivos de ação: `POST /orders/{id}/actions/cancel`
 
 ---
@@ -282,7 +282,7 @@ HTTP/1.1 304 Not Modified
 - GET de recursos individuais: use `ETag` + `Cache-Control`
 - PUT/PATCH: use `If-Match` para evitar conflitos de atualização concorrente
 - Recursos privados: `Cache-Control: private, no-store`
-- Nunca cachear respostas de erro 4xx/5xx
+- Evite cachear erros por padrão, exceto quando explicitamente controlado (ex.: 404, 410, 429) com headers apropriados.
 
 ---
 

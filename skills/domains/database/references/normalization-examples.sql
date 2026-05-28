@@ -31,5 +31,5 @@ CREATE TABLE order_summary_view (
     customer_name   VARCHAR(200),
     total_amount    DECIMAL(12,2),
     item_count      INT,
-    last_updated_at DATETIME
+    last_date_mod   DATETIME
 );

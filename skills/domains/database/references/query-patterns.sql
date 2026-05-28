@@ -28,8 +28,8 @@ SELECT * FROM orders WHERE id > :last_seen_id ORDER BY id LIMIT 20;
 -- FUNÇÕES EM COLUNAS INDEXADAS — impede uso do índice
 -- =============================================================
 
--- Errado: DATE() envolve a coluna, tornando o índice em created_at inutilizável
--- WHERE DATE(created_at) = '2025-01-01'
+-- Errado: DATE() envolve a coluna, tornando o índice em date_creation inutilizável
+-- WHERE DATE(date_creation) = '2025-01-01'
 
 -- Correto: comparação por intervalo preserva o uso do índice B-Tree
-WHERE created_at >= '2025-01-01' AND created_at < '2025-01-02';
+WHERE date_creation >= '2025-01-01' AND date_creation < '2025-01-02';

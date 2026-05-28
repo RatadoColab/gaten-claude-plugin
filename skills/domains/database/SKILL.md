@@ -30,7 +30,7 @@ Diretrizes para modelagem de dados, escrita de queries eficientes, gerenciamento
 
 - Tabelas no plural em `snake_case`: `user_orders`, `product_categories`.
 - Chave primária: `id` — use `BIGINT UNSIGNED AUTO_INCREMENT` para tabelas de alta escrita; use `UUID` quando a geração de ID precisa ser distribuída ou quando o ID é exposto externamente.
-- Timestamps padrão: `created_at`, `updated_at` com `DEFAULT CURRENT_TIMESTAMP` e `ON UPDATE CURRENT_TIMESTAMP`.
+- Timestamps padrão: `date_creation`, `date_mod` com `DEFAULT CURRENT_TIMESTAMP` e `ON UPDATE CURRENT_TIMESTAMP`.
 - Soft delete: coluna `deleted_at DATETIME NULL DEFAULT NULL` — aplique apenas quando o histórico de exclusão é um requisito de negócio; evite em tabelas de alto volume onde o filtro `WHERE deleted_at IS NULL` degrada queries.
 
 ### 2.2 Normalização
@@ -81,7 +81,7 @@ Denormalize **somente quando houver evidência de gargalo de leitura**, não por
 - Em índices compostos, coloque à esquerda a coluna usada como **filtro obrigatório na maioria das queries**, não necessariamente a de maior cardinalidade. A regra de seletividade se aplica quando ambas as colunas aparecem juntas nos filtros: nesse caso, prefira a mais seletiva à esquerda.
 
   - `(user_id, status)` — quando toda query já sabe o `user_id`; `status` vem como filtro secundário opcional
-  - `(status, created_at)` — quando queries frequentes filtram por `status` primeiro, independente do usuário
+  - `(status, date_creation)` — quando queries frequentes filtram por `status` primeiro, independente do usuário
   - Em índices de cobertura (covering index), a coluna de maior cardinalidade à esquerda maximiza a eficiência de varredura
 
 - Prefira **partial indexes** para filtros com subconjunto previsível.
@@ -229,7 +229,7 @@ $stmt->execute([$email]);
 
 ## 9. Auditoria de Dados
 
-Para rastrear quem alterou o quê e quando (além de `created_at`/`updated_at`):
+Para rastrear quem alterou o quê e quando (além de `date_creation`/`date_mod`):
 
 > Ver estrutura completa de `audit_log` com índices em [`references/audit-table.sql`](references/audit-table.sql).
 
