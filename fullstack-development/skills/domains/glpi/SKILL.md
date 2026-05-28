@@ -1,6 +1,6 @@
 ---
 name: glpi
-description: Esta skill deve ser carregada quando o projeto for um plugin GLPI 10.0.x. Identificadores de contexto GLPI: presença de setup.php + hook.php na raiz do projeto, ou menção explícita do usuário ("plugin GLPI", "módulo GLPI", "GLPI 10", "CommonDBTM"). Cobre os padrões gerais de integração com o framework GLPI — CommonDBTM, sistema de permissões, acesso ao banco via $DB global e registro de hooks. Sub-skills específicas estão disponíveis para criação de plugins e handlers AJAX.
+description: This skill should be loaded when the project is a GLPI 10.0.x plugin. GLPI context identifiers: presence of setup.php + hook.php at the project root, or explicit user mention ("plugin GLPI", "GLPI module", "GLPI 10", "CommonDBTM"). Covers general integration patterns with the GLPI framework — CommonDBTM, permission system, database access via global $DB, and hook registration. Specific sub-skills are available for plugin creation and AJAX handlers.
 version: 0.2.0
 ---
 
