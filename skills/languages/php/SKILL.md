@@ -119,53 +119,7 @@ Exemplos completos de cada recurso em **`references/php83-features.md`**.
 
 ---
 
-## Estrutura de Projeto
-
-```
-src/
-├── Domain/               # Regras de negócio (sem dependências externas)
-│   ├── User/
-│   │   ├── User.php              # Entidade
-│   │   ├── Email.php             # Value Object
-│   │   ├── UserRepositoryInterface.php
-│   │   └── Exception/
-│   │       └── UserNotFoundException.php
-│   └── Order/
-│       └── ...
-├── Application/          # Casos de uso (orquestra o domínio)
-│   └── User/
-│       ├── CreateUserCommand.php  # DTO de entrada
-│       ├── CreateUserHandler.php  # Handler
-│       └── UserResponse.php      # DTO de saída
-└── Infrastructure/       # Implementações concretas (banco, HTTP, etc.)
-    ├── Persistence/
-    │   └── PdoUserRepository.php
-    └── Http/
-        └── UserController.php
-tests/
-├── Unit/                 # Sem I/O, sem banco
-└── Integration/          # Com banco ou serviços reais
-```
-
----
-
 ## Boas Práticas Essenciais
-
-### Injeção de Dependência
-
-```php
-// Correto: injetar pelo construtor
-final class OrderService
-{
-    public function __construct(
-        private readonly OrderRepositoryInterface $orders,
-        private readonly EventDispatcherInterface $dispatcher,
-    ) {}
-}
-
-// Incorreto: new em método de negócio
-// $mailer = new SmtpMailer(); // acoplamento rígido
-```
 
 ### Match Expressions
 
@@ -239,10 +193,6 @@ final class UserNotFoundException extends \DomainException
 ## Segurança — Resumo
 
 ```php
-// Prepared statements (nunca concatenar input do usuário em SQL)
-$stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email');
-$stmt->execute([':email' => $email]);
-
 // Escape de output HTML
 echo htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
@@ -262,9 +212,6 @@ Guia completo com PDO, CSRF, uploads, cabeçalhos HTTP e configurações de prod
 
 | Anti-Pattern | Solução |
 |---|---|
-| Variáveis globais | Injeção de dependência |
-| `new` em métodos de negócio | Injetar via construtor |
-| Herança para reaproveitamento | Composição e interfaces |
 | Operator `@` | Try/catch explícito |
 | Strings/números mágicos | Enums ou constantes tipadas |
 | Catch silencioso | Logar e re-lançar |

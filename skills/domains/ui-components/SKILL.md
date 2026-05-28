@@ -1,6 +1,6 @@
 ---
 name: ui-components
-description: This skill should be used when creating, reviewing, or refactoring UI components. Covers component design principles, reusability patterns, props/slots/events API design, responsiveness, accessibility (WCAG 2.2), design tokens, atomic design, Storybook documentation, and component testing with Vitest.
+description: This skill should be used when creating, reviewing, or refactoring UI components. Covers component design principles, reusability patterns, props/slots/events API design, responsiveness, accessibility (WCAG 2.2), design tokens, and atomic design.
 version: 0.2.0
 ---
 
@@ -43,44 +43,32 @@ Organizar componentes por nível de abstração e dependência, não como regra 
 
 ---
 
-## 3. API do Componente (Vue 3 — `<script setup>`)
+## 3. API do Componente (Vue 3 — Options API / Global Build)
+
+> **Em plugins GLPI:** usar Vue 3 via **global build** (`vue.global.prod.js`) sem bundler. Não usar `<script setup>` nem SFCs — definir componentes com `Vue.defineComponent({})` ou Options API inline.
 
 ### 3.1 Props
 
-Definir com `defineProps` tipado. Sempre declarar `default` quando o valor não for obrigatório.
-
 - Usar union types literais para props com conjunto fixo de valores (`variant`, `size`, `align`).
-- Nunca passar objetos mutáveis direto via prop — preferir passar IDs e deixar o componente buscar no store.
+- Nunca passar objetos mutáveis direto via prop — preferir passar IDs e deixar o componente buscar no estado.
 - Evitar props booleanas com semântica negativa (`noLabel`, `hideIcon`); preferir `showLabel`, `showIcon`.
 
 ### 3.2 Emits
 
-Declarar todos os eventos com `defineEmits` e tipar os payloads.
-
 - Usar o padrão `update:modelValue` para componentes que funcionam com `v-model`.
 - Nomes de eventos em kebab-case.
 - Nunca emitir o objeto de evento DOM diretamente quando apenas parte dos dados é relevante.
-
-### v-model Múltiplos (Vue 3)
-
-Componentes que expõem múltiplos valores bidiretionais (ex: `DateRangePicker`, `FilterPanel`) usam `defineProps` e `defineEmits` com os sufixos `update:modelValue` e `update:nomeProp`.
 
 ### 3.3 Slots
 
 - Verificar `$slots.nome` antes de renderizar o wrapper do slot — evita elementos vazios no DOM.
 - Usar scoped slots para expor dados internos ao pai quando necessário.
 
-### 3.4 Expose
-
-Usar `defineExpose` com parcimônia; preferir comunicação via props/emits. Expor apenas o que o pai genuinamente precisa (ex: `focus`, `reset`).
-
 ### Fallthrough de Atributos (`inheritAttrs`)
 
 Para componentes que encapsulam um único elemento nativo (`BaseInput`, `BaseSelect`, `BaseButton`), desabilitar o fallthrough automático e aplicar `$attrs` manualmente no elemento correto.
 
 Sem `inheritAttrs: false`, atributos como `id`, `placeholder`, `type` e `aria-*` são aplicados no elemento raiz do componente (geralmente uma `<div>`), causando bugs silenciosos de acessibilidade — o `<label for="id">` não conectará ao `<input>` correto.
-
-> Ver exemplo completo em [`references/component-api.ts`](references/component-api.ts).
 
 ---
 
@@ -172,72 +160,18 @@ Mapear valores de prop para classes CSS que consomem tokens — sem estilos inli
 
 ---
 
-## 7. Composables — Lógica Reutilizável
+## 7. Componentes Compostos — provide/inject
 
-Extrair lógica de componente em composables quando a mesma lógica aparece em dois ou mais lugares, ou quando o componente fica grande demais.
-
-**Boas práticas de composables:**
-- Nome sempre começa com `use`.
-- Retornam refs e funções — nunca efeitos colaterais globais implícitos.
-- Podem receber refs como parâmetros (`MaybeRef<T>`) para serem reativos.
-- Testar o composable isoladamente, sem montar componente.
-
----
-
-## 8. Componentes Compostos — provide/inject
-
-Quando um componente pai precisa coordenar múltiplos filhos sem prop drilling (Tabs/TabPanel, Accordion/AccordionItem, Select/Option), usar `provide`/`inject` com símbolo tipado:
+Quando um componente pai precisa coordenar múltiplos filhos sem prop drilling (Tabs/TabPanel, Accordion/AccordionItem, Select/Option), usar `provide`/`inject`:
 
 - Usar `Symbol` como chave para evitar colisões de nome
-- Usar `InjectionKey<T>` do Vue para type safety automático no `inject`
 - Lançar erro explícito se o filho for usado fora do contexto do pai
 
-> Ver exemplo completo em [`references/composables.ts`](references/composables.ts).
+> Testes de componentes Vue em plugins GLPI são feitos via **PHPUnit** no lado servidor — não há runner JavaScript separado.
 
 ---
 
-## 9. Documentação com Storybook
-
-Cada componente compartilhado (atoms e molecules) deve ter uma Story correspondente.
-
-**O que cada Story deve cobrir:**
-- Estado padrão (default).
-- Todas as variantes relevantes.
-- Estado desabilitado, se aplicável.
-- Estado de erro ou inválido, se aplicável.
-- Versão com slot/conteúdo longo para verificar quebra de layout.
-
-> Ver exemplo completo em [`references/storybook-example.ts`](references/storybook-example.ts).
-
----
-
-## 10. Testes de Componente
-
-Usar **Vitest** como runner e **Vue Testing Library** (`@testing-library/vue`) para interações centradas no comportamento do usuário.
-
-### 10.1 Princípios
-
-- Testar o que o usuário vê e interage — não o estado interno (`ref`, `data`).
-- Preferir queries semânticas: `getByRole`, `getByLabelText`, `getByText`.
-- Evitar `getByTestId` — usar apenas quando nenhuma query semântica for viável.
-- Sempre `await` após eventos que modificam o DOM.
-
-### 10.2 Estrutura de teste
-
-> Ver exemplo completo em [`references/testing-examples.ts`](references/testing-examples.ts).
-
-### 10.3 O que testar em cada componente
-
-| Tipo | O que testar |
-|---|---|
-| Atoms | Props → saída DOM, estados (disabled, error), emits |
-| Molecules | Interação entre partes (ex: input + mensagem de erro), navegação por teclado |
-| Organisms | Fluxo completo de interação, integração com store/composable |
-| Composables | Lógica reativa isolada, sem montar componente |
-
----
-
-## 11. Performance
+## 8. Performance
 
 - Usar `defineAsyncComponent` para componentes pesados carregados condicionalmente.
 - Evitar `v-if` + `v-for` no mesmo elemento — separar em componente filho ou usar `computed`.
@@ -246,15 +180,14 @@ Usar **Vitest** como runner e **Vue Testing Library** (`@testing-library/vue`) p
 - Aplicar `key` única e estável em listas — nunca usar o índice como `key` em listas que mudam de ordem.
 - **`markRaw`**: marcar objetos que não devem ser tornados reativos (instâncias de bibliotecas externas como charts, editores, mapas). Sem `markRaw`, o Vue tenta rastrear as propriedades do objeto, causando bugs de performance ou erros silenciosos.
 
-> Ver exemplo completo em [`references/performance-patterns.ts`](references/performance-patterns.ts).
+> Ver exemplo completo em [`references/performance-patterns.md`](references/performance-patterns.md).
 
 ---
 
 ## Referências
 
 - Ver `domains/user-experience/SKILL.md` para estados de UI e feedback visual.
-- [Composition API FAQ — Vue.js](https://vuejs.org/guide/extras/composition-api-faq)
-- [Vue.js Testing Guide](https://vuejs.org/guide/scaling-up/testing)
+- Ver `domains/glpi/vue/SKILL.md` para padrões de integração Vue 3 Global Build em plugins GLPI.
 - [WCAG 2.2 — W3C](https://www.w3.org/WAI/standards-guidelines/wcag/)
-- [Atomic Design — Brad Frost](https://bradfrost.com/blog/post/atomic-design-and-storybook/)
+- [Atomic Design — Brad Frost](https://bradfrost.com/blog/post/atomic-web-design/)
 - [CSS Custom Properties — Design Tokens Guide](https://www.frontendtools.tech/blog/css-variables-guide-design-tokens-theming-2025)

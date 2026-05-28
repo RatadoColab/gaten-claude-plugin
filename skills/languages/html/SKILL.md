@@ -8,46 +8,7 @@ version: 0.2.0
 
 Diretrizes para escrita de HTML5 semântico, acessível e responsivo com Bootstrap 5.
 
----
-
-## Estrutura do Documento HTML5
-
-Template mínimo obrigatório para toda página HTML:
-
-```html
-<!DOCTYPE html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8">
-    <!-- viewport: impede zoom automático em mobile -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Descrição da página para SEO">
-    <title>Título Descritivo — Nome do Site</title>
-    <!-- Bootstrap 5 CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  </head>
-  <body>
-    <!-- skip link: primeira âncora da página para acessibilidade por teclado -->
-    <a class="visually-hidden-focusable" href="#main-content">Ir ao conteúdo principal</a>
-
-    <header role="banner">
-      <nav aria-label="Navegação principal">...</nav>
-    </header>
-
-    <main id="main-content">
-      <h1>Título Principal da Página</h1>
-      ...
-    </main>
-
-    <footer role="contentinfo">...</footer>
-
-    <!-- Bootstrap 5 JS Bundle (inclui Popper) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
-</html>
-```
-
-> Sempre definir `lang` na tag `<html>`. Para páginas em português do Brasil: `lang="pt-BR"`.
+> **Em plugins GLPI:** os templates são fragmentos inseridos no layout do framework. O GLPI já fornece o `<html>`, `<head>` e Bootstrap 5 — nunca reimportar via CDN.
 
 ---
 

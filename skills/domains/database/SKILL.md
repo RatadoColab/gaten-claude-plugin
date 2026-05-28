@@ -10,9 +10,6 @@ version: 0.2.0
 
 Diretrizes para modelagem de dados, escrita de queries eficientes, gerenciamento de migrations e operação segura de bancos relacionais e não-relacionais.
 
-> **SGBD de referência:** as orientações deste documento usam **PostgreSQL** como base.
-> Diferenças relevantes para MySQL/MariaDB são indicadas inline com o prefixo `[MySQL]`.
-
 ---
 
 ## 1. Princípios Fundamentais
@@ -28,7 +25,6 @@ Diretrizes para modelagem de dados, escrita de queries eficientes, gerenciamento
 
 ### 2.1 Convenções de nomenclatura
 
-- Tabelas no plural em `snake_case`: `user_orders`, `product_categories`.
 - Chave primária: `id` — use `BIGINT UNSIGNED AUTO_INCREMENT` para tabelas de alta escrita; use `UUID` quando a geração de ID precisa ser distribuída ou quando o ID é exposto externamente.
 - Timestamps padrão: `date_creation`, `date_mod` com `DEFAULT CURRENT_TIMESTAMP` e `ON UPDATE CURRENT_TIMESTAMP`.
 - Soft delete: coluna `deleted_at DATETIME NULL DEFAULT NULL` — aplique apenas quando o histórico de exclusão é um requisito de negócio; evite em tabelas de alto volume onde o filtro `WHERE deleted_at IS NULL` degrada queries.
@@ -148,12 +144,6 @@ ALTER TABLE users DROP COLUMN first_name, DROP COLUMN last_name;
 
 > Para prevenção de SQL Injection, ver `../security/SKILL.md`.
 
-```php
-// Correto: parâmetro preparado
-$stmt = $pdo->prepare("SELECT id, name FROM users WHERE email = ?");
-$stmt->execute([$email]);
-```
-
 > Ver comparação errado/correto e demais padrões em [`references/query-patterns.sql`](references/query-patterns.sql).
 
 ### 5.2 Performance
@@ -201,33 +191,9 @@ $stmt->execute([$email]);
 
 ---
 
-## 7. Connection Pooling
+## 7. Auditoria de Dados
 
-- Configure o pool com tamanho compatível com a concorrência esperada. Uma fórmula inicial razoável: `pool_size = num_cores * 2 + num_disks`.
-
-> Esta fórmula é ponto de partida do ecossistema HikariCP/PostgreSQL. Ajuste com base em benchmarks do workload real — workloads I/O-bound tipicamente se beneficiam de pools maiores que esta fórmula sugere.
-
-- Defina `idle_timeout` menor que o timeout de conexão do banco — evita o uso de conexões stale.
-- Habilite validação de conexão antes de usar (`testOnBorrow` ou equivalente) para detectar conexões quebradas.
-- Em Node.js e Python (linguagens sem destruidores determinísticos), sempre libere a conexão explicitamente no bloco `finally` para evitar esgotamento do pool.
-- Ao usar PgBouncer em transaction mode, desabilite prepared statements no cliente (incompatíveis com esse modo).
-
----
-
-## 8. Controle de Acesso no SGBD
-
-- Nunca usar o superusuário (`root`, `postgres`) na conexão da aplicação
-- Criar um usuário de aplicação com privilégios mínimos necessários
-
-> Ver `CREATE ROLE` e `GRANT` para usuário de aplicação e readonly em [`references/access-control.sql`](references/access-control.sql).
-
-- Separar papéis por função: leitura, escrita, administração de schema
-- Revogar privilégios que não são mais necessários imediatamente
-- Rotacionar senhas de banco regularmente; usar secrets manager em produção
-
----
-
-## 9. Auditoria de Dados
+> Auditoria implementada via código da aplicação ou triggers no banco. Em plugins GLPI, a conexão com o banco é gerenciada pelo framework — nunca configurar conexão diretamente no plugin.
 
 Para rastrear quem alterou o quê e quando (além de `date_creation`/`date_mod`):
 
@@ -235,12 +201,11 @@ Para rastrear quem alterou o quê e quando (além de `date_creation`/`date_mod`)
 
 - Registrar `old_data` e `new_data` como JSONB para auditoria completa
 - Popular via triggers no banco ou na camada de repositório da aplicação
-- Em PostgreSQL, considerar a extensão `pgaudit` para auditoria de nível de sessão
 - Nunca registrar senhas, tokens ou dados sensíveis nos logs de auditoria
 
 ---
 
-## 10. Armadilhas de ORM
+## 8. Armadilhas de ORM
 
 - **N+1 queries:** ao iterar sobre uma coleção e carregar relacionamentos dentro do loop, o ORM dispara uma query por item. Use eager loading (`with()`, `include`, `joinedload`) para resolver.
 
@@ -258,7 +223,7 @@ users = User.query.options(joinedload(User.orders)).all()
 
 ---
 
-## 11. SQL vs NoSQL — Decisão
+## 9. SQL vs NoSQL — Decisão
 
 Em 2025, a abordagem predominante é **persistência poliglota**: usar o banco certo para cada responsabilidade.
 
@@ -278,7 +243,7 @@ Em 2025, a abordagem predominante é **persistência poliglota**: usar o banco c
 
 ---
 
-## 12. Observabilidade
+## 10. Observabilidade
 
 - Habilite slow query log e defina threshold (ex: queries > 100ms).
 - Monitore: latência de queries (p50, p95, p99), conexões ativas vs pool size, taxa de cache hit (para queries com índice), crescimento de tabelas.

@@ -165,40 +165,24 @@ Use o atributo `autocomplete` com valores padronizados para acelerar o preenchim
 
 ---
 
-## 8. Gerenciamento de Estado com React Hook Form + Zod
-
-> Para projetos React com TypeScript, a stack recomendada é **React Hook Form + Zod**. As seções anteriores apresentam os fundamentos agnósticos de framework; esta seção mostra a implementação concreta.
-
-Para projetos React, use React Hook Form com Zod para validação tipada e performática.
-
-> Ver exemplo completo em [`references/rhf-zod-example.tsx`](references/rhf-zod-example.tsx).
-
-**Boas práticas com RHF + Zod:**
-- Defina o schema Zod separadamente (fora do componente) para reaproveitamento
-- Use `zodResolver` do pacote `@hookform/resolvers`
-- Para formulários de criação e edição, encapsule schema e valores padrão em um custom hook reutilizável
-- Para validações dinâmicas (schema que muda conforme dados), use uma factory function que retorna o schema
-
----
-
-## 9. Formulários de Múltiplas Etapas (Multi-step / Wizard)
+## 8. Formulários de Múltiplas Etapas (Multi-step / Wizard)
 
 **Quando usar:** formulários com mais de 8 campos, grupos de dados logicamente distintos (dados pessoais → endereço → confirmação), ou quando etapas anteriores condicionam etapas posteriores.
 
 **Quando evitar:** formulários simples com 5 campos ou menos — a fricção adicional da navegação entre etapas supera o benefício para o usuário.
 
-### 9.1 Estrutura
+### 8.1 Estrutura
 
 - Divida o formulário em grupos lógicos — cada etapa com um único objetivo
 - Exiba um **indicador de progresso** claro (ex.: "Etapa 2 de 4")
 - Permita navegar para etapas anteriores sem perder dados já preenchidos
 - Implemente salvamento automático em `localStorage` para formulários críticos
 
-### 9.2 Gerenciamento de estado multi-step
+### 8.2 Gerenciamento de estado multi-step
 
 > Ver exemplo completo em [`references/multi-step-store.ts`](references/multi-step-store.ts).
 
-### 9.3 Acessibilidade em wizards
+### 8.3 Acessibilidade em wizards
 
 - Atualize o `<title>` da página ou um `aria-live` ao mudar de etapa
 - O foco deve ir para o heading da nova etapa ao avançar
@@ -226,26 +210,15 @@ Para projetos React, use React Hook Form com Zod para validação tipada e perfo
 
 ### 11.1 CSRF
 
-- Use tokens CSRF em todos os formulários com ações de escrita (POST/PUT/DELETE/PATCH)
-- Prefira o padrão Synchronizer Token (gerado por sessão no servidor) ou Double Submit Cookie
-- Configure cookies de sessão com `SameSite=Lax` (padrão moderno) ou `SameSite=Strict` para aplicações críticas, sempre com `Secure`
+- Use tokens CSRF em todos os formulários com ações de escrita — via mecanismo do framework (ex.: `_glpi_csrf_token` em plugins GLPI)
 
 ### 11.2 XSS
 
 - Nunca renderize input do usuário diretamente como HTML sem sanitização
-- Use [DOMPurify](https://github.com/cure53/DOMPurify) para sanitizar HTML proveniente de usuários
-- Em React, evite `dangerouslySetInnerHTML` — se necessário, sanitize com DOMPurify antes
+- Sanitize via biblioteca do framework (ex.: `Sanitizer::sanitize()` no GLPI) antes de persistir ou renderizar
 - Configure Content Security Policy (CSP) no servidor para restringir origens de scripts
 
-### 11.3 Rate Limiting e Proteção contra Força Bruta
-
-- Implementar rate limiting no servidor para endpoints de autenticação: máximo 5 tentativas por IP em 15 minutos
-- Após N falhas consecutivas, aplicar lockout temporário — retornar mensagem não-específica ("Tente novamente em 15 minutos") sem revelar se o problema é senha ou usuário
-- Usar CAPTCHA acessível (hCaptcha com desafio de áudio como alternativa) apenas como último recurso
-- Registrar tentativas de login em log de auditoria com IP, timestamp e user-agent — nunca registrar a senha
-- Formulários de recuperação de senha devem retornar a mesma mensagem para e-mail existente e inexistente (prevenção de user enumeration)
-
-### 11.4 Validação e sanitização server-side
+### 11.3 Validação e sanitização server-side
 
 - Trate **todo** dado recebido do cliente como potencialmente malicioso
 - Normalize antes de validar: trim em strings, lowercase em e-mails
@@ -282,7 +255,7 @@ Antes de considerar um formulário concluído, verifique:
 
 **Segurança**
 - [ ] Token CSRF em formulários de escrita
-- [ ] Sanitização de HTML de input do usuário (DOMPurify)
+- [ ] Sanitização de HTML de input do usuário (via mecanismo do framework)
 - [ ] Validação de tipo e tamanho em uploads (cliente e servidor)
 - [ ] Nenhuma informação sensível exposta em mensagens de erro
 

@@ -1,6 +1,6 @@
 ---
 name: javascript
-description: This skill should be used when writing, reviewing, or refactoring JavaScript code for both frontend and backend (Node.js). Covers ES6+ features (arrow functions, destructuring, classes, modules, optional chaining, nullish coalescing), async patterns (Promises, async/await, combinators), module systems (named/default exports, dynamic import, tree-shaking), DOM manipulation, and JavaScript best practices. Use when the user asks to "write JavaScript", "review JS code", "implement async logic", "use ES6 classes", "configure modules", "handle DOM events", or "refactor to modern JS".
+description: This skill should be used when writing, reviewing, or refactoring JavaScript code for both frontend and backend (Node.js). Covers ES6+ features (arrow functions, destructuring, classes, optional chaining, nullish coalescing), async patterns (Promises, async/await, combinators), DOM manipulation, and JavaScript best practices. Use when the user asks to "write JavaScript", "review JS code", "implement async logic", "use ES6 classes", "handle DOM events", or "refactor to modern JS".
 version: 0.2.0
 ---
 
@@ -231,38 +231,6 @@ console.log(dog.speak());
 
 ---
 
-## Módulos ES6
-
-```js
-// --- math.js ---
-// Named exports — multiple per file
-export const PI = 3.14159;
-export function add(a, b) { return a + b; }
-export function subtract(a, b) { return a - b; }
-
-// --- formatter.js ---
-// Default export — one per file
-export default class Formatter {
-    format(value) { return String(value); }
-}
-
-// --- main.js ---
-import Formatter from './formatter.js';               // default import
-import { add, subtract } from './math.js';            // named imports
-import { add as sum } from './math.js';               // aliased import
-import * as MathUtils from './math.js';               // namespace import
-
-// Dynamic import — returns a Promise
-async function loadModule() {
-    const { add } = await import('./math.js');         // lazy loading
-    return add(1, 2);
-}
-```
-
-Para re-exports, barrel files, tree-shaking e circular dependencies, ver **`references/modules.md`**.
-
----
-
 ## Async/Await
 
 | Abordagem | Código | Erro handling | Legibilidade |
@@ -364,7 +332,6 @@ Consultar conforme necessário — carregados sob demanda:
 |---|---|
 | **`references/es6-features.md`** | Destructuring avançado, generators, iterators, Proxy, WeakMap, Symbols, tagged templates |
 | **`references/async-patterns.md`** | Event loop, Promise chains, combinators, AbortController, timeout e cancelamento |
-| **`references/modules.md`** | Barrel files, re-exports, dynamic import, tree-shaking, circular dependencies |
 | **`references/dom-patterns.md`** | Event delegation, MutationObserver, IntersectionObserver, CustomEvent, debounce/throttle |
 
 ---
