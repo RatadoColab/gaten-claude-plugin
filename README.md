@@ -10,7 +10,7 @@ Este repositório centraliza plugins reutilizáveis para o [Claude Code](https:/
 
 | Plugin | Versão | Descrição |
 |--------|--------|-----------|
-| [`fullstack-development`](./fullstack-development/) | 0.1.0 | Desenvolvimento fullstack com agentes especializados em spec, backend e frontend |
+| [`fullstack-development`](./fullstack-development/) | 0.2.0 | Desenvolvimento fullstack com agentes especializados em spec, backend, frontend e DevOps/CI-CD |
 
 ## Como usar
 
@@ -40,6 +40,7 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 | `spec-dev` | blue | "revise esta spec", "valide a especificação" |
 | `backend-dev` | green | "desenvolva o backend", "implemente a API", "crie o endpoint" |
 | `frontend-dev` | cyan | "desenvolva o frontend", "crie o componente", "implemente o formulário" |
+| `devops-cicd` | yellow | "crie o pipeline", "configure o CI/CD", "configure o Azure DevOps", "escreva o Dockerfile", "faça deploy no OpenShift", "provisione a infraestrutura" |
 
 ### Slash commands
 
@@ -52,10 +53,11 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 ### Skills incluídas
 
 **Base** (carregadas automaticamente por cada agente):
-- `spec-base`, `backend-base`, `frontend-base`
+- `spec-base`, `backend-base`, `frontend-base`, `devops-base`
 
 **Domínios:**
 - `spec-review`, `api-rest`, `database`, `security`, `forms`, `ui-components`, `user-experience`
+- DevOps/CI-CD: `ci-cd`, `containers`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`
 - `glpi` — com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`
 
 **Linguagens:**
@@ -72,7 +74,7 @@ gaten-claude-plugin/
 ├── fullstack-development/        ← plugin fullstack
 │   ├── .claude-plugin/
 │   │   └── plugin.json           ← manifesto do plugin
-│   ├── agents/                   ← spec-dev, backend-dev, frontend-dev
+│   ├── agents/                   ← spec-dev, backend-dev, frontend-dev, devops-cicd
 │   ├── commands/                 ← review-spec, new-feature, code-review
 │   ├── skills/
 │   │   ├── base/                 ← skills base por agente

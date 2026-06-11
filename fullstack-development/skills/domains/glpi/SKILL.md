@@ -1,6 +1,6 @@
 ---
 name: glpi
-description: This skill should be loaded when the project is a GLPI 10.0.x plugin. GLPI context identifiers: presence of setup.php + hook.php at the project root, or explicit user mention ("plugin GLPI", "GLPI module", "GLPI 10", "CommonDBTM"). Covers general integration patterns with the GLPI framework — CommonDBTM, permission system, database access via global $DB, and hook registration. Specific sub-skills are available for plugin creation and AJAX handlers.
+description: This skill should be loaded when the project is a GLPI 10.0.x plugin. GLPI context identifiers: presence of setup.php + hook.php at the project root, or explicit user mention ("plugin GLPI", "GLPI module", "GLPI 10", "CommonDBTM"). Covers general integration patterns with the GLPI framework — CommonDBTM, permission system, database access via global $DB, and hook registration. Specific sub-skills are available for plugin creation, AJAX handlers, Twig form templates, and Vue integration.
 version: 0.2.0
 ---
 
@@ -187,6 +187,7 @@ Carregar conforme a tarefa específica:
 | Criar um novo plugin do zero | `skills/domains/glpi/plugin-creation/SKILL.md` |
 | Criar ou editar handlers em `ajax/` | `skills/domains/glpi/ajax-handlers/SKILL.md` |
 | Criar ou editar formulários Twig em `templates/` | `skills/domains/glpi/form-templates/SKILL.md` |
+| Adicionar interface Vue em templates Twig (aba/SPA no plugin) | `skills/domains/glpi/vue/SKILL.md` |
 
 ## Restrições Absolutas em Plugins GLPI
 

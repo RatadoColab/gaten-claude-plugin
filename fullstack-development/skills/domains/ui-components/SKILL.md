@@ -180,7 +180,7 @@ Quando um componente pai precisa coordenar múltiplos filhos sem prop drilling (
 - Aplicar `key` única e estável em listas — nunca usar o índice como `key` em listas que mudam de ordem.
 - **`markRaw`**: marcar objetos que não devem ser tornados reativos (instâncias de bibliotecas externas como charts, editores, mapas). Sem `markRaw`, o Vue tenta rastrear as propriedades do objeto, causando bugs de performance ou erros silenciosos.
 
-> Ver exemplo completo em [`references/performance-patterns.md`](references/performance-patterns.md).
+> Ver exemplo completo em [`references/performance-patterns.ts`](references/performance-patterns.ts).
 
 ---
 
