@@ -448,3 +448,13 @@ Usar como referência rápida em code reviews e antes de merges para produção:
 - [ ] Erros retornam mensagens genéricas ao cliente
 - [ ] Login e recuperação de senha retornam a **mesma mensagem e tempo de resposta** para usuário existente e inexistente (previne user enumeration e timing attacks)
 - [ ] Logs de eventos de segurança registrando contexto suficiente
+
+---
+
+## Referências
+
+- Ver `../devsecops/SKILL.md` para segurança no pipeline e na infraestrutura (SAST/SCA/DAST, IaC/image scanning, SBOM, supply chain, secrets) — escopo de DevSecOps complementar a este
+- Ver `../api-rest/SKILL.md` para autenticação, autorização e contratos de API
+- Ver `../database/SKILL.md` para queries parametrizadas e proteção de dados
+- [OWASP Top 10:2021](https://owasp.org/Top10/)
+- [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/)
