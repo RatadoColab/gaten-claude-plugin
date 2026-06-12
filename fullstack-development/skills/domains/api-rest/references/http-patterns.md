@@ -64,3 +64,35 @@ RateLimit-Reset: 1716912000
 ```http
 Strict-Transport-Security: max-age=31536000; includeSubDomains
 ```
+
+---
+
+## Headers Importantes — Catálogo
+
+### Requisição
+
+| Header              | Uso                                              |
+|---------------------|--------------------------------------------------|
+| `Authorization`     | Token de autenticação (`Bearer <token>`)         |
+| `Content-Type`      | Formato do corpo enviado (`application/json`)    |
+| `Accept`            | Formato esperado na resposta                     |
+| `Idempotency-Key`   | Chave para operações idempotentes                |
+| `If-None-Match`     | ETag para requisições condicionais (GET)         |
+| `If-Match`          | ETag para atualizações condicionais (PUT/PATCH)  |
+| `X-Request-ID`      | ID para rastreamento distribuído                 |
+
+### Resposta
+
+| Header              | Uso                                              |
+|---------------------|--------------------------------------------------|
+| `Content-Type`      | `application/json` ou `application/problem+json` |
+| `Location`          | URI do recurso criado (POST 201)                 |
+| `ETag`              | Versão do recurso para cache                     |
+| `Cache-Control`     | Diretivas de cache                               |
+| `X-Request-ID`      | Espelhamento do ID de rastreamento               |
+| `Retry-After`       | Segundos antes de nova tentativa (429, 503)      |
+| `RateLimit-Limit`   | Limite de requisições por janela                 |
+| `RateLimit-Remaining` | Requisições restantes na janela atual          |
+| `RateLimit-Reset`   | Timestamp Unix quando a janela reseta            |
+| `Deprecation`       | Indica que o endpoint está deprecado             |
+| `Sunset`            | Data prevista de remoção do endpoint             |

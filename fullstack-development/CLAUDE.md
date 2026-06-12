@@ -1,12 +1,12 @@
 # fullstack-development Plugin — Contexto Local
 
-Plugin Claude Code modular para desenvolvimento fullstack. Construído em maio/2026; a v0.2.0 (junho/2026) adicionou o eixo DevOps/CI-CD — agente `devops-cicd`, skill base `devops-base` e 7 domínios (`ci-cd`, `containers`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`).
+Plugin Claude Code modular para desenvolvimento fullstack. O plugin contém uma forte política de progressive disclosure, com foco em economia de tokens para evitar o carregamento de SKILLs que não fazem parte do contexto do projeto.
 
 ## Instalação e Teste
 
 ```bash
-# Instalar localmente para testar (apontar ao diretório que contém .claude-plugin/)
-cc --plugin-dir /home/andre/projetos/IBGE/gaten-claude-plugin/fullstack-development
+# Instalar localmente para testar (executar a partir da raiz do plugin — diretório que contém .claude-plugin/)
+cc --plugin-dir .
 
 # Verificar agentes carregados
 /agents
@@ -31,6 +31,12 @@ skills/
   languages/                   ← 6 skills de linguagem
 commands/                      ← 3 slash commands
 ```
+
+## Versão e Release
+
+- Versão do plugin em `.claude-plugin/plugin.json`; cada release bumpa a versão e adiciona uma entrada em `CHANGELOG.md` (formato Keep a Changelog) + link de release no rodapé.
+- Manter o `version:` no frontmatter de cada `SKILL.md` alinhado ao publicar — gotcha: skills ficam defasadas (ex.: `glpi/vue` ficou em `0.1.0` enquanto as demais em `0.2.0`).
+- Auditar tamanho dos corpos: `find skills -name SKILL.md -exec wc -w {} \;` (alvo ~1.500–2.000 palavras; ver política de progressive disclosure em Decisões de Design).
 
 ## Agentes e Gatilhos
 
@@ -84,6 +90,14 @@ Manter unido até o conteúdo amadurecer; extrair quando:
 - JavaScript cobre backend (Node.js) e frontend no mesmo arquivo de skill
 - `authors` no plugin.json (array) em vez de `author` (objeto único)
 
+### Política de progressive disclosure nos SKILL.md
+
+Para conter o consumo de tokens (o corpo do SKILL.md é sempre carregado quando a skill dispara):
+
+- **Alvo de corpo:** ~1.500–2.000 palavras. Catálogos extensos, enumerações e exemplos longos vão para `references/` por tópico, deixando no corpo um resumo + ponteiro `> ... em [\`references/x.md\`](references/x.md)`.
+- **Código inline:** no máximo **1 bloco curto (<8 linhas) por seção**; exemplos maiores ou repetidos vão para `references/`.
+- **Sem duplicação:** uma informação vive em um único lugar — não repetir no corpo o que já está num reference (nem entre skills). Tópicos transversais têm fonte autoritativa única (ex.: segurança de aplicação → `domains/security`; acessibilidade → `domains/ui-components`); as demais skills apenas apontam.
+
 ## Autores
 
 - André Proto <andre.proto@gmail.com>
@@ -91,7 +105,4 @@ Manter unido até o conteúdo amadurecer; extrair quando:
 
 ## Próximos Passos Sugeridos
 
-- Expandir o conteúdo de cada `SKILL.md` com `references/` detalhados
-- Adicionar `examples/` às skills de linguagem com snippets prontos
 - Considerar hooks para validação automática de specs antes de commits
-- Testar gatilhos dos agentes em cenários reais de desenvolvimento

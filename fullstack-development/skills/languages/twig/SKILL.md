@@ -98,57 +98,21 @@ Para padrões completos de herança, `embed`, `use` e exemplos de `base.html.twi
 
 ---
 
-## Filters Essenciais
+## Filters e Functions Essenciais
 
-| Filter | Parâmetros | Exemplo | Equivalente PHP |
-|---|---|---|---|
-| `upper` | — | `{{ nome\|upper }}` | `strtoupper()` |
-| `lower` | — | `{{ nome\|lower }}` | `strtolower()` |
-| `capitalize` | — | `{{ frase\|capitalize }}` | `ucfirst()` |
-| `title` | — | `{{ frase\|title }}` | `ucwords()` |
-| `trim` | `[chars]` | `{{ texto\|trim }}` | `trim()` |
-| `length` | — | `{{ lista\|length }}` | `count()` / `strlen()` |
-| `date` | `format`, `timezone` | `{{ now\|date('d/m/Y') }}` | `date()` |
-| `number_format` | `decimals`, `dec_point`, `thousands_sep` | `{{ valor\|number_format(2, ',', '.') }}` | `number_format()` |
-| `abs` | — | `{{ saldo\|abs }}` | `abs()` |
-| `round` | `precision`, `method` | `{{ num\|round(2) }}` | `round()` |
-| `slice` | `start`, `length`, `preserve_keys` | `{{ lista\|slice(0, 5) }}` | `array_slice()` |
-| `join` | `glue`, `and` | `{{ tags\|join(', ') }}` | `implode()` |
-| `sort` | `arrow` | `{{ lista\|sort }}` | `sort()` |
-| `merge` | `arr` | `{{ a\|merge(b) }}` | `array_merge()` |
-| `json_encode` | `options` | `{{ dados\|json_encode }}` | `json_encode()` |
-| `default` | `value` | `{{ nome\|default('Anônimo') }}` | `?? 'Anônimo'` |
-| `replace` | `from` | `{{ texto\|replace({'_': ' '}) }}` | `str_replace()` |
-| `nl2br` | — | `{{ texto\|nl2br` }} | `nl2br()` |
-| `raw` | — | `{{ html\|raw }}` | — (desabilita escape) |
+Filters mais usados (lista completa — `batch`, `column`, encoding, `format_date` etc. — e arrow functions `map`/`filter`/`reduce` em **`references/filters-functions.md`**):
 
-```twig
-{# Arrow functions em filters — Twig 3.x #}
-{% set nomes = usuarios|map(u => u.name) %}
-{% set ativos = usuarios|filter(u => u.active) %}
-{% set total = valores|reduce((carry, v) => carry + v, 0) %}
-```
-
-Para lista completa com `batch`, `column`, `convert_encoding`, `format_date`, `format_datetime` e todos os filtros de encoding, consultar **`references/filters-functions.md`**.
-
----
-
-## Functions Essenciais
-
-| Função | Uso | Exemplo |
+| Filter | Exemplo | PHP |
 |---|---|---|
-| `range(low, high, step)` | Gera sequência numérica | `{% for i in range(1, 10) %}` |
-| `cycle(arr, pos)` | Alterna entre valores | `{{ cycle(['par', 'ímpar'], loop.index0) }}` |
-| `attribute(obj, name)` | Acesso dinâmico a atributo | `{{ attribute(user, campo) }}` |
-| `block(name)` | Renderiza conteúdo de um bloco | `{{ block('titulo') }}` |
-| `parent()` | Retorna conteúdo do bloco pai | `{{ parent() }}` |
-| `dump(var)` | Debug — inspeciona variável | `{{ dump(user) }}` |
-| `include(tmpl)` | Inclui template dinamicamente | `{{ include('partial.html.twig') }}` |
-| `source(tmpl)` | Retorna código-fonte do template | `{{ source('email.txt.twig') }}` |
-| `random(val)` | Valor aleatório | `{{ random(['A','B','C']) }}` |
-| `min(arr)` / `max(arr)` | Mínimo / máximo | `{{ min(valores) }}` |
-| `date(date, tz)` | Converte para objeto DateTime | `{{ date('now')\|date('d/m/Y') }}` |
-| `template_from_string(tmpl)` | Template a partir de string | Uso avançado — evitar em produção |
+| `default` | `{{ nome\|default('Anônimo') }}` | `?? 'Anônimo'` |
+| `date` | `{{ now\|date('d/m/Y') }}` | `date()` |
+| `number_format` | `{{ valor\|number_format(2, ',', '.') }}` | `number_format()` |
+| `length` | `{{ lista\|length }}` | `count()`/`strlen()` |
+| `join` | `{{ tags\|join(', ') }}` | `implode()` |
+| `json_encode` | `{{ dados\|json_encode }}` | `json_encode()` |
+| `raw` | `{{ html\|raw }}` | — (desabilita escape) |
+
+Functions mais usadas: `range()` (sequência), `cycle()` (alterna valores), `attribute()` (acesso dinâmico), `block()`/`parent()` (herança), `dump()` (debug), `include()`/`source()`. Detalhes e demais funções em **`references/filters-functions.md`**.
 
 ---
 
@@ -231,7 +195,7 @@ Para sandbox mode, `SandboxExtension` e configuração de políticas, consultar 
 | Anti-Pattern | Problema | Solução |
 |---|---|---|
 | Lógica de negócio no template | Templates difíceis de testar e manter | Processar no controller/service; passar dados prontos |
-| `\|raw` com input de usuário | XSS | Sanitizar com HTMLPurifier antes; nunca confiar no input |
+| `\|raw` com input de usuário | XSS | Sanitizar antes (ver seção Segurança); nunca confiar no input |
 | Acesso profundo `obj.a.b.c.d` | Acoplamento forte ao modelo de dados | Criar variável intermediária com `{% set %}` |
 | Queries dentro de template (via serviço injetado) | N+1, lógica de dados no template | Pré-carregar no controller e passar coleção pronta |
 | Duplicação de fragmentos sem `include` | Inconsistência ao alterar layout | Extrair para `_partial.html.twig` e usar `include` |

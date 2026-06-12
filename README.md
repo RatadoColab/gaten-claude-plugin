@@ -10,7 +10,7 @@ Este repositório centraliza plugins reutilizáveis para o [Claude Code](https:/
 
 | Plugin | Versão | Descrição |
 |--------|--------|-----------|
-| [`fullstack-development`](./fullstack-development/) | 0.2.0 | Desenvolvimento fullstack com agentes especializados em spec, backend, frontend e DevOps/CI-CD |
+| [`fullstack-development`](./fullstack-development/) | 0.2.1 | Desenvolvimento fullstack com agentes especializados em spec, backend, frontend e DevOps/CI-CD |
 
 ## Como usar
 
@@ -65,6 +65,8 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 
 **Precedência de carregamento:** GLPI > Languages > Domains
 
+**Progressive disclosure:** cada `SKILL.md` mantém o corpo enxuto (~1.500–2.000 palavras) com o detalhamento (catálogos, exemplos longos) extraído para `references/` por tópico, carregados apenas quando necessários — foco em economia de tokens, evitando carregar conteúdo fora do contexto da tarefa.
+
 ## Estrutura do repositório
 
 ```
@@ -76,7 +78,7 @@ gaten-claude-plugin/
 │   │   └── plugin.json           ← manifesto do plugin
 │   ├── agents/                   ← spec-dev, backend-dev, frontend-dev, devops-cicd
 │   ├── commands/                 ← review-spec, new-feature, code-review
-│   ├── skills/
+│   ├── skills/                  ← cada skill: SKILL.md + references/ (detalhes sob demanda)
 │   │   ├── base/                 ← skills base por agente
 │   │   ├── domains/              ← skills de domínio (inclui glpi/)
 │   │   └── languages/            ← skills por linguagem

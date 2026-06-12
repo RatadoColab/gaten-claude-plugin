@@ -37,52 +37,29 @@ Diretrizes para escrita de HTML5 semântico, acessível e responsivo com Bootstr
 
 ### Breakpoints
 
-| Infix | Nome | Largura mínima | Container padrão |
-|---|---|---|---|
-| *(nenhum)* | Extra small | < 576px | 100% |
-| `sm` | Small | ≥ 576px | 540px |
-| `md` | Medium | ≥ 768px | 720px |
-| `lg` | Large | ≥ 992px | 960px |
-| `xl` | Extra large | ≥ 1200px | 1140px |
-| `xxl` | Extra extra large | ≥ 1400px | 1320px |
+| Infix | Largura mínima | Container |
+|---|---|---|
+| *(nenhum)* | < 576px | 100% |
+| `sm` | ≥ 576px | 540px |
+| `md` | ≥ 768px | 720px |
+| `lg` | ≥ 992px | 960px |
+| `xl` | ≥ 1200px | 1140px |
+| `xxl` | ≥ 1400px | 1320px |
 
-### Sistema de Grid (12 colunas)
+### Grid (12 colunas)
+
+Estrutura `container > row > col-*`; combinar breakpoints para responsividade (`col-12 col-md-8`); `g-*` controla o gutter. `col` divide igualmente; `col-auto` usa a largura do conteúdo.
 
 ```html
-<!-- container: largura máxima por breakpoint -->
 <div class="container">
-  <div class="row">
-    <!-- col-md-8: 8/12 colunas a partir de md; col-12 abaixo de md -->
+  <div class="row g-3">
     <div class="col-12 col-md-8">Conteúdo principal</div>
     <div class="col-12 col-md-4">Sidebar</div>
   </div>
 </div>
-
-<!-- container-fluid: sempre 100% da largura -->
-<div class="container-fluid">
-  <div class="row g-3">
-    <!-- g-3: gap (gutter) de 1rem entre colunas e linhas -->
-    <div class="col-sm-6 col-lg-4">Card</div>
-    <div class="col-sm-6 col-lg-4">Card</div>
-    <div class="col-sm-12 col-lg-4">Card</div>
-  </div>
-</div>
 ```
 
-### Classes de Coluna Rápidas
-
-| Classe | Colunas ocupadas | Largura relativa |
-|---|---|---|
-| `col-1` | 1 de 12 | ~8.33% |
-| `col-3` | 3 de 12 | 25% |
-| `col-4` | 4 de 12 | 33.33% |
-| `col-6` | 6 de 12 | 50% |
-| `col-8` | 8 de 12 | 66.67% |
-| `col-12` | 12 de 12 | 100% |
-| `col` | Igual entre irmãos | Automático |
-| `col-auto` | Largura do conteúdo | Automático |
-
-> Detalhes completos de offset, order, nesting, flexbox utilities e spacing em **`references/bootstrap5-layout.md`**.
+> Estrutura completa, classes de coluna, offset, order, nesting, flexbox utilities e spacing em **`references/bootstrap5-layout.md`**.
 
 ---
 

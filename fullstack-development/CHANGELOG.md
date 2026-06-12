@@ -5,6 +5,35 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.2.1] - 2026-06-11
+
+Rodada de otimização de consumo de tokens: redução do vetor de dados externos, carregamento mínimo de skills e aplicação de progressive disclosure nos `SKILL.md` (corpos enxutos + conteúdo detalhado movido para `references/` por tópico, sem perda de informação).
+
+### Alterado
+
+#### Agentes
+- `devops-cicd` — removida a ferramenta `WebSearch` (elimina o vetor de dados externos do agente); reforço de que as skills de domínio são mutuamente exclusivas por tarefa
+- `spec-dev` — `WebSearch` mantido, mas com guardrail: usar apenas quando o usuário pedir explicitamente verificação de versão/documentação online, sem buscas especulativas
+- `spec-dev`, `backend-dev`, `frontend-dev`, `devops-cicd` — adicionada diretriz de **carregamento mínimo** (carregar só a base + a skill da stack detectada; `references/` sob demanda)
+
+#### Skills — progressive disclosure (corpos reduzidos)
+- `domains/security` (2.683→~950 palavras) — OWASP Top 10 detalhado movido para `references/owasp-top10.md`; defesas web (XSS, CSRF, upload, CORS, secrets, supply chain) para `references/web-defenses.md`
+- `domains/user-experience` (2.447→~1.355) — seções 6–12 movidas para `references/mobile-responsive.md`, `motion-darkmode-a11y.md`, `ux-writing-flows.md`; seção de formulários colapsada para ponteiro a `forms`
+- `domains/api-rest` (2.385→~1.555) — `references/status-codes.md`, `error-handling.md` (RFC 9457), `advanced-endpoints.md` e `pagination.md`; tabelas de headers movidas para `http-patterns.md`
+- `domains/database` (1.943→~1.640) — `references/migrations.md` e `sql-vs-nosql.md`; blocos SQL/Python inline duplicados removidos
+- `domains/forms` (1.698→~1.350) — `references/brazilian-inputs.md`, `multi-step-and-upload.md` e `autocomplete.md`; seção de segurança colapsada para ponteiro a `security`
+- `domains/glpi/vue` (1.726→~1.630) — modais e ciclo de vida movidos para `references/runtime-patterns.md`; bloco AJAX reduzido com ponteiro a `integration-patterns.md`
+- `languages/twig` (1.663→~1.320) — catálogo de filters/functions reduzido a resumo (duplicava `references/filters-functions.md`); regra `|raw`/HTMLPurifier deduplicada
+- `languages/html` (1.653→~1.520) — grid/breakpoints reduzidos a resumo (duplicava `references/bootstrap5-layout.md`)
+
+#### Skills — descriptions e versões
+- `domains/security`, `api-rest`, `database`, `forms` — adicionadas *trigger phrases* literais à `description` para melhorar a ativação
+- `domains/glpi/vue` — `version` da skill alinhada para `0.2.0`
+
+#### Projeto
+- `plugin.json` — versão `0.2.1`
+- `CLAUDE.md` — nova subseção "Política de progressive disclosure nos SKILL.md" (alvo de corpo ~1.500–2.000 palavras, máx. 1 bloco de código curto por seção, fonte autoritativa única por tópico transversal)
+
 ## [0.2.0] - 2026-06-10
 
 ### Adicionado
@@ -83,5 +112,6 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - Documentação do projeto (`CLAUDE.md`) com estrutura, agentes e decisões de design
 - Precedência de carregamento de skills: GLPI > Languages > Domains
 
+[0.2.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.2.1
 [0.2.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.2.0
 [0.1.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.1.0
