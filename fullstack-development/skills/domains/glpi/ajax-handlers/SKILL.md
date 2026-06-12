@@ -5,7 +5,7 @@ description: >
   "add an ajax endpoint", "create a file in ajax/", "handle an AJAX request",
   "return JSON from PHP in GLPI", "create a dropdown handler", or mentions
   the ajax/ directory in a GLPI plugin context.
-version: 0.1.0
+version: 0.2.1
 ---
 
 # GLPI — Handlers AJAX
@@ -18,44 +18,18 @@ Handlers AJAX são arquivos PHP em `ajax/` que respondem a requisições JavaScr
 
 ## 1. Ordem de Inicialização (Obrigatória)
 
-Todo handler AJAX deve seguir exatamente esta sequência:
+Todo handler deve seguir exatamente esta sequência:
 
-```php
-<?php
+1. `$AJAX_INCLUDE = 1;` — flag que indica ao GLPI que este é um endpoint AJAX
+2. CSRF token movido para o header **antes** do includes.php: `$_SERVER['HTTP_X_GLPI_CSRF_TOKEN'] = $_POST['_glpi_csrf_token'] ?? '';` (apenas se o handler receber `$_POST['_glpi_csrf_token']`)
+3. Bootstrap do framework: `include('../../../inc/includes.php');`
+4. Content-Type apropriado: `application/json` ou `text/html` (charset UTF-8)
+5. `Html::header_nocache();` — impede cache
+6. Verificação de ambiente: `if (!defined('GLPI_ROOT'))` → `403` + `die()`
+7. Verificação de plugin ativo: `Plugin::isPluginActive('nomedoplugin')` → `503` se inativo (opcional quando o handler é genérico ao GLPI)
+8. Verificação de sessão/permissões — **sempre antes de processar qualquer lógica**: `Session::checkCentralAccess();`
 
-// 1. Flag que indica ao GLPI que este é um endpoint AJAX
-$AJAX_INCLUDE = 1;
-
-// 2. CSRF token ANTES do includes.php (apenas se receber $_POST['_glpi_csrf_token'])
-$_SERVER['HTTP_X_GLPI_CSRF_TOKEN'] = $_POST['_glpi_csrf_token'] ?? '';
-
-// 3. Bootstrap do framework
-include('../../../inc/includes.php');
-
-// 4. Content-Type apropriado
-header('Content-Type: application/json; charset=UTF-8');
-// ou: header('Content-Type: text/html; charset=UTF-8');
-
-// 5. Impede cache
-Html::header_nocache();
-
-// 6. Verificação de ambiente
-if (!defined('GLPI_ROOT')) {
-    http_response_code(403);
-    die();
-}
-
-// 7. Verificação de plugin ativo
-if (!Plugin::isPluginActive('nomedoplugin')) {
-    http_response_code(503);
-    die('Plugin not installed or activated');
-}
-
-// 8. Verificação de sessão/permissões — SEMPRE antes de processar qualquer lógica
-Session::checkCentralAccess();
-```
-
-> O passo 2 (CSRF token) só é necessário quando o handler recebe `$_POST['_glpi_csrf_token']`. O passo 7 é opcional quando o handler é genérico ao GLPI.
+Template completo anotado em **`references/patterns.md`**.
 
 ---
 
@@ -71,12 +45,8 @@ Nunca implementar autenticação própria. Usar sempre um dos métodos abaixo:
 | `Session::haveRight($rightname, UPDATE)` | Quando a permissão é verificada condicionalmente (retorna bool) |
 
 ```php
-// Exemplos
-Session::checkCentralAccess();
-Session::checkLoginUser();
 Session::checkRight(MinhaClasse::$rightname, CREATE);
 
-// Verificação condicional
 if (!Session::haveRight('ticket', UPDATE)) {
     http_response_code(403);
     die();
@@ -92,89 +62,23 @@ if (!Session::haveRight('ticket', UPDATE)) {
 Sempre usar `filter_input` com cast explícito. Nunca acessar `$_POST` ou `$_GET` diretamente sem sanitização.
 
 ```php
-// Inteiros (IDs, flags numéricas)
-$id       = (int) filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
-$entities = (int) filter_input(INPUT_POST, 'entities_id', FILTER_SANITIZE_NUMBER_INT);
-$rand     = (int) filter_input(INPUT_POST, 'rand', FILTER_SANITIZE_NUMBER_INT);
-
-// Strings (tipos, operações)
-$type = (string) filter_input(INPUT_POST, 'type');
-$op   = (string) filter_input(INPUT_GET, 'op');
-
-// Com fallback
-$operation = (string) (filter_input(INPUT_POST, 'operation') ?: 'default');
-
-// Validação de JSON (parâmetro GET complexo)
-$actors = filter_input(INPUT_GET, '_actors', FILTER_DEFAULT, FILTER_NULL_ON_FAILURE);
-if (!empty($actors)) {
-    $actors = Toolbox::jsonDecode(urldecode($actors), true);
-}
-if (!is_array($actors)) {
-    $actors = null;
-}
-
-// Rejeitar IDs inválidos
+$id = (int) filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
 if ($id <= 0) {
     http_response_code(400);
     die();
 }
 ```
 
+Padrões para strings, fallbacks e parâmetros JSON em GET na seção **Validação de Parâmetros** de `references/patterns.md`.
+
 ---
 
 ## 4. Padrões de Operação
 
-### 4.1 Operações CRUD via POST
+Duas formas de despachar operações no mesmo handler:
 
-```php
-if (isset($_POST['add'])) {
-    Session::checkRight(MinhaClasse::$rightname, CREATE);
-    $obj   = new MinhaClasse();
-    $newID = $obj->add($_POST);
-
-    if ($newID === false) {
-        http_response_code(400);
-        die();
-    }
-
-    echo json_encode(['success' => true, 'id' => $newID]);
-    exit;
-}
-
-if (isset($_POST['update'])) {
-    // ...
-}
-
-if (isset($_POST['delete'])) {
-    // ...
-}
-```
-
-### 4.2 Operações múltiplas via parâmetro `op`
-
-```php
-$op = (string) filter_input(INPUT_POST, 'op');
-
-switch ($op) {
-    case 'get_dropdown':
-        header('Content-Type: text/html; charset=UTF-8');
-        // renderiza HTML de dropdown
-        break;
-
-    case 'search':
-        header('Content-Type: application/json; charset=UTF-8');
-        // retorna array JSON
-        break;
-
-    case 'update_status':
-        // lógica de atualização
-        break;
-
-    default:
-        http_response_code(400);
-        die();
-}
-```
+- **CRUD via POST** — testar `isset($_POST['add'])` / `update` / `delete`, verificar o direito correspondente (`CREATE`/`UPDATE`/`DELETE`) antes de cada operação e responder JSON. Template completo no **Padrão 3** de `references/patterns.md`.
+- **Operações múltiplas via parâmetro `op`** — `switch` sobre `filter_input(..., 'op')`, com `default` retornando `400`; cada case define seu próprio Content-Type. Exemplos nas seções **Operações Múltiplas** e **Padrão 4** (wizard via GET) de `references/patterns.md`.
 
 ---
 
@@ -188,56 +92,25 @@ switch ($op) {
 | Respostas com metadados (id, redirecturl) | Fragmentos de formulário carregados dinamicamente |
 | Status de sucesso/erro | Conteúdo de wizard steps |
 
-### 5.2 Estrutura JSON de sucesso
+### 5.2 Envelope JSON
+
+Sucesso: `{success: true, id, message, redirecturl?}` com HTTP `200`. Em criação, usar `201` + header `Location` apenas quando o JS precisar conhecer a URL canônica do recurso criado — em AJAX puro, `200 + id` é suficiente. Erro:
 
 ```php
-// Operação genérica (GET/PUT/PATCH) — HTTP 200
-echo json_encode([
-    'success'     => true,
-    'id'          => $newID,
-    'message'     => __('Item atualizado com sucesso', 'nomedoplugin'),
-    'redirecturl' => $CFG_GLPI['root_doc'] . "/front/item.form.php?id={$newID}",
-]);
-exit;
-
-// Criação de recurso — HTTP 201 quando o cliente precisa descobrir o Location
-http_response_code(201);
-header('Location: ' . $CFG_GLPI['root_doc'] . "/front/item.form.php?id={$newID}");
-echo json_encode(['success' => true, 'id' => $newID]);
-exit;
-```
-
-> Em AJAX puro (JS injeta HTML na mesma página), `200 + id` é suficiente. Use `201 + Location` apenas quando o JS precisar conhecer a URL canônica do recurso criado.
-
-### 5.3 Estrutura JSON de erro
-
-```php
-http_response_code(403);
-echo json_encode([
-    'success' => false,
-    'code'    => 'FORBIDDEN',               // constante para decisão programática no JS
-    'message' => __('Acesso não permitido', 'nomedoplugin'),
-    'errors'  => [],                         // array de erros campo a campo (opcional)
-]);
-exit;
-
-// Com erros de validação granulares (422)
 http_response_code(422);
 echo json_encode([
     'success' => false,
-    'code'    => 'VALIDATION_ERROR',
+    'code'    => 'VALIDATION_ERROR',  // constante para decisão programática no JS
     'message' => __('Dados inválidos', 'nomedoplugin'),
-    'errors'  => [
-        ['field' => 'name',       'message' => __('Nome é obrigatório', 'nomedoplugin')],
-        ['field' => 'entities_id','message' => __('Entidade não existe', 'nomedoplugin')],
-    ],
+    'errors'  => [],                  // erros campo a campo (opcional)
 ]);
-exit;
 ```
+
+Exemplos completos (200/201/403/422, erros granulares por campo) na seção **Estruturas de Resposta JSON** de `references/patterns.md`.
 
 > **Nota sobre RFC 9457:** A api-rest recomenda Problem Details (RFC 9457) com `type`, `title`, `status`, `detail`. Handlers AJAX do GLPI são **endpoints internos** consumidos apenas pelo próprio frontend JS do plugin — não são APIs públicas. O envelope `{success, code, message, errors}` é compatível com o padrão existente nos plugins IBGE e dispensa o overhead do RFC 9457.
 
-### 5.4 Tabela de códigos HTTP
+### 5.3 Tabela de códigos HTTP
 
 | Código | Situação | Distinção importante |
 |--------|----------|---------------------|
@@ -254,51 +127,19 @@ exit;
 
 ## 6. Delegação para Classe de Negócio
 
-Preferir delegar lógica complexa para métodos da classe `CommonDBTM` em vez de implementar inline no handler.
-
-```php
-// Handler leve — apenas valida entrada e delega
-$id     = (int) filter_input(INPUT_POST, 'tickets_id', FILTER_SANITIZE_NUMBER_INT);
-$input  = filter_input(INPUT_POST, null, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY) ?? [];
-
-$ticket = new Ticket();
-$result = $ticket->processCloneRequest($input);
-
-echo json_encode(['success' => $result !== false, 'id' => $result]);
-exit;
-```
-
-Lógica inline é aceitável apenas para handlers simples (consultas `$DB`, renderização de dropdown).
+Preferir delegar lógica complexa para métodos da classe `CommonDBTM`: o handler apenas valida entrada, delega e serializa a resposta (**Padrão 1** de `references/patterns.md`). Lógica inline é aceitável apenas para handlers simples (consultas `$DB`, renderização de dropdown).
 
 ---
 
 ## 7. Tratamento de Erros
 
-```php
-// Try-catch para erros inesperados — usar 500, não 400
-try {
-    $result = MinhaClasse::processForm($_POST);
-} catch (ErrorException $e) {
-    http_response_code(500);
-    // Nunca expor $e->getMessage() em produção
-    echo json_encode(['success' => false, 'code' => 'INTERNAL_ERROR', 'message' => '']);
-    exit;
-}
-
-// Mensagens para o usuário após redirect (não para AJAX puro)
-if ($success) {
-    Session::addMessageAfterRedirect(__('Operação realizada', 'nomedoplugin'), true);
-}
-```
+Envolver operações com risco de exceção em try-catch respondendo `500` — nunca `400`, que mascara a origem — e nunca expor `$e->getMessage()` em produção (**Padrão 6** de `references/patterns.md`). Para mensagens ao usuário após redirect (não AJAX puro), usar `Session::addMessageAfterRedirect()`.
 
 ---
 
 ## 8. Globais Disponíveis
 
-```php
-global $DB;          // Acesso ao banco — sempre declarar global antes de usar
-global $CFG_GLPI;    // Configurações (root_doc, etc.)
-```
+Declarar antes de usar: `global $DB;` (acesso ao banco) e `global $CFG_GLPI;` (configurações, ex.: `root_doc`).
 
 ---
 
@@ -316,4 +157,4 @@ global $CFG_GLPI;    // Configurações (root_doc, etc.)
 
 ## Recursos Adicionais
 
-- **`references/patterns.md`** — Templates completos anotados e exemplos reais de handlers por tipo de operação
+- **`references/patterns.md`** — Templates completos anotados, validação de parâmetros, estruturas de resposta JSON e exemplos reais de handlers por tipo de operação

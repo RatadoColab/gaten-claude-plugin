@@ -499,6 +499,113 @@ exit;
 
 ---
 
+## Validação de Parâmetros
+
+```php
+// Inteiros (IDs, flags numéricas)
+$id       = (int) filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
+$entities = (int) filter_input(INPUT_POST, 'entities_id', FILTER_SANITIZE_NUMBER_INT);
+$rand     = (int) filter_input(INPUT_POST, 'rand', FILTER_SANITIZE_NUMBER_INT);
+
+// Strings (tipos, operações)
+$type = (string) filter_input(INPUT_POST, 'type');
+$op   = (string) filter_input(INPUT_GET, 'op');
+
+// Com fallback
+$operation = (string) (filter_input(INPUT_POST, 'operation') ?: 'default');
+
+// Validação de JSON (parâmetro GET complexo)
+$actors = filter_input(INPUT_GET, '_actors', FILTER_DEFAULT, FILTER_NULL_ON_FAILURE);
+if (!empty($actors)) {
+    $actors = Toolbox::jsonDecode(urldecode($actors), true);
+}
+if (!is_array($actors)) {
+    $actors = null;
+}
+
+// Rejeitar IDs inválidos
+if ($id <= 0) {
+    http_response_code(400);
+    die();
+}
+```
+
+---
+
+## Operações Múltiplas via Parâmetro `op` (POST)
+
+```php
+$op = (string) filter_input(INPUT_POST, 'op');
+
+switch ($op) {
+    case 'get_dropdown':
+        header('Content-Type: text/html; charset=UTF-8');
+        // renderiza HTML de dropdown
+        break;
+
+    case 'search':
+        header('Content-Type: application/json; charset=UTF-8');
+        // retorna array JSON
+        break;
+
+    case 'update_status':
+        // lógica de atualização
+        break;
+
+    default:
+        http_response_code(400);
+        die();
+}
+```
+
+---
+
+## Estruturas de Resposta JSON
+
+```php
+// Sucesso genérico (GET/PUT/PATCH) — HTTP 200
+echo json_encode([
+    'success'     => true,
+    'id'          => $newID,
+    'message'     => __('Item atualizado com sucesso', 'nomedoplugin'),
+    'redirecturl' => $CFG_GLPI['root_doc'] . "/front/item.form.php?id={$newID}",
+]);
+exit;
+
+// Criação de recurso — HTTP 201 quando o cliente precisa descobrir o Location
+http_response_code(201);
+header('Location: ' . $CFG_GLPI['root_doc'] . "/front/item.form.php?id={$newID}");
+echo json_encode(['success' => true, 'id' => $newID]);
+exit;
+
+// Erro de permissão — HTTP 403
+http_response_code(403);
+echo json_encode([
+    'success' => false,
+    'code'    => 'FORBIDDEN',               // constante para decisão programática no JS
+    'message' => __('Acesso não permitido', 'nomedoplugin'),
+    'errors'  => [],                         // array de erros campo a campo (opcional)
+]);
+exit;
+
+// Erros de validação granulares — HTTP 422
+http_response_code(422);
+echo json_encode([
+    'success' => false,
+    'code'    => 'VALIDATION_ERROR',
+    'message' => __('Dados inválidos', 'nomedoplugin'),
+    'errors'  => [
+        ['field' => 'name',       'message' => __('Nome é obrigatório', 'nomedoplugin')],
+        ['field' => 'entities_id','message' => __('Entidade não existe', 'nomedoplugin')],
+    ],
+]);
+exit;
+```
+
+> Em AJAX puro (JS injeta HTML na mesma página), `200 + id` é suficiente. Usar `201 + Location` apenas quando o JS precisar conhecer a URL canônica do recurso criado.
+
+---
+
 ## Integração com Dropdown GLPI
 
 Ao retornar HTML de dropdown para injeção em `div` via JavaScript:

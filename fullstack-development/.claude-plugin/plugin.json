@@ -1,6 +1,6 @@
 {
   "name": "fullstack-development",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Plugin modular para desenvolvimento fullstack com agentes especializados em especificação, backend, frontend e DevOps/CI-CD, e skills organizadas por domínio e linguagem de programação.",
   "authors": [
     {

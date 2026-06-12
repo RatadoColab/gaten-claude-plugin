@@ -1,7 +1,7 @@
 ---
 name: backend-base
 description: This skill should be used when developing backend features, services, APIs, or data layers. Covers architecture principles, code organization patterns, and general best practices for backend development.
-version: 0.1.0
+version: 0.2.1
 ---
 
 # Backend Base — Fundamentos de Desenvolvimento Backend
@@ -43,16 +43,7 @@ Fornece os princípios de arquitetura e boas práticas gerais aplicáveis ao des
 
 ## Adaptação por Framework
 
-As camadas acima são genéricas. Frameworks com arquitetura própria exigem adaptação:
-
-| Camada genérica | Equivalente no GLPI 10.x |
-|---|---|
-| Controller/Handler | `front/item.php` — chama `Html::header()` / `Html::footer()` diretamente |
-| Service/Use Case | Métodos na própria classe que estende `CommonDBTM` |
-| Repository | `CommonDBTM` integrado — `getFromDB()`, `add()`, `update()`, `delete()` |
-| Auth / AuthZ | `Session::haveRight('rightname', READ\|WRITE)` |
-
-Em projetos GLPI, carregar `domains/glpi/SKILL.md` para substituir estes padrões pelas convenções corretas do framework.
+As camadas acima são genéricas. Frameworks com arquitetura própria exigem adaptação: em projetos GLPI, carregar `domains/glpi/SKILL.md` — a tabela de equivalências de camadas e as convenções do framework vivem lá e **prevalecem** sobre os padrões genéricos desta base.
 
 ## Referências
 

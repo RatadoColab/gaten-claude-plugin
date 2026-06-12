@@ -1,7 +1,7 @@
 ---
 name: iac
-description: This skill should be used when provisioning infrastructure as code or implementing GitOps. Covers IaC tools (Terraform, Pulumi, CloudFormation), GitOps with ArgoCD/Flux, Git as source of truth, state management, drift detection, secrets management (Vault, sealed secrets), and zero-trust principles.
-version: 0.1.0
+description: This skill should be used when provisioning infrastructure as code or implementing GitOps. Typical triggers include "write the Terraform config", "provision the infrastructure", "set up ArgoCD/Flux", "manage Terraform state". Covers IaC tools (Terraform, Pulumi, CloudFormation), GitOps with ArgoCD/Flux, Git as source of truth, state management, drift detection, secrets management (Vault, sealed secrets), and zero-trust principles.
+version: 0.2.1
 ---
 
 # IaC — Infraestrutura como Código e GitOps
@@ -60,26 +60,7 @@ reproduzível a partir do repositório.
 - Isolar state por ambiente (workspaces ou diretórios separados)
 - Revisar o `plan` antes de todo `apply` — idealmente como gate no pipeline
 
-### Exemplo — Terraform com backend remoto
-
-```hcl
-terraform {
-  required_version = ">= 1.7"
-  backend "s3" {
-    bucket         = "company-tf-state"
-    key            = "prod/network.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "tf-locks"      # lock contra apply concorrente
-    encrypt        = true
-  }
-}
-
-# Recurso parametrizado e versionado
-resource "aws_s3_bucket" "assets" {
-  bucket = "app-assets-${var.environment}"
-  tags   = { Environment = var.environment, ManagedBy = "terraform" }
-}
-```
+Exemplo de backend remoto (S3 + DynamoDB lock) e recurso parametrizado em **`references/terraform-examples.md`**.
 
 ---
 

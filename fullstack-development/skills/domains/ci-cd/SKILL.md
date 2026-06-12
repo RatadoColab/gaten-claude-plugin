@@ -1,7 +1,7 @@
 ---
 name: ci-cd
-description: This skill should be used when designing or implementing CI/CD pipelines. Covers pipeline stages, automated testing gates, build artifacts, deployment strategies (rolling, blue-green, canary, feature flags), quality gates, pipeline security, and GitHub Actions/GitLab CI examples.
-version: 0.1.0
+description: This skill should be used when designing or implementing CI/CD pipelines. Typical triggers include "create the CI pipeline", "set up GitHub Actions/GitLab CI", "which deploy strategy should I use?", "add quality gates to the pipeline". Covers pipeline stages, automated testing gates, build artifacts, deployment strategies (rolling, blue-green, canary, feature flags), quality gates, pipeline security, and GitHub Actions/GitLab CI examples.
+version: 0.2.1
 ---
 
 # CI/CD — Pipelines de Integração e Entrega Contínua
@@ -84,66 +84,13 @@ Critérios objetivos que bloqueiam a progressão do pipeline:
 
 ## Segurança do Pipeline
 
-- Credenciais do pipeline com menor privilégio e escopo curto (OIDC em vez de chaves longevas)
-- Secrets injetados em runtime via cofre — nunca em variáveis em texto puro no YAML
-- Fixar (pin) versões de actions/imagens por hash para evitar supply chain attack
-- Isolar runners; não executar código não confiável de PRs com credenciais de produção
-
-> Ver `../devsecops/SKILL.md` para os scans (SAST/SCA/DAST/IaC/imagem), supply chain e secrets do pipeline.
+Segurança do pipeline (OIDC vs chaves longevas, secrets via cofre, pinning por hash, isolamento de runners, scans SAST/SCA/DAST/IaC/imagem, supply chain) é coberta integralmente em `../devsecops/SKILL.md` — fonte autoritativa.
 
 ---
 
-## Exemplo — GitHub Actions
+## Exemplos — GitHub Actions e GitLab CI
 
-```yaml
-name: ci
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-
-jobs:
-  build-test:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read            # menor privilégio
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      - run: npm ci              # instalação reproduzível
-      - run: npm run lint        # gate de estilo
-      - run: npm test -- --coverage
-      - run: npm audit --audit-level=high   # SCA
-```
-
----
-
-## Exemplo — GitLab CI
-
-```yaml
-stages: [build, test, deploy]
-
-build:
-  stage: build
-  script:
-    - docker build -t "$IMAGE:$CI_COMMIT_SHORT_SHA" .   # tag imutável por commit
-
-test:
-  stage: test
-  script:
-    - npm ci
-    - npm test
-
-deploy_prod:
-  stage: deploy
-  when: manual                  # gate de aprovação para produção
-  environment: production
-  script:
-    - ./scripts/deploy.sh "$IMAGE:$CI_COMMIT_SHORT_SHA"
-```
+Pipelines completos em **`references/pipeline-examples.md`**. Pontos-chave dos exemplos: `permissions: contents: read` (menor privilégio), `npm ci` (instalação reproduzível), tag de imagem imutável por commit (`$CI_COMMIT_SHORT_SHA`) e `when: manual` + `environment` como gate de aprovação para produção.
 
 ---
 

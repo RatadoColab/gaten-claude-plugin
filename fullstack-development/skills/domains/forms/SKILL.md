@@ -1,7 +1,7 @@
 ---
 name: forms
-description: This skill should be used when implementing forms, input validation, or form-related UX. Covers validation strategies, error feedback patterns, accessibility requirements (WCAG 2.2), security, multi-step forms, file uploads, autocomplete, and user experience best practices for forms.
-version: 0.2.0
+description: This skill should be used when implementing forms, input validation, or form-related UX. Typical triggers include "build this form", "validate this input", "how should I show form errors?", "make this form accessible", "create a multi-step wizard", "add CPF/CNPJ/CEP validation", "handle file upload in this form". Covers validation strategies, error feedback patterns, accessibility requirements (WCAG 2.2), security, multi-step forms, file uploads, autocomplete, and user experience best practices for forms.
+version: 0.2.1
 ---
 
 # Forms — Formulários Frontend
@@ -137,97 +137,37 @@ Em formulários com mais de 5 campos ou de múltiplas seções, exiba um resumo 
 
 ## 7. Autocomplete e Autofill
 
-Use o atributo `autocomplete` com valores padronizados para acelerar o preenchimento e ajudar usuários com deficiências cognitivas ou motoras.
-
-```html
-<!-- Personal data -->
-<input type="text"     autocomplete="given-name"      name="first_name" />
-<input type="text"     autocomplete="family-name"     name="last_name" />
-<input type="email"    autocomplete="email"           name="email" />
-<input type="tel"      autocomplete="tel"             name="phone" />
-
-<!-- Address -->
-<input type="text"     autocomplete="address-line1"   name="address" />
-<input type="text"     autocomplete="postal-code"     name="cep" />
-
-<!-- Authentication -->
-<input type="password" autocomplete="current-password" name="password" />
-<input type="password" autocomplete="new-password"     name="new_password" />
-
-<!-- OTP -->
-<input type="text"     autocomplete="one-time-code"   name="otp" inputmode="numeric" />
-```
+Use o atributo `autocomplete` com valores padronizados (`given-name`, `family-name`, `email`, `tel`, `address-line1`, `postal-code`, `current-password`, `new-password`, `one-time-code`) para acelerar o preenchimento e ajudar usuários com deficiências cognitivas ou motoras.
 
 **Regras:**
 - Use `autocomplete="new-password"` em formulários de cadastro para evitar que o browser sugira senhas antigas
 - Nunca use `autocomplete="off"` em campos de login — navegadores modernos ignoram essa instrução e o comportamento é inconsistente
 - Certifique-se de que campos de dados pessoais estejam dentro de um `<form>` para que o autofill do Chrome funcione corretamente
 
----
-
-## 8. Formulários de Múltiplas Etapas (Multi-step / Wizard)
-
-**Quando usar:** formulários com mais de 8 campos, grupos de dados logicamente distintos (dados pessoais → endereço → confirmação), ou quando etapas anteriores condicionam etapas posteriores.
-
-**Quando evitar:** formulários simples com 5 campos ou menos — a fricção adicional da navegação entre etapas supera o benefício para o usuário.
-
-### 8.1 Estrutura
-
-- Divida o formulário em grupos lógicos — cada etapa com um único objetivo
-- Exiba um **indicador de progresso** claro (ex.: "Etapa 2 de 4")
-- Permita navegar para etapas anteriores sem perder dados já preenchidos
-- Implemente salvamento automático em `localStorage` para formulários críticos
-
-### 8.2 Gerenciamento de estado multi-step
-
-> Ver exemplo completo em [`references/multi-step-store.ts`](references/multi-step-store.ts).
-
-### 8.3 Acessibilidade em wizards
-
-- Atualize o `<title>` da página ou um `aria-live` ao mudar de etapa
-- O foco deve ir para o heading da nova etapa ao avançar
-- Não desabilite o botão "Voltar" — sempre permita revisão
+> Tabela completa de valores por contexto (com markup) em [`references/autocomplete.md`](references/autocomplete.md).
 
 ---
 
-## 10. Upload de Arquivos
+## 8. Multi-step e Upload de Arquivos
 
-### 10.1 Estrutura básica acessível
+Padrões detalhados (wizard, estado multi-step, acessibilidade, upload acessível) em [`references/multi-step-and-upload.md`](references/multi-step-and-upload.md):
 
-> Ver exemplo completo em [`references/file-upload.html`](references/file-upload.html).
-
-**Regras:**
-- Exiba barra de progresso por arquivo em uploads múltiplos
-- Permita cancelar o upload em andamento
-- Valide tipo e tamanho no cliente antes do envio (para feedback imediato) **e** no servidor
-- Mostre preview de imagens antes do envio quando possível
-- Drag-and-drop deve ter equivalente via botão (acessibilidade)
-- Suporte `keyboard` events no drop zone para usuários sem mouse: `Enter`/`Space` abre o file picker
+- **Multi-step:** usar acima de 8 campos ou grupos logicamente distintos; indicador de progresso; navegação para trás sem perder dados; persistência em `localStorage`
+- **Upload:** validar tipo/tamanho no cliente **e** no servidor; progresso e cancelamento; drag-and-drop com equivalente por teclado/botão
 
 ---
 
-## 11. Segurança
+## 9. Segurança
 
-### 11.1 CSRF
+Aplicar no contexto de formulário (segurança de aplicação completa em `../security/SKILL.md` — fonte autoritativa):
 
-- Use tokens CSRF em todos os formulários com ações de escrita — via mecanismo do framework (ex.: `_glpi_csrf_token` em plugins GLPI)
-
-### 11.2 XSS
-
-- Nunca renderize input do usuário diretamente como HTML sem sanitização
-- Sanitize via biblioteca do framework (ex.: `Sanitizer::sanitize()` no GLPI) antes de persistir ou renderizar
-- Configure Content Security Policy (CSP) no servidor para restringir origens de scripts
-
-### 11.3 Validação e sanitização server-side
-
-- Trate **todo** dado recebido do cliente como potencialmente malicioso
-- Normalize antes de validar: trim em strings, lowercase em e-mails
-- Use listas de permissão (allowlist) para campos de tipo enumerado (ex.: categorias, status)
-- Nunca exponha mensagens de erro internas do banco ou stack traces ao cliente
+- **CSRF:** token em todo formulário de escrita, via mecanismo do framework (ex.: `_glpi_csrf_token` em plugins GLPI)
+- **XSS:** sanitizar input do usuário via biblioteca do framework (ex.: `Sanitizer::sanitize()` no GLPI) antes de persistir/renderizar; CSP no servidor
+- **Server-side:** revalidar/normalizar todo dado recebido; allowlist em campos enumerados; nunca expor erros internos do banco
 
 ---
 
-## 12. Checklist de Implementação
+## 10. Checklist de Implementação
 
 Antes de considerar um formulário concluído, verifique:
 
@@ -267,22 +207,10 @@ Antes de considerar um formulário concluído, verifique:
 
 ---
 
-## 13. Inputs com Formatos Brasileiros
+## 11. Inputs com Formatos Brasileiros
 
-### CPF / CNPJ
-- Aceitar entrada livre (com ou sem máscara) e normalizar no servidor: remover pontos, traços e barras antes de persistir
-- Validar os dígitos verificadores **no cliente** para feedback imediato — não apenas no servidor
-- Exibir no formato `000.000.000-00` apenas em modo de exibição (readonly), não durante o preenchimento
-- Atributos recomendados: `inputmode="numeric"`, `autocomplete="off"`
+Padrões para CPF/CNPJ, CEP (busca ViaCEP) e telefone (E.164) em [`references/brazilian-inputs.md`](references/brazilian-inputs.md):
 
-### CEP com Busca Automática
-- Ao sair do campo de CEP (`blur`), disparar busca na API ViaCEP
-- Preencher campos de logradouro automaticamente e mantê-los editáveis
-- Indicar loading durante a busca (`aria-busy="true"`) e tratar erros (CEP não encontrado) com mensagem inline
-
-> Ver exemplo completo em [`references/viacep-integration.ts`](references/viacep-integration.ts).
-
-### Telefone
-- Usar `type="tel"` com `autocomplete="tel"` e `inputmode="tel"`
-- Aceitar DDD + número com ou sem formatação; normalizar no servidor para formato E.164 (`+5511999999999`)
-- Validar com regex que aceite formatos variados: `(11) 99999-9999`, `11999999999`, `+5511999999999`
+- **CPF/CNPJ:** entrada livre, validar dígitos no cliente, normalizar no servidor, exibir máscara só em readonly
+- **CEP:** busca automática na ViaCEP ao `blur`, preencher logradouro editável, tratar erro inline
+- **Telefone:** `type="tel"` + `inputmode="tel"`, normalizar para E.164 no servidor

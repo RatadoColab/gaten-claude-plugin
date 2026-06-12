@@ -1,7 +1,7 @@
 ---
 name: database
-description: This skill should be used when modeling databases, writing queries, designing migrations, or working with data access layers. Covers relational modeling, normalization vs denormalization trade-offs, index strategies (B-Tree, composite, partial, covering), zero-downtime migration patterns, query optimization, transactions, connection pooling, ORM pitfalls, and SQL vs NoSQL decision framework.
-version: 0.2.0
+description: This skill should be used when modeling databases, writing queries, designing migrations, or working with data access layers. Typical triggers include "design this database schema", "which index should I add?", "optimize this slow query", "write a zero-downtime migration", "should I use SQL or NoSQL?", "fix this N+1 query". Covers relational modeling, normalization vs denormalization trade-offs, index strategies (B-Tree, composite, partial, covering), zero-downtime migration patterns, query optimization, transactions, connection pooling, ORM pitfalls, and SQL vs NoSQL decision framework.
+version: 0.2.1
 ---
 
 # Database — Modelagem e Boas Práticas
@@ -37,15 +37,7 @@ Normalize até a **3ª Forma Normal (3NF)** como ponto de partida:
 2. **2NF:** todo atributo não-chave depende da chave primária completa (sem dependências parciais em chaves compostas).
 3. **3NF:** nenhum atributo não-chave depende de outro atributo não-chave (sem dependências transitivas).
 
-```sql
--- Violação de 3NF: zip_code determina city e state
-CREATE TABLE orders (id BIGINT PRIMARY KEY, customer_id BIGINT, zip_code VARCHAR(10), city VARCHAR(100), state CHAR(2));
-
--- Correto: separar em tabela própria
-CREATE TABLE zip_codes (zip_code VARCHAR(10) PRIMARY KEY, city VARCHAR(100) NOT NULL, state CHAR(2) NOT NULL);
-```
-
-> Ver exemplo completo em [`references/normalization-examples.sql`](references/normalization-examples.sql).
+> Ver exemplo (violação de 3NF com `zip_code` → `city`/`state` e a correção) em [`references/normalization-examples.sql`](references/normalization-examples.sql).
 
 ### 2.3 Denormalização intencional
 
@@ -98,41 +90,12 @@ Denormalize **somente quando houver evidência de gargalo de leitura**, não por
 
 ## 4. Migrations
 
-### 4.1 Regras fundamentais
+Regras essenciais (detalhe completo, incluindo Expand-Contract e operações de alto risco, em [`references/migrations.md`](references/migrations.md)):
 
-- Toda alteração de schema via migration versionada — nunca via SQL manual no banco de produção.
-- Cada migration deve ter `up` (aplicar) e `down` (reverter).
-- Migrations de schema e migrations de dados ficam em arquivos separados.
-- Teste a migration em staging com volume de dados equivalente ao de produção — uma operação que leva milissegundos em 1.000 linhas pode travar por minutos em 100 milhões.
-
-### 4.2 Zero downtime: padrão Expand-Contract
-
-Para alterações que seriam breaking changes em produção, use o padrão **Expand-Contract** (também chamado de Parallel Change):
-
-**Fase 1 — Expand:** adicione a nova estrutura sem remover a antiga.
-```sql
--- Migration 1: adiciona coluna nova, mantém a antiga
-ALTER TABLE users ADD COLUMN full_name VARCHAR(200);
-```
-
-**Fase 2 — Migrate:** o código da aplicação escreve em ambas as colunas; backfill dos dados históricos.
-```sql
--- Migration 2: preenche dados existentes
-UPDATE users SET full_name = CONCAT(first_name, ' ', last_name);
-```
-
-**Fase 3 — Contract:** após o deploy completo, remova a estrutura antiga.
-```sql
--- Migration 3: remove colunas antigas (deploy separado)
-ALTER TABLE users DROP COLUMN first_name, DROP COLUMN last_name;
-```
-
-### 4.3 Operações de alto risco
-
-- `ADD COLUMN NOT NULL` sem `DEFAULT` em tabelas grandes pode causar lock; adicione com `DEFAULT NULL` primeiro, faça backfill, depois adicione o `NOT NULL`.
-- `ADD CONSTRAINT` pode varrer toda a tabela para validação; em PostgreSQL, use `ADD CONSTRAINT ... NOT VALID` seguido de `VALIDATE CONSTRAINT` em background.
-- `DROP COLUMN` / `DROP TABLE` são irreversíveis — mantenha um backup de ponto no tempo antes de executar.
-- Renomear colunas ou tabelas é uma breaking change — use o padrão Expand-Contract.
+- Toda alteração de schema via migration versionada com `up`/`down` — nunca SQL manual em produção.
+- Migrations de schema e de dados em arquivos separados; teste em staging com volume equivalente ao de produção.
+- Breaking changes (renomear/remover coluna, `NOT NULL` em tabela grande): usar o padrão **Expand-Contract** (expand → migrate/backfill → contract em deploys separados).
+- `DROP COLUMN`/`DROP TABLE` são irreversíveis — backup de ponto no tempo antes.
 
 ---
 
@@ -142,9 +105,7 @@ ALTER TABLE users DROP COLUMN first_name, DROP COLUMN last_name;
 
 - **Sempre use parâmetros preparados** (prepared statements / bind parameters) para evitar SQL injection. Nunca concatene input do usuário em strings SQL.
 
-> Para prevenção de SQL Injection, ver `../security/SKILL.md`.
-
-> Ver comparação errado/correto e demais padrões em [`references/query-patterns.sql`](references/query-patterns.sql).
+> Prevenção de SQL Injection em `../security/SKILL.md`; comparação errado/correto e demais padrões em [`references/query-patterns.sql`](references/query-patterns.sql); permissões mínimas para usuários de banco (aplicação e somente leitura) em [`references/access-control.sql`](references/access-control.sql).
 
 ### 5.2 Performance
 
@@ -193,7 +154,7 @@ ALTER TABLE users DROP COLUMN first_name, DROP COLUMN last_name;
 
 ## 7. Auditoria de Dados
 
-> Auditoria implementada via código da aplicação ou triggers no banco. Em plugins GLPI, a conexão com o banco é gerenciada pelo framework — nunca configurar conexão diretamente no plugin.
+> Auditoria implementada via código da aplicação ou triggers no banco. Em plugins GLPI, todo acesso passa pelo `$DB` do framework (nunca configurar conexão própria) — ver `../glpi/SKILL.md` (§Acesso ao Banco de Dados).
 
 Para rastrear quem alterou o quê e quando (além de `date_creation`/`date_mod`):
 
@@ -209,12 +170,7 @@ Para rastrear quem alterou o quê e quando (além de `date_creation`/`date_mod`)
 
 - **N+1 queries:** ao iterar sobre uma coleção e carregar relacionamentos dentro do loop, o ORM dispara uma query por item. Use eager loading (`with()`, `include`, `joinedload`) para resolver.
 
-```python
-# Correto: eager load (SQLAlchemy)
-users = User.query.options(joinedload(User.orders)).all()
-```
-
-> Ver comparação N+1 vs eager loading em [`references/orm-patterns.py`](references/orm-patterns.py).
+> Ver comparação N+1 vs eager loading (SQLAlchemy) em [`references/orm-patterns.py`](references/orm-patterns.py).
 
 - **Lazy loading silencioso:** entenda o comportamento padrão do ORM — lazy loading é conveniente em desenvolvimento mas perigoso em produção.
 - **Queries geradas opacas:** em pontos críticos de performance, verifique o SQL gerado pelo ORM com logging de queries ativado antes de ir a produção.
@@ -225,21 +181,9 @@ users = User.query.options(joinedload(User.orders)).all()
 
 ## 9. SQL vs NoSQL — Decisão
 
-Em 2025, a abordagem predominante é **persistência poliglota**: usar o banco certo para cada responsabilidade.
+Abordagem predominante: **persistência poliglota** — o banco certo para cada responsabilidade. SQL para ACID, dados relacionais com joins, auditoria e relatórios; NoSQL para esquema variável, escala horizontal massiva, cache/sessões (Redis) e busca full-text (Elasticsearch).
 
-| Use SQL (relacional) quando... | Use NoSQL quando... |
-|---|---|
-| ACID é mandatório (finanças, inventário) | Esquema altamente variável ou sem esquema fixo |
-| Dados são fortemente relacionais com muitos joins | Escala horizontal massiva com baixa latência (feeds, IoT, logs) |
-| Auditoria, conformidade regulatória | Dados hierárquicos ou documentos sem estrutura uniforme |
-| Relatórios complexos com agregações | Cache e sessões (Redis) |
-| Modelo de dados estável e bem definido | Busca full-text avançada (Elasticsearch) |
-
-**Padrão de particionamento típico:**
-- PostgreSQL/MySQL → dados transacionais e relacionais.
-- Redis → cache, sessões, filas leves, rate limiting.
-- Elasticsearch/OpenSearch → busca full-text e logs.
-- MongoDB → documentos com estrutura variável.
+> Tabela de decisão completa e padrão de particionamento em [`references/sql-vs-nosql.md`](references/sql-vs-nosql.md).
 
 ---
 

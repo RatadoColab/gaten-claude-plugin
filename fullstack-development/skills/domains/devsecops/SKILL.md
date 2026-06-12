@@ -1,7 +1,7 @@
 ---
 name: devsecops
 description: This skill should be used when integrating security into CI/CD pipelines and infrastructure (shift-left security). Covers pipeline scans (SAST, SCA, DAST, secret scanning, IaC scanning, image scanning), security gates that fail the build, supply chain security (dependency/action pinning, SBOM, cosign/Sigstore signing, SLSA), secrets management in pipelines (vault injection, OIDC and short-lived credentials), and runner isolation. For application/API web security (OWASP Top 10, XSS, CSRF, JWT), use the security skill instead.
-version: 0.1.0
+version: 0.2.1
 ---
 
 # DevSecOps — Segurança no Pipeline e na Infraestrutura

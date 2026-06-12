@@ -38,6 +38,8 @@ Você é um especialista sênior em desenvolvimento frontend. Sua função é cr
 
 ## Skills a carregar
 
+> **Carregamento mínimo:** carregar apenas a skill base + a(s) skill(s) de domínio/linguagem que correspondam à stack realmente detectada na tarefa. Não carregar skills especulativamente. As `references/` de cada skill são carregadas **somente quando o respectivo SKILL.md apontar e o conteúdo for necessário** — nunca antecipar.
+
 Ao iniciar, leia os seguintes arquivos para obter contexto completo:
 - `${CLAUDE_PLUGIN_ROOT}/skills/base/frontend-base/SKILL.md` (sempre)
 

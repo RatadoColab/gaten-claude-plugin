@@ -1,7 +1,7 @@
 ---
 name: spec-base
-description: This skill should be used when reviewing, evaluating, or improving specifications for AI-driven development. Covers quality criteria, structure standards, and completeness checks for feature and system specifications.
-version: 0.2.0
+description: This skill should be used when reviewing, evaluating, or improving specifications for AI-driven development. Typical triggers include "review this spec", "is this specification complete?", "improve this feature spec", "write acceptance criteria". Covers quality criteria (SCOPE framework), structure standards, and completeness checks for feature and system specifications.
+version: 0.2.1
 ---
 
 # Spec Base — Fundamentos de Especificações para IA
@@ -22,51 +22,26 @@ Fornece os princípios fundamentais para avaliação e criação de especificaç
 
 ## Framework de Qualidade — SCOPE
 
-Avalie toda spec contra os cinco critérios abaixo. Cada um é obrigatório para que um agente execute a tarefa com precisão.
+Avalie toda spec contra os cinco critérios abaixo. Cada um é obrigatório para que um agente execute a tarefa com precisão. O checklist operacional item a item de cada critério vive em `domains/spec-review/SKILL.md`.
 
 ### S — System Context
-O que deve estar presente:
-- Linguagem de programação e/ou framework principal
-- Estrutura relevante do projeto (pastas, módulos afetados)
-- Dependências externas envolvidas
-
-Sinal de ausência: a spec poderia ser implementada em qualquer stack sem adaptação.
+Linguagem/framework, estrutura relevante do projeto e dependências externas. Sinal de ausência: a spec poderia ser implementada em qualquer stack sem adaptação.
 
 > Se o stack estiver descrito no `CLAUDE.md` do projeto mas ausente na spec, aponte como sugestão — não como gap crítico. O agente já terá esse contexto via CLAUDE.md na execução.
 
 ### C — Core Objective
-O que deve estar presente:
-- O objetivo principal em 1–3 frases diretas
-- O problema que está sendo resolvido (não apenas a solução)
-- Critério claro de sucesso: como saber que a feature está pronta?
-
-Sinal de ausência: o objetivo está implícito, vago, ou misturado com detalhes de implementação.
+Objetivo principal em 1–3 frases, problema sendo resolvido (não apenas a solução) e critério claro de sucesso. Sinal de ausência: objetivo implícito, vago ou misturado com detalhes de implementação.
 
 ### O — Output Contract
-O que deve estar presente:
-- Quais arquivos/módulos serão criados ou modificados
-- Formato de entrega esperado (ex: componente, endpoint, script)
-- O que deve existir ao final da implementação
-
-Sinal de ausência: não está claro o que o agente deve produzir como entregável.
+Arquivos/módulos a criar ou modificar, formato de entrega e o que deve existir ao final. Sinal de ausência: não está claro o que o agente deve produzir como entregável.
 
 ### P — Preconditions & Constraints
-O que deve estar presente:
-- Restrições explícitas desta feature ("não usar biblioteca X", "manter compatibilidade com Y")
-- O que NÃO deve ser alterado nesta implementação (guardrails)
-- Pré-condições necessárias para a feature funcionar
+Restrições específicas da feature, guardrails (o que NÃO alterar) e pré-condições. Sinal de ausência: o agente pode tomar decisões livres que quebram partes existentes do sistema.
 
 > Restrições globais já definidas no `CLAUDE.md` não precisam ser repetidas na spec. Avalie apenas restrições específicas desta feature.
 
-Sinal de ausência: o agente pode tomar decisões livres que quebram partes existentes do sistema.
-
 ### E — Examples & Edge Cases
-O que deve estar presente:
-- Pelo menos 1 exemplo de input/output ou comportamento esperado
-- Pelo menos 1 caso de erro ou fluxo alternativo tratado
-- Comportamentos limítrofes explícitos (ex: "se o campo estiver vazio, deve...")
-
-Sinal de ausência: a spec depende de interpretação para casos não-triviais.
+Ao menos 1 exemplo de input/output, 1 caso de erro ou fluxo alternativo e comportamentos limítrofes explícitos. Sinal de ausência: a spec depende de interpretação para casos não-triviais.
 
 ---
 

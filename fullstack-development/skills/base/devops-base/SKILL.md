@@ -1,7 +1,7 @@
 ---
 name: devops-base
 description: This skill should be used when planning or implementing DevOps and CI/CD work. Covers DevOps culture, automation principles, shift-left and DevSecOps, immutability, idempotency, the four DORA metrics, and how to navigate the CI/CD, containers, OpenShift, Azure DevOps, IaC, observability, and DevSecOps domains.
-version: 0.1.0
+version: 0.2.1
 ---
 
 # DevOps Base — Fundamentos de DevOps e CI/CD
@@ -43,18 +43,7 @@ código e sua entrega em produção com segurança e confiabilidade.
 
 ## DevSecOps — Segurança Integrada
 
-Segurança é responsabilidade de todos e deve estar embutida no pipeline, não ser uma etapa final.
-
-- **Nunca** armazenar secrets (chaves, senhas, tokens) em texto puro no repositório — usar cofre
-  de secrets (Vault, sealed secrets, secret managers da nuvem)
-- Embutir scans automáticos em cada estágio: **SAST** (código), **SCA** (dependências), **DAST**
-  (runtime) e **IaC scanning** (misconfiguração de infraestrutura)
-- Aplicar princípios de **zero-trust** e menor privilégio nas credenciais do pipeline
-- Gerar e assinar **SBOM** (Software Bill of Materials) para rastrear a cadeia de suprimentos
-
-> Ver `../../domains/devsecops/SKILL.md` para scans no pipeline, IaC/image scanning, SBOM, supply
-> chain e gestão de secrets/credenciais. Para segurança de aplicação web/API (OWASP Top 10), ver
-> `../../domains/security/SKILL.md`.
+Segurança é responsabilidade de todos e deve estar embutida no pipeline, não ser uma etapa final — práticas completas (scans SAST/SCA/DAST/IaC, secrets, SBOM, supply chain) em `../../domains/devsecops/SKILL.md`. Para segurança de aplicação web/API (OWASP Top 10), ver `../../domains/security/SKILL.md`.
 
 ## Métricas DORA
 
@@ -99,13 +88,6 @@ Ao trabalhar uma tarefa de DevOps, carregar o domínio pertinente sobre esta bas
 
 ## Referências
 
-- Ver `../../domains/ci-cd/SKILL.md` para pipelines e estratégias de deploy
-- Ver `../../domains/azure-devops/SKILL.md` para CI/CD no Azure DevOps
-- Ver `../../domains/containers/SKILL.md` para containerização e orquestração
-- Ver `../../domains/openshift/SKILL.md` para deploy no OpenShift
-- Ver `../../domains/iac/SKILL.md` para infraestrutura como código e GitOps
-- Ver `../../domains/observability/SKILL.md` para observabilidade e SRE
-- Ver `../../domains/devsecops/SKILL.md` para segurança no pipeline e na infraestrutura
 - [DORA — DevOps Research and Assessment](https://dora.dev/)
 - [Google SRE Book](https://sre.google/books/)
 - [OWASP CI/CD Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/CI_CD_Security_Cheat_Sheet.html)

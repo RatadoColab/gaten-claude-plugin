@@ -1,7 +1,7 @@
 ---
 name: ui-components
-description: This skill should be used when creating, reviewing, or refactoring UI components. Covers component design principles, reusability patterns, props/slots/events API design, responsiveness, accessibility (WCAG 2.2), design tokens, and atomic design.
-version: 0.2.0
+description: This skill should be used when creating, reviewing, or refactoring UI components. Typical triggers include "create a reusable component", "design the props API", "make this component accessible", "add design tokens", "review this component". Covers component design principles, reusability patterns, props/slots/events API design, responsiveness, accessibility (WCAG 2.2), design tokens, and atomic design.
+version: 0.2.1
 ---
 
 # UI Components — Componentes de Interface
@@ -69,6 +69,8 @@ Organizar componentes por nível de abstração e dependência, não como regra 
 Para componentes que encapsulam um único elemento nativo (`BaseInput`, `BaseSelect`, `BaseButton`), desabilitar o fallthrough automático e aplicar `$attrs` manualmente no elemento correto.
 
 Sem `inheritAttrs: false`, atributos como `id`, `placeholder`, `type` e `aria-*` são aplicados no elemento raiz do componente (geralmente uma `<div>`), causando bugs silenciosos de acessibilidade — o `<label for="id">` não conectará ao `<input>` correto.
+
+> Exemplos de props/emits/slots/v-model tipados (projetos Vue com bundler) em [`references/component-api.ts`](references/component-api.ts).
 
 ---
 
@@ -167,18 +169,18 @@ Quando um componente pai precisa coordenar múltiplos filhos sem prop drilling (
 - Usar `Symbol` como chave para evitar colisões de nome
 - Lançar erro explícito se o filho for usado fora do contexto do pai
 
+> Exemplos (useDisclosure, par provide/inject tipado) em [`references/composables.ts`](references/composables.ts).
+
 > Testes de componentes Vue em plugins GLPI são feitos via **PHPUnit** no lado servidor — não há runner JavaScript separado.
 
 ---
 
 ## 8. Performance
 
-- Usar `defineAsyncComponent` para componentes pesados carregados condicionalmente.
+Técnicas de performance Vue (defineAsyncComponent, v-show vs v-if, shallowRef, markRaw, keep-alive): ver a tabela de Performance em `../../languages/vue/SKILL.md` — fonte autoritativa. Específicos de componente:
+
 - Evitar `v-if` + `v-for` no mesmo elemento — separar em componente filho ou usar `computed`.
-- Preferir `v-show` a `v-if` para toggles frequentes (evita montagem/desmontagem).
-- Usar `shallowRef` para objetos grandes que não precisam de reatividade profunda.
 - Aplicar `key` única e estável em listas — nunca usar o índice como `key` em listas que mudam de ordem.
-- **`markRaw`**: marcar objetos que não devem ser tornados reativos (instâncias de bibliotecas externas como charts, editores, mapas). Sem `markRaw`, o Vue tenta rastrear as propriedades do objeto, causando bugs de performance ou erros silenciosos.
 
 > Ver exemplo completo em [`references/performance-patterns.ts`](references/performance-patterns.ts).
 

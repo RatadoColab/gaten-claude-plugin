@@ -9,14 +9,14 @@ description: >
   "what's the best way to show a loading indicator?", "is this error message good?",
   "how do I make this accessible?", "write microcopy for this button",
   "design a toast notification pattern", "should I use a modal or inline here?".
-version: 0.2.0
+version: 0.2.1
 ---
 
 # User Experience — UX e Fluxos de Usuário
 
 ## Visão Geral
 
-Diretrizes para criar interfaces que oferecem experiência clara, previsível e satisfatória ao usuário, cobrindo desde princípios fundamentais até padrões específicos de estado, formulários, acessibilidade e microcopy.
+Diretrizes para criar interfaces claras e previsíveis: princípios, estados de UI, formulários, acessibilidade e microcopy.
 
 ---
 
@@ -41,12 +41,7 @@ Toda interface deve respeitar as dez heurísticas de usabilidade de Nielsen como
 
 Reduzir a carga cognitiva é o principal meio de diminuir fricção. Aplicar:
 
-- **Divulgação progressiva (progressive disclosure):** mostrar apenas o que é essencial agora; revelar opções avançadas sob demanda
-  ```
-  // Exemplo: formulário de endereço
-  // Exibir apenas CEP, rua e número inicialmente
-  // Revelar "Complemento" e "Referência" via toggle "Adicionar detalhes"
-  ```
+- **Divulgação progressiva (progressive disclosure):** mostrar apenas o que é essencial agora; revelar opções avançadas sob demanda (ex.: formulário de endereço exibe só CEP/rua/número; "Complemento" e "Referência" via toggle "Adicionar detalhes")
 - **Chunking:** agrupar informações relacionadas em blocos visuais distintos (max 5–7 itens por grupo)
 - **Defaults inteligentes:** pré-preencher campos com o valor mais provável para o contexto do usuário
 - **Persistir estado entre navegações:** filtros aplicados, posição de scroll e seleções devem sobreviver à navegação e ao recarregamento quando fizer sentido
@@ -65,13 +60,7 @@ Todo componente ou tela que depende de dados externos deve tratar **explicitamen
 - Spinners são aceitáveis apenas para ações pontuais e curtas (< 1 segundo), como submissão de formulário
 - Adicionar animação sutil de pulso ao skeleton para indicar atividade
 
-```jsx
-// Skeleton — preferido para listas e cards
-<SkeletonCard lines={3} avatarSize="md" />
-
-// Spinner — aceitável para ações pontuais
-<Button loading={isSubmitting}>Salvar</Button>
-```
+> Ver exemplo (SkeletonCard + Button loading) em [`references/code-examples.md`](references/code-examples.md).
 
 **Regras de tempo:**
 - < 100ms: nenhuma indicação necessária
@@ -153,177 +142,28 @@ Micro-interações comunicam estado, guiam atenção e tornam a interface respon
 
 ---
 
-## 5. Formulários
+## 5. Formulários (ângulo UX)
 
-### 5.1 Layout e Ordem
+Princípios de UX para formulários — implementação completa (validação, erros, acessibilidade, multi-step, upload, inputs BR) em `../forms/SKILL.md`, a fonte autoritativa:
 
-- Ordenar campos na sequência que o usuário pensa (nome → email → senha, não email → nome → senha)
-- Formulários simples (≤ 5 campos): coluna única; formulários complexos: agrupar por contexto com títulos de seção
-- Alinhar labels acima dos campos (não ao lado) — melhora leitura e funciona melhor em mobile
-
-### 5.2 Validação
-
-- Validar no `blur` do campo (quando o usuário sai), nunca ao digitar (keystroke-level) — evita frustração prematura
-- Exibir erros inline, abaixo do campo, em fonte ≥ 12px
-- Mensagens específicas: "Informe um e-mail válido (ex: usuario@dominio.com)" em vez de "E-mail inválido"
-- Indicar campos obrigatórios claramente (asterisco + legenda); não marcar campos opcionais com "(opcional)" em formulários predominantemente obrigatórios — faça o oposto
-
-### 5.3 Campos Especializados
-
-**Data e hora:**
-- `type="date"` tem renderização inconsistente entre browsers — avaliar uso de componente customizado para formulários críticos
-- Sempre exibir o formato esperado como placeholder ou hint: `DD/MM/AAAA`
-- Para intervalos de data, preferir dois campos separados (início / fim) a um date range picker complexo
-
-**Upload de arquivo:**
-- Sempre oferecer botão de clique como alternativa ao drag-and-drop (acessibilidade de teclado)
-- Exibir progresso de upload com `aria-live="polite"` para leitores de tela
-- Mostrar preview antes do envio quando o formato permitir (imagens)
-- Limites de tamanho e tipos aceitos devem estar visíveis antes do upload, não apenas em mensagem de erro
-
-**Autocompletar:**
-- Usar atributo `autocomplete` com valores padronizados HTML (ex: `given-name`, `family-name`, `email`)
-- Nunca usar `autocomplete="off"` em campos de login — browsers modernos ignoram e prejudica gerenciadores de senha
-- Para busca com sugestões, implementar `aria-autocomplete`, `aria-expanded` e `aria-activedescendant` corretamente
-
-### 5.4 CTAs de Formulário
-
-- Usar verbos que descrevem a ação: "Criar conta", "Salvar alterações", "Enviar pedido" em vez de "Confirmar" ou "OK"
-- Botão primário à direita; botão secundário ou cancelar à esquerda (padrão ocidental de leitura)
-- Não desabilitar o botão de submit antes da tentativa — exibir erros após a tentativa inicial
+- **Ordem e layout:** seguir a sequência que o usuário pensa; labels acima dos campos; coluna única até 5 campos
+- **Validação:** no `blur`, nunca a cada tecla; erros inline e específicos ("Informe um e-mail válido (ex: usuario@dominio.com)")
+- **CTAs:** verbo da ação ("Criar conta", "Salvar alterações"), não "OK"/"Confirmar"; primário à direita
+- **Campos:** exibir formato esperado como hint (`DD/MM/AAAA`); `autocomplete` padronizado; nunca `autocomplete="off"` em login
 
 ---
 
-## 6. Mobile-First e Responsividade
+## 6. Tópicos Avançados (carregar sob demanda)
 
-### 6.1 Estratégia
+Os tópicos abaixo foram movidos para references por tema — carregar apenas quando a tarefa exigir:
 
-- Projetar para a menor tela primeiro; adicionar complexidade progressivamente para telas maiores
-- O tráfego mobile representa a maioria do tráfego web global — projete sempre mobile-first e trate desktop como progressive enhancement.
+- **Mobile-first, alvos de toque, breakpoints e gestos:** [`references/mobile-responsive.md`](references/mobile-responsive.md)
+- **Dark mode, motion design e acessibilidade (a11y):** [`references/motion-darkmode-a11y.md`](references/motion-darkmode-a11y.md)
+- **UX writing/microcopy, onboarding progressivo, fluxos de usuário e testes de usabilidade:** [`references/ux-writing-flows.md`](references/ux-writing-flows.md)
 
-### 6.2 Alvos de Toque
-
-- Elementos interativos: mínimo **44×44px** (Apple HIG) ou **48×48px** (Material Design / WCAG 2.5.5)
-- Espaçamento mínimo de 8px entre elementos tocáveis para evitar toques acidentais
-
-### 6.3 Breakpoints de Referência (2025)
-
-| Nome       | Largura        | Uso típico              |
-|------------|----------------|-------------------------|
-| Mobile S   | < 360px        | Dispositivos compactos  |
-| Mobile     | 360px – 767px  | Smartphones             |
-| Tablet     | 768px – 1023px | Tablets em retrato      |
-| Desktop S  | 1024px – 1279px| Laptops                 |
-| Desktop    | 1280px – 1439px| Monitores               |
-| Desktop L / Ultrawide | ≥ 1440px | Monitores 27"+, layouts de múltiplas colunas |
-
-- Preferir breakpoints baseados no conteúdo ("quebrar quando o layout precisar") em vez de fixos por dispositivo
-
-### 6.4 Gestos
-
-- Usar gestos reconhecíveis (swipe, pinch, scroll) — evitar gestos customizados sem feedback visual de descoberta
-- Fornecer alternativa por toque para todo gesto (ex: botão de exclusão além de swipe-to-delete)
-
----
-
-## 7. Dark Mode
-
-- Implementar como **preferência do usuário**, respeitando `prefers-color-scheme` do sistema por padrão, com toggle explícito para sobrescrever
-- Usar cinza escuro (`#121212` ou similar) em vez de preto puro — reduz fadiga visual
-- Nunca inverter imagens ou ícones coloridos — usar variantes específicas para dark mode
-- Manter contraste mínimo WCAG AA (ver seção de Acessibilidade para valores exatos)
-- Evitar sombras escuras em dark mode — substituir por bordas sutis ou elevação via cor
-
-> Ver exemplo completo em [`references/code-examples.md`](references/code-examples.md).
-
----
-
-## 8. Motion Design e Animação
-
-### 8.1 Princípios
-
-- Animação deve **comunicar** (transição de estado, hierarquia, causalidade) — não decorar
-- Duração recomendada: 100–150ms para microinterações, 200–400ms para transições de tela
-- Easing padrão: `ease-out` para entradas (elementos que chegam), `ease-in` para saídas (elementos que partem)
-
-### 8.2 Acessibilidade de Movimento
-
-- Respeitar `prefers-reduced-motion: reduce` — desabilitar ou simplificar animações para usuários sensíveis
-- Animações com flicker ou movimento rápido podem desencadear crises em usuários com epilepsia fotossensível
-
-> Ver exemplo completo em [`references/code-examples.md`](references/code-examples.md).
-
----
-
-## 9. Acessibilidade (a11y)
-
-- **WCAG 2.2 AA** é o padrão mínimo exigido; o WCAG 3.0 está em elaboração
-- Contraste mínimo: **4.5:1** para texto normal, **3:1** para texto grande (≥ 18pt ou ≥ 14pt bold)
-- Todo elemento interativo deve ser acessível via teclado e ter `focus-visible` visível
-- Usar HTML semântico antes de atribuir `role` ARIA — `<button>` em vez de `<div role="button">`
-- Imagens informativas precisam de `alt` descritivo; imagens decorativas devem ter `alt=""`
-- Ordem de leitura do DOM deve coincidir com a ordem visual para usuários de screen reader
-
----
-
-## 10. UX Writing e Microcopy
-
-Microcopy são os pequenos textos da interface (labels, placeholders, mensagens de erro, tooltips, CTAs) que guiam o usuário sem que ele perceba.
-
-### 10.1 Princípios
-
-- **Claro antes de criativo:** comunicar o essencial com a menor quantidade de palavras
-- **Usar a voz do usuário:** escrever como o usuário pensa ("Esqueci minha senha" em vez de "Recuperação de credenciais")
-- **Verbos de ação em CTAs:** "Baixar relatório", "Adicionar membro" em vez de "Download" ou "Adicionar"
-- **Consistência terminológica:** usar o mesmo termo em toda a interface; documentar em glossário de produto
-
-### 10.2 Mensagens de Erro em Microcopy
-
-```
-// Técnico e frio
-"Autenticação falhou."
-
-// Humano e orientado à ação
-"Senha incorreta. Tente novamente ou redefina sua senha."
-```
-
-### 10.3 Onboarding e Tooltips
-
-- Tooltips: máximo 1–2 frases; aparecer no hover/foco; não conter informação crítica que o usuário não verá no mobile
-- Onboarding progressivo: apresentar funcionalidades conforme o usuário avança, não tudo de uma vez no primeiro acesso
-
----
-
-## Onboarding Progressivo
-
-- **Empty states como onboarding:** quando o estado vazio é o primeiro contato do usuário, transformá-lo em guia de primeiros passos com CTA claro
-- **Product tours:** usar apenas para funcionalidades não-óbvias; máximo de 3-5 etapas; permitir pular a qualquer momento
-- **Checklist de primeiros passos:** eficaz para produtos com setup inicial (ex: "Complete seu perfil", "Conecte sua conta") — exibir progresso e celebrar conclusão
-- **Aha moment:** identificar o momento em que o usuário percebe o valor do produto e projetar o fluxo de onboarding para chegar lá o mais rápido possível
-- **Tooltips contextuais:** disparar na primeira vez que o usuário encontra uma funcionalidade avançada, não na abertura da aplicação
-
----
-
-## 11. Fluxos de Usuário
-
-- Definir o **caminho feliz (happy path)** primeiro e garantir que funcione sem fricção
-- Mapear pontos de saída do fluxo e garantir que o usuário possa retornar (breadcrumb, botão voltar, estado preservado)
-- Identificar e projetar explicitamente os **fluxos de exceção** (erro, permissão negada, sessão expirada, offline)
-- Mínimo de cliques para ações frequentes — eliminar confirmações desnecessárias para ações reversíveis
-- Redirecionar automaticamente ao destino original após login (não sempre para a home)
-
----
-
-## 12. Testes de Usabilidade
-
-- **Teste com 5 usuários** identifica ~85% dos problemas de usabilidade (Nielsen, NN/G)
-- Usar texto real desde os primeiros protótipos — nunca lorem ipsum
-- Tipos de teste por fase:
-  - **Exploratório (discovery):** entrevistas, card sorting, tree testing
-  - **Formativo (protótipo):** teste de usabilidade moderado, think-aloud
-  - **Somativo (produto):** A/B testing de microcopy e CTAs, métricas de funil
-- Documentar achados com **prioridade de impacto** (crítico / moderado / cosmético) e associar a heurística violada
-- Testar dark mode, tamanhos de fonte aumentados e navegação por teclado como parte do processo padrão
+Pontos a não esquecer mesmo sem abrir os references:
+- **Acessibilidade** (contraste, teclado, alvos de toque, `prefers-reduced-motion`): WCAG 2.2 AA é o mínimo — fonte autoritativa: `../ui-components/SKILL.md` (§Acessibilidade).
+- **Mobile:** projetar mobile-first.
 
 ---
 

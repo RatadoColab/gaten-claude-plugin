@@ -1,10 +1,10 @@
-# HTML — Acessibilidade (WCAG 2.1 AA)
+# HTML — Acessibilidade (WCAG 2.2 AA)
 
-Referência completa de acessibilidade: WCAG 2.1, ARIA, teclado, contraste e foco.
+Referência completa de acessibilidade: WCAG 2.2, ARIA, teclado, contraste e foco.
 
 ---
 
-## WCAG 2.1 — Critérios Essenciais (Nível A e AA)
+## WCAG 2.2 — Critérios Essenciais (Nível A e AA)
 
 | Critério | Nível | Descrição | Exemplo de código |
 |---|---|---|---|

@@ -1,7 +1,7 @@
 ---
 name: php
 description: This skill should be used when writing, reviewing, or refactoring PHP code. Covers PHP 8.3 features (readonly classes, typed constants, json_validate, #[\Override]), PSR-12 standards, modern type system (enums, union types, intersection types, never return type, constructor promotion), design patterns (DTOs, Value Objects, Repository), dependency injection, error handling with typed exceptions, PHPUnit testing, Composer best practices, security (PDO, XSS, CSRF, password hashing), and performance optimization (OPcache, generators, N+1 prevention). Use when the user asks to "write PHP code", "review PHP", "create a PHP class", "implement a repository", "add a PHP enum", "configure OPcache", "write PHPUnit tests", or "upgrade to PHP 8.3".
-version: 0.2.0
+version: 0.2.1
 ---
 
 # PHP — Convenções e Boas Práticas (8.3.x)
@@ -24,19 +24,9 @@ declare(strict_types=1);    // sempre após <?php
 
 namespace App\Domain\User;  // namespace = caminho de diretório
 
-use App\Domain\Shared\Email;
-use App\Infrastructure\Persistence\UserRepository;
-
-final class UserService   // PascalCase, uma classe por arquivo
+final class UserService     // PascalCase, uma classe por arquivo
 {
-    public function __construct(           // visibilidade obrigatória
-        private readonly UserRepository $repository,
-    ) {}
-
-    public function findByEmail(Email $email): ?User  // tipos sempre declarados
-    {
-        return $this->repository->findByEmail($email);
-    }
+    public function __construct(private readonly UserRepository $repository) {}
 }
 ```
 
@@ -47,38 +37,12 @@ final class UserService   // PascalCase, uma classe por arquivo
 Declarar `strict_types=1` em **todo arquivo PHP**. Tipar todos os parâmetros, propriedades e retornos.
 
 ```php
-<?php
-declare(strict_types=1);
+function formatId(int|string $id): string { ... }   // union types: mínimo necessário
+function findUser(?int $id): ?User { ... }          // nullable shorthand
+function throwNotFound(string $e): never { ... }    // never: funções que nunca retornam
 
-// Union types: mínimo de tipos necessários
-function formatId(int|string $id): string { ... }
-
-// Nullable shorthand
-function findUser(?int $id): ?User { ... }
-
-// never: funções que nunca retornam
-function throwNotFound(string $entity): never
-{
-    throw new \RuntimeException("{$entity} não encontrado.");
-}
-
-// Enums com backed type
-enum Status: string
-{
-    case Active   = 'active';
-    case Inactive = 'inactive';
-
-    public function label(): string
-    {
-        return match ($this) {
-            Status::Active   => 'Ativo',
-            Status::Inactive => 'Inativo',
-        };
-    }
-}
-
-// Conversão segura (tryFrom retorna null em vez de lançar)
-$status = Status::tryFrom($input) ?? Status::Inactive;
+enum Status: string { case Active = 'active'; case Inactive = 'inactive'; }
+$status = Status::tryFrom($input) ?? Status::Inactive;  // tryFrom: null em vez de lançar
 ```
 
 Para referência completa de tipos, intersection types, `readonly`, constructor promotion e `final readonly class` para DTOs, consultar **`references/type-system.md`**.
@@ -97,58 +61,17 @@ Para referência completa de tipos, intersection types, `readonly`, constructor 
 | Exceções granulares de DateTime | Capturar `DateMalformedStringException` em vez do genérico `\Exception` |
 | `Randomizer::getBytesFromString()` | Tokens de verificação com charset controlado |
 
-```php
-// Constante tipada (PHP 8.3)
-class Config
-{
-    const string VERSION = '2.0.0';
-    const int MAX_RETRIES = 3;
-}
-
-// json_validate — eficiente, sem alocar memória
-if (!json_validate($payload)) {
-    throw new \InvalidArgumentException('JSON inválido.');
-}
-
-// Override — erro se o método não existir no pai
-#[\Override]
-public function findById(int $id): ?User { ... }
-```
-
 Exemplos completos de cada recurso em **`references/php83-features.md`**.
 
 ---
 
 ## Boas Práticas Essenciais
 
-### Match Expressions
-
-```php
-// match lança UnhandledMatchError para casos não cobertos (mais seguro que switch)
-$label = match ($status) {
-    Status::Active   => 'Ativo',
-    Status::Inactive => 'Inativo',
-    Status::Pending  => 'Pendente',
-};
-```
-
-### Named Arguments
-
-```php
-// Clareza em chamadas com múltiplos parâmetros
-$date = new \DateTimeImmutable(datetime: '2024-01-15', timezone: new \DateTimeZone('America/Sao_Paulo'));
-
-createUser(name: 'João', email: 'joao@example.com', role: Role::Admin);
-```
-
-### First-Class Callables
-
-```php
-// PHP 8.1+: closures a partir de funções existentes
-$lengths  = array_map(strlen(...), $strings);
-$filtered = array_filter($values, is_int(...));
-$upper    = array_map(strtoupper(...), $names);
-```
+| Padrão | Regra | Exemplo compacto |
+|---|---|---|
+| Match expressions | Preferir a `switch` — lança `UnhandledMatchError` para casos não cobertos | `$label = match ($status) { Status::Active => 'Ativo', ... };` |
+| Named arguments | Clareza em chamadas com múltiplos parâmetros | `createUser(name: 'João', role: Role::Admin)` |
+| First-class callables (8.1+) | Closures a partir de funções existentes | `array_map(strlen(...), $strings)` |
 
 Padrões completos (Value Objects, DTOs, Repository Pattern, Command/Handler) em **`references/patterns.md`**.
 
@@ -156,36 +79,14 @@ Padrões completos (Value Objects, DTOs, Repository Pattern, Command/Handler) em
 
 ## Tratamento de Erros
 
-```php
-<?php
-declare(strict_types=1);
+Hierarquia: `Throwable` > `Error` | `Exception`. Capturar do mais específico ao mais geral, encadeando a causa com `previous:`. Definir exceções de domínio com factory estático (ex.: `UserNotFoundException::forId($id)` estendendo `\DomainException`). Nunca silenciar erros com `@` nem capturar sem tratar (ver Anti-Patterns).
 
-// Hierarquia: Throwable > Error | Exception
-// Capturar do mais específico ao mais geral
+```php
 try {
     $date = new \DateTimeImmutable($input);
 } catch (\DateMalformedStringException $e) {
     throw new \InvalidArgumentException("Data inválida: {$input}", previous: $e);
-} catch (\DateException $e) {
-    throw new \RuntimeException('Erro de data inesperado.', previous: $e);
 }
-
-// Exceções de domínio específicas
-namespace App\Domain\User\Exception;
-
-final class UserNotFoundException extends \DomainException
-{
-    public static function forId(int $id): self
-    {
-        return new self("Usuário #{$id} não encontrado.", 404);
-    }
-}
-
-// Nunca silenciar erros com @
-// $result = @file_get_contents($url); // NÃO FAZER
-
-// Nunca capturar silenciosamente
-// catch (\Exception $e) {} // NÃO FAZER — logar e re-lançar
 ```
 
 ---

@@ -7,7 +7,7 @@ description: >
   tools", "create a reactive form in GLPI", "use Vue without webpack", or
   "add Vue 3 to a plugin page". Also load when the user mentions vue-loader.js,
   a global Vue build, or createApp() inside a Twig {% block javascripts %}.
-version: 0.1.0
+version: 0.2.1
 ---
 
 # GLPI — Interfaces Vue (Global Build)
@@ -193,21 +193,7 @@ Dropdown::show('Computer', [
 ]);
 ```
 
-**Lado Twig** — hidden input com `v-model` ligado a `_pre_*`:
-
-```html
-<input type="hidden" id="items_field" v-model="formApp._pre_items" />
-```
-
-**Lado Vue** — `watch` no `_pre_*` que processa o JSON:
-
-```javascript
-watch(() => formApp._pre_items, () => {
-    if (formApp._pre_items !== '') {
-        formApp.items = JSON.parse(formApp._pre_items);
-    }
-});
-```
+**Lado Twig** — hidden input com `v-model` ligado a `_pre_*`: `<input type="hidden" id="items_field" v-model="formApp._pre_items" />`. **Lado Vue** — `watch` em `formApp._pre_items` que faz `JSON.parse` quando não vazio. Implementação completa dos três lados em `references/integration-patterns.md` (seção "hidden input bridge").
 
 A função `updateRelatedVueField()` em `vue-loader.js` lê as opções selecionadas, grava o JSON no hidden input e dispara um evento `input` para que o `v-model` do Vue capture a mudança.
 
@@ -219,33 +205,19 @@ Usar `glpiClearDropdownValue(itemtype)` e `glpiSetDropdownValue(itemtype, value)
 
 ## 6. AJAX a partir do Vue
 
-Usar `fetch()` com `URLSearchParams` e `application/x-www-form-urlencoded` — formato esperado pelos handlers `ajax/` do GLPI:
+Usar `fetch()` com `URLSearchParams` e `application/x-www-form-urlencoded` — formato esperado pelos handlers `ajax/` do GLPI. O payload embute valores via Twig e serializa o estado reativo omitindo props privadas:
 
 ```javascript
 const payload = new URLSearchParams({
-    'op':                'save',
-    'items_id':          "{{ item.fields['id'] }}",   // Twig embute o valor
-    '_glpi_csrf_token':  "{{ csrf_token() }}",         // Token CSRF via Twig
-    'data':              JSON.stringify(formApp, excludePrivateValuesFromObject)
+    'op':               'save',
+    'items_id':         "{{ item.fields['id'] }}",   // Twig embute o valor
+    '_glpi_csrf_token': "{{ csrf_token() }}",         // Token CSRF via Twig
+    'data':             JSON.stringify(formApp, excludePrivateValuesFromObject)
 });
-
-fetch(`${rootDoc}/plugins/myplugin/ajax/handler.php`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-    body:    payload.toString()
-})
-.then(response => {
-    if (!response.ok) {
-        displayAjaxMessageAfterRedirect();
-        throw new Error('HTTP ' + response.status);
-    }
-    return response.json();
-})
-.then(json => {
-    // atualizar estado reativo com dados retornados
-    listApp.items = json.data;
-});
+// POST com Content-Type x-www-form-urlencoded; em !response.ok, chamar displayAjaxMessageAfterRedirect()
 ```
+
+> Exemplo `fetch` completo (com tratamento de erro e atualização do estado) em [`references/integration-patterns.md`](references/integration-patterns.md) (seção "AJAX save").
 
 Pontos-chave:
 - `"{{ csrf_token() }}"` é avaliado pelo Twig no momento da renderização e fica estático no JS — é suficiente para a sessão atual
@@ -255,77 +227,16 @@ Pontos-chave:
 
 ---
 
-## 7. Bootstrap Modals com Vue
+## 7. Modals Bootstrap e Ciclo de Vida
 
-**Abertura** — usar `data-bs-toggle` com binding Vue:
+Padrões detalhados com exemplos em [`references/runtime-patterns.md`](references/runtime-patterns.md):
 
-```html
-<button data-bs-toggle="modal"
-        data-bs-target="#myModal"
-        :disabled="formApp.type.id === 0">
-    Adicionar
-</button>
-```
-
-**Fechamento programático** — chamar `closeModal()` após save bem-sucedido:
-
-```javascript
-formApp.save = function() {
-    // ... fetch POST ...
-    .then(() => {
-        closeModal('myModal');
-        formApp.clear();
-    });
-};
-```
-
-**Limpeza de estado** — limpar o formulário ao fechar o modal sem salvar:
-
-```html
-<button class="btn-close" @click="formApp.clear()"></button>
-```
+- **Modals Bootstrap 5:** abrir via `data-bs-toggle`/`data-bs-target`; fechar com `closeModal(id)` após save; limpar estado (`formApp.clear()`) ao fechar sem salvar
+- **Ciclo de vida:** `onBeforeMount()` para buscar dados antes da renderização; `onMounted()` para operações que exigem o DOM pronto (injeção de dropdowns GLPI via AJAX)
 
 ---
 
-## 8. Ciclo de Vida — Carregamento Inicial
-
-Usar `onBeforeMount()` para buscar dados antes da primeira renderização do DOM:
-
-```javascript
-onBeforeMount(() => {
-    fetch(`${rootDoc}/plugins/myplugin/ajax/handler.php`, {
-        method: 'POST',
-        body:   new URLSearchParams({ 'op': 'load', 'items_id': "{{ item.fields['id'] }}" })
-    })
-    .then(r => r.json())
-    .then(json => { listApp.items = json.data; });
-});
-```
-
-Usar `onMounted()` para operações que exigem o DOM pronto (injeção de HTML de dropdowns GLPI via AJAX, inicialização de widgets de terceiros):
-
-```javascript
-onMounted(() => {
-    fetch(`${rootDoc}/plugins/myplugin/ajax/dropdowns.php`, {
-        method: 'POST',
-        body:   new URLSearchParams({ 'op': 'get_dropdowns', 'rand': Date.now() })
-    })
-    .then(r => r.json())
-    .then(json => {
-        document.getElementById('dropdown-container').innerHTML = json.html;
-    });
-});
-```
-
----
-
-## 9. Compatibilidade com `languages/vue/SKILL.md`
-
-Todos os primitivos de reatividade e hooks do `languages/vue/SKILL.md` (`reactive()`, `ref()`, `computed()`, `watch()`, `onMounted()` etc.) e as diretivas de template funcionam de forma idêntica no global build. A diferença é apenas de entrega: `const { createApp } = Vue` em vez de `import { createApp } from 'vue'`, sem SFCs, sem TypeScript, sem Pinia.
-
----
-
-## 10. Checklist — Antes de Usar Vue em um Template
+## 8. Checklist — Antes de Usar Vue em um Template
 
 - [ ] `lib/vue/vue.global.prod.js` presente no plugin
 - [ ] `js/vue-loader.js` criado com as funções helper (ver `references/vue-loader.md`)
@@ -343,6 +254,7 @@ Todos os primitivos de reatividade e hooks do `languages/vue/SKILL.md` (`reactiv
 | Arquivo | Conteúdo |
 |---|---|
 | **`references/vue-loader.md`** | Arquivo `vue-loader.js` completo e anotado com todas as funções helper; nota sobre timing de carregamento |
+| **`references/runtime-patterns.md`** | Modals Bootstrap 5 com Vue e hooks de ciclo de vida (`onBeforeMount`/`onMounted`) com exemplos |
 | **`references/integration-patterns.md`** | Exemplos completos anotados: estrutura mínima, multi-reactive, hidden input bridge, AJAX save, carga de dropdowns via AJAX |
 | **`references/twig-integration.md`** | Estrutura de templates Twig, blocos `{% verbatim %}`, injeção de dados PHP, decomposição via `include`, ciclo de vida de renderização |
 | **`languages/vue/SKILL.md`** | Reatividade avançada, watch patterns, composables, performance — todos aplicáveis ao global build |

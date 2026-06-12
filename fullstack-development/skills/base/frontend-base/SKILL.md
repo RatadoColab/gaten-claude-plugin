@@ -1,7 +1,7 @@
 ---
 name: frontend-base
 description: This skill should be used when developing frontend features, components, pages, or templates. Covers component architecture, state management principles, accessibility basics, and general best practices for frontend development.
-version: 0.1.0
+version: 0.2.1
 ---
 
 # Frontend Base — Fundamentos de Desenvolvimento Frontend
@@ -44,17 +44,11 @@ Documentar todas as funções, componentes, classes e métodos:
 
 ## Segurança
 
-- Prevenir XSS sanitizando todo conteúdo dinâmico antes de inserir no DOM
-- Evitar `innerHTML` com dados não confiáveis; usar APIs seguras como `textContent`
-- Aplicar Content Security Policy (CSP) adequada ao projeto
-- Validar e sanitizar inputs no frontend antes de enviar ao backend
+Segurança de frontend (XSS, sanitização, `innerHTML` vs `textContent`, CSP, validação de input): ver `domains/security/SKILL.md` — fonte autoritativa.
 
 ## Performance
 
-- Aplicar lazy loading para componentes e rotas não críticas
-- Monitorar e controlar tamanho do bundle (code splitting por rota/domínio)
-- Minimizar re-renders desnecessários (computed properties, memoização)
-- Otimizar assets (imagens, fontes) e uso de cache do browser
+Lazy loading, code splitting, controle de re-renders e otimização de assets: ver `domains/ui-components/SKILL.md` (§Performance) e, em projetos Vue, `languages/vue/SKILL.md` (§Performance).
 
 ## Referências
 

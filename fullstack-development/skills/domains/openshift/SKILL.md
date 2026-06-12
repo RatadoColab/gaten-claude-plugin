@@ -1,7 +1,7 @@
 ---
 name: openshift
 description: This skill should be used when deploying to or working with Red Hat OpenShift (OKD). Covers the differences from vanilla Kubernetes (Route vs Ingress, Project vs Namespace, DeploymentConfig, BuildConfig/ImageStream), Security Context Constraints (SCC), restricted-v2 defaults and their Dockerfile implications, Source-to-Image (S2I), the internal registry, the `oc` CLI, and OpenShift GitOps (ArgoCD).
-version: 0.1.0
+version: 0.2.1
 ---
 
 # OpenShift — Kubernetes Enterprise da Red Hat
@@ -88,22 +88,7 @@ CMD ["node", "dist/server.js"]
 
 ## Exposição — Route com TLS
 
-```yaml
-apiVersion: route.openshift.io/v1
-kind: Route
-metadata:
-  name: api
-spec:
-  # host omitido = o cluster gera um hostname automático; defina host: para domínio fixo
-  to:
-    kind: Service
-    name: api
-  port:
-    targetPort: 8080
-  tls:
-    termination: edge                 # edge | passthrough | reencrypt
-    insecureEdgeTerminationPolicy: Redirect
-```
+Manifest completo de `Route` (host automático vs fixo, `insecureEdgeTerminationPolicy: Redirect`) em **`references/examples.md`**.
 
 | Terminação      | Onde o TLS termina                        | Quando usar                          |
 |-----------------|-------------------------------------------|--------------------------------------|

@@ -1,7 +1,7 @@
 ---
 name: api-rest
-description: This skill should be used when designing or implementing REST APIs. Covers HTTP verbs, status codes, URL patterns, versioning, request/response contracts, error handling (RFC 9457), pagination strategies, caching, idempotency, security, OpenAPI 3.1, and REST best practices.
-version: 0.2.0
+description: This skill should be used when designing or implementing REST APIs. Typical triggers include "design a REST API", "which HTTP status code should I return?", "how do I paginate this endpoint?", "structure this API error response", "version this API", "write the OpenAPI spec for this". Covers HTTP verbs, status codes, URL patterns, versioning, request/response contracts, error handling (RFC 9457), pagination strategies, caching, idempotency, security, OpenAPI 3.1, and REST best practices.
+version: 0.2.1
 ---
 
 # API REST — Padrões e Boas Práticas
@@ -34,7 +34,7 @@ Diretrizes para design e implementação de APIs REST consistentes, previsíveis
 | HEAD    | Metadados sem corpo           | Sim         | Sim    |
 | OPTIONS | Capacidades do endpoint       | Sim         | Sim    |
 
-> *PATCH não é idempotente por definição; o uso de Idempotency-Key garante segurança contra reenvio, mas não altera sua semântica HTTP.
+> *Ver a seção **Idempotência** abaixo.
 
 ---
 
@@ -61,7 +61,7 @@ Prefixar a URL com versão principal: `/api/v1/resources`
 |---------------------|--------------------------------------|-----------------------------------|-------------------------------|
 | URL path (preferida) | `/api/v2/users`                     | Visível, cacheável, testável      | URL muda entre versões        |
 | Query string        | `/users?version=2`                   | Simples de implementar            | Pode ser ignorada por caches  |
-| Header customizado  | `API-Version: 2`                     | URL estável                       | Menos visível, harder to test |
+| Header customizado  | `API-Version: 2`                     | URL estável                       | Menos visível, menos testável |
 | Content negotiation | `Accept: application/vnd.api.v2+json` | Padrão HTTP                      | Complexo para clientes        |
 
 **Regras de evolução:**
@@ -78,47 +78,14 @@ Prefixar a URL com versão principal: `/api/v1/resources`
 
 Use o código mais específico disponível — nunca retorne `200 OK` com um erro no corpo.
 
-### 2xx — Sucesso
+| Classe | Mais usados |
+|--------|-------------|
+| 2xx | `200` OK · `201` criado (+`Location`) · `202` aceito (assíncrono) · `204` sem corpo |
+| 3xx | `301` movido · `304` not modified (cache) |
+| 4xx | `400` malformado · `401` não autenticado · `403` sem permissão · `404` inexistente · `409` conflito · `422` falha de regra · `429` rate limit |
+| 5xx | `500` erro interno · `502` bad gateway · `503` indisponível · `504` timeout |
 
-| Código | Uso                                                   |
-|--------|-------------------------------------------------------|
-| `200`  | Sucesso geral (GET, PUT, PATCH com corpo)             |
-| `201`  | Recurso criado (POST); incluir `Location` no header  |
-| `202`  | Requisição aceita para processamento assíncrono       |
-| `204`  | Sucesso sem corpo (DELETE, PUT/PATCH sem retorno)     |
-| `206`  | Conteúdo parcial (range requests)                     |
-
-### 3xx — Redirecionamento
-
-| Código | Uso                                              |
-|--------|--------------------------------------------------|
-| `301`  | Recurso movido permanentemente                   |
-| `304`  | Not Modified — cliente pode usar cache           |
-
-### 4xx — Erro do cliente
-
-| Código | Uso                                                          |
-|--------|--------------------------------------------------------------|
-| `400`  | Requisição malformada, parâmetros inválidos                  |
-| `401`  | Não autenticado — credenciais ausentes ou inválidas          |
-| `403`  | Autenticado, mas sem permissão para o recurso                |
-| `404`  | Recurso não encontrado (URL válida, recurso inexistente)     |
-| `405`  | Método HTTP não permitido para este endpoint                 |
-| `406`  | Not Acceptable — `Accept` header incompatível com os formatos disponíveis        |
-| `409`  | Conflito de estado (ex.: e-mail duplicado)                   |
-| `410`  | Recurso removido permanentemente (substitui 404 quando útil) |
-| `415`  | Content-Type não suportado                                   |
-| `422`  | Dados válidos sintaticamente, mas falha em regra de negócio  |
-| `429`  | Rate limit excedido                                          |
-
-### 5xx — Erro do servidor
-
-| Código | Uso                                         |
-|--------|---------------------------------------------|
-| `500`  | Erro interno não tratado                    |
-| `502`  | Bad gateway (proxy/upstream com falha)      |
-| `503`  | Serviço indisponível (manutenção, overload) |
-| `504`  | Gateway timeout                             |
+> Catálogo completo por classe em [`references/status-codes.md`](references/status-codes.md).
 
 ---
 
@@ -126,115 +93,21 @@ Use o código mais específico disponível — nunca retorne `200 OK` com um err
 
 Use o padrão **RFC 9457 (Problem Details for HTTP APIs)** com `Content-Type: application/problem+json`.
 
-**Campos obrigatórios:**
+Campos: `type` (URI do tipo, único obrigatório pelo RFC), `title`, `status`, `detail` (obrigatórios por convenção do projeto); `instance` e `errors[]` (opcionais, validação campo a campo).
 
-| Campo    | Tipo   | Descrição                                               |
-|----------|--------|---------------------------------------------------------|
-| `type`   | string | URI que identifica o tipo do problema (pode ser relativa) |
-| `title`  | string | Resumo legível, invariante para o tipo do problema      |
-| `status` | number | Código HTTP refletido no corpo (ajuda proxies/logs)     |
-| `detail` | string | Explicação específica desta ocorrência                  |
-
-> Nota: O RFC 9457 define apenas `type` como obrigatório (com default `about:blank`). Os campos `title`, `status` e `detail` são exigidos por convenção interna deste projeto.
-
-**Campos opcionais:**
-
-| Campo      | Tipo   | Descrição                                       |
-|------------|--------|-------------------------------------------------|
-| `instance` | string | URI da requisição que causou o problema         |
-| `errors`   | array  | Lista de erros de validação campo a campo       |
-
-**Exemplo — erro de validação (`400`):**
-
-```json
-{
-  "type": "https://api.exemplo.com/errors/validation-error",
-  "title": "Validation Error",
-  "status": 400,
-  "detail": "One or more fields failed validation.",
-  "instance": "/api/v1/users",
-  "errors": [
-    {
-      "field": "email",
-      "code": "INVALID_FORMAT",
-      "message": "Must be a valid email address."
-    },
-    {
-      "field": "age",
-      "code": "OUT_OF_RANGE",
-      "message": "Must be between 18 and 120."
-    }
-  ]
-}
-```
-
-**Exemplo — recurso não encontrado (`404`):**
-
-```json
-{
-  "type": "https://api.exemplo.com/errors/not-found",
-  "title": "Resource Not Found",
-  "status": 404,
-  "detail": "User with id '42' does not exist.",
-  "instance": "/api/v1/users/42"
-}
-```
+> Tabelas de campos e exemplos completos (validação 400, not found 404) em [`references/error-handling.md`](references/error-handling.md).
 
 ---
 
 ## Paginação
 
-Nunca retorne coleções sem paginação. Escolha a estratégia adequada ao caso de uso:
+Nunca retorne coleções sem paginação. Escolha a estratégia adequada:
 
-### Offset/Page (datasets pequenos e estáticos)
+- **Offset/Page** (`?page=2&per_page=25`): datasets pequenos e estáticos; envelope com `total`/`total_pages`. Degrada com grandes offsets e pode duplicar/omitir em dados mutáveis.
+- **Cursor/Keyset** (`?limit=25&after=cursor_abc`): datasets grandes ou mutáveis (feeds, timelines, >10k); envelope com `next_cursor`/`has_next`. Performance estável, sem gaps.
+- Regras: `limit` padrão + máximo documentado; ordenar por campo estável e indexado (`id`+`created_at`); sempre incluir metadados de paginação.
 
-```
-GET /users?page=2&per_page=25
-GET /users?offset=50&limit=25
-```
-
-**Resposta:**
-```json
-{
-  "data": [...],
-  "pagination": {
-    "total": 1250,
-    "page": 2,
-    "per_page": 25,
-    "total_pages": 50
-  }
-}
-```
-
-**Limitação:** degradação de performance com grandes offsets; dados podem ser duplicados/omitidos se a coleção mudar entre páginas.
-
-### Cursor/Keyset (datasets grandes ou que mudam frequentemente)
-
-```
-GET /events?limit=25&after=cursor_abc123
-GET /events?limit=25&before=cursor_xyz789
-```
-
-**Resposta:**
-```json
-{
-  "data": [...],
-  "pagination": {
-    "has_next": true,
-    "has_prev": false,
-    "next_cursor": "cursor_def456",
-    "prev_cursor": null
-  }
-}
-```
-
-**Vantagens:** performance estável em qualquer volume, sem duplicações ou gaps em dados mutáveis.
-
-**Regras gerais:**
-- Defina um `limit` padrão sensato e documente o máximo permitido (ex.: `limit=100` máximo)
-- Ordene sempre por campo estável e indexado (geralmente `id` + `created_at`)
-- Inclua metadados de paginação sempre na resposta
-- Use cursor-based para feeds, timelines e coleções grandes (>10k registros)
+> Envelopes JSON completos (offset e cursor) em [`references/pagination.md`](references/pagination.md).
 
 ---
 
@@ -259,23 +132,14 @@ GET /users?fields=id,name,email          # sparse fieldsets
 
 ## Caching
 
-Use headers HTTP padrão para controle de cache:
+Use headers HTTP padrão para controle de cache e validação condicional (evita transferência desnecessária):
 
 ```http
 Cache-Control: public, max-age=300
 ETag: "abc123def456"
-Last-Modified: Tue, 27 May 2025 10:00:00 GMT
-```
 
-**Validação condicional (evita transferência desnecessária):**
-
-```http
-# Cliente envia ETag recebida anteriormente
-GET /products/42 HTTP/1.1
-If-None-Match: "abc123def456"
-
-# Servidor responde 304 se não mudou
-HTTP/1.1 304 Not Modified
+# Cliente reenvia a ETag em If-None-Match; servidor responde 304 se não mudou
+If-None-Match: "abc123def456"   →   HTTP/1.1 304 Not Modified
 ```
 
 **Regras:**
@@ -291,98 +155,38 @@ HTTP/1.1 304 Not Modified
 Garanta que operações possam ser repetidas com segurança em caso de falha de rede:
 
 - GET, PUT, DELETE são idempotentes por definição
-- POST e PATCH **não** são idempotentes nativamente — use `Idempotency-Key`
+- POST e PATCH **não** são idempotentes nativamente — use `Idempotency-Key` (UUID no header); janela de retenção mínima de 24h, retornando o resultado armazenado em reenvios. A chave garante segurança contra reenvio, mas não altera a semântica HTTP do método
 
-```http
-POST /payments HTTP/1.1
-Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
-Content-Type: application/json
-
-{
-  "amount": 150.00,
-  "currency": "BRL"
-}
-```
-
-**Comportamento esperado:**
-- Primeira chamada: processa e armazena resultado associado à chave
-- Chamadas subsequentes com mesma chave: retorna resultado armazenado (sem reprocessar)
-- Janela de retenção: mínimo 24 horas
-- Chave expirada ou inválida: retornar `422` com detalhe
+> Comportamento completo e exemplo em [`references/advanced-endpoints.md`](references/advanced-endpoints.md).
 
 ---
 
 ## Headers Importantes
 
-### Requisição
+Mais usados:
+- **Requisição:** `Authorization` (Bearer), `Content-Type`, `Accept`, `Idempotency-Key`, `If-None-Match`/`If-Match` (condicionais), `X-Request-ID`
+- **Resposta:** `Location` (201), `ETag`, `Cache-Control`, `Retry-After` (429/503), `RateLimit-*`, `Deprecation`/`Sunset`
 
-| Header              | Uso                                              |
-|---------------------|--------------------------------------------------|
-| `Authorization`     | Token de autenticação (`Bearer <token>`)         |
-| `Content-Type`      | Formato do corpo enviado (`application/json`)    |
-| `Accept`            | Formato esperado na resposta                     |
-| `Idempotency-Key`   | Chave para operações idempotentes                |
-| `If-None-Match`     | ETag para requisições condicionais (GET)         |
-| `If-Match`          | ETag para atualizações condicionais (PUT/PATCH)  |
-| `X-Request-ID`      | ID para rastreamento distribuído                 |
-
-### Resposta
-
-| Header              | Uso                                              |
-|---------------------|--------------------------------------------------|
-| `Content-Type`      | `application/json` ou `application/problem+json` |
-| `Location`          | URI do recurso criado (POST 201)                 |
-| `ETag`              | Versão do recurso para cache                     |
-| `Cache-Control`     | Diretivas de cache                               |
-| `X-Request-ID`      | Espelhamento do ID de rastreamento               |
-| `Retry-After`       | Segundos antes de nova tentativa (429, 503)      |
-| `RateLimit-Limit`   | Limite de requisições por janela                 |
-| `RateLimit-Remaining` | Requisições restantes na janela atual          |
-| `RateLimit-Reset`   | Timestamp Unix quando a janela reseta            |
-| `Deprecation`       | Indica que o endpoint está deprecado             |
-| `Sunset`            | Data prevista de remoção do endpoint             |
+> Catálogo completo de headers (requisição e resposta) em [`references/http-patterns.md`](references/http-patterns.md).
 
 ---
 
 ## Rate Limiting
 
-Retorne `429 Too Many Requests` com headers informativos e body RFC 9457.
+Contrato HTTP: retorne `429 Too Many Requests` com headers `RateLimit-*`/`Retry-After` e body RFC 9457; documente os limites por endpoint ou tier no OpenAPI. Políticas de limite (critérios por usuário/IP/device, backoff): ver `../security/SKILL.md` (§Rate Limiting) — fonte autoritativa.
 
 > Ver exemplo completo em [`references/http-patterns.md`](references/http-patterns.md).
-
-**Regras:**
-- Aplicar rate limit por token/usuário, não apenas por IP
-- Documentar limites por endpoint ou tier no OpenAPI
-- Orientar clientes a implementar exponential backoff usando o valor de `Retry-After` como base para o intervalo mínimo
 
 ---
 
 ## Segurança
 
-### Autenticação
+Específico de API (autenticação/autorização completas em `../security/SKILL.md` — fonte autoritativa):
 
-- **OAuth 2.0 + OIDC:** padrão para delegação de acesso e autenticação federada
-- **JWT (Bearer tokens):** expiração de 15–60 minutos; usar refresh tokens para sessões longas
-- **API Keys:** apenas para comunicação server-to-server, nunca em clientes públicos
-- Não armazenar dados sensíveis no payload do JWT (assinado, não criptografado)
-
-```http
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-### Práticas obrigatórias
-
-- TLS 1.2+ em todos os endpoints (sem exceções)
-- Validar e sanitizar **todo** input do cliente contra schema (JSON Schema / OpenAPI)
-- Não expor stack traces ou detalhes internos em respostas de erro de produção
-- Usar HTTPS-only com `Strict-Transport-Security` (HSTS)
-- Implementar CORS restritivo — listar origens explicitamente, não usar `*` em APIs autenticadas
-
-```http
-Strict-Transport-Security: max-age=31536000; includeSubDomains
-```
-
-> Ver `../security/SKILL.md` para checklist completo de autenticação e autorização.
+- **Autenticação:** OAuth 2.0 + OIDC; JWT Bearer (access token de 15 min + refresh token — parâmetros em `../security/SKILL.md`); API Keys só server-to-server; não pôr dados sensíveis no payload do JWT
+- **Transporte:** TLS 1.2+ e HSTS em todos os endpoints
+- **Input:** validar/sanitizar contra schema (JSON Schema / OpenAPI); nunca expor stack traces em produção
+- **CORS:** allowlist explícita de origens — nunca `*` em APIs autenticadas
 
 ---
 
@@ -446,68 +250,15 @@ Toda API deve ter especificação OpenAPI 3.1 mantida como fonte de verdade.
 
 ---
 
-## Processamento Assíncrono
+## Endpoints Avançados
 
-Para operações longas, retorne `202 Accepted` com `Location` apontando para o job e link de polling no corpo.
+Padrões detalhados (com exemplos) em [`references/advanced-endpoints.md`](references/advanced-endpoints.md):
 
-> Ver exemplo completo em [`references/async-patterns.md`](references/async-patterns.md).
-
-O cliente faz polling em `/jobs/{id}` até o status ser `completed` ou `failed`.
-
----
-
-## Webhooks
-
-Para notificação push de eventos, prefira webhooks ao polling contínuo:
-
-- Entregar eventos via `POST` para URL cadastrada pelo consumidor
-- Assinar payload com HMAC-SHA256 no header `X-Webhook-Signature: sha256=<hash>`
-- Aguardar resposta `2xx` em até 5 segundos; marcar como falha caso contrário
-- Implementar retry com exponential backoff (máx. 3 tentativas em 24h)
-- O consumidor deve responder `200` imediatamente e processar de forma assíncrona
-
-> Ver exemplo completo em [`references/async-patterns.md`](references/async-patterns.md).
-
----
-
-## Health Check
-
-Expor endpoints de saúde sem autenticação:
-
-```
-GET /health        → liveness (processo está vivo)
-GET /health/ready  → readiness (pronto para receber tráfego)
-```
-
-> Ver exemplo completo em [`references/async-patterns.md`](references/async-patterns.md).
-
-- `200` quando `healthy` ou `degraded`
-- `503` quando `unhealthy`
-- Nunca expor detalhes internos (versão, stack trace) nesses endpoints
-
----
-
-## Operações em Lote
-
-Para criar ou atualizar múltiplos recursos em uma requisição, use `POST /resources/batch` com array `operations`.
-
-> Ver exemplo completo em [`references/async-patterns.md`](references/async-patterns.md).
-
-- Usar `207 Multi-Status` quando a operação tem resultados parcialmente bem-sucedidos
-- Garantir idempotência com `Idempotency-Key` no header da requisição em lote
-
----
-
-## Soft Delete
-
-Quando recursos removidos precisam ser auditados ou restaurados:
-
-- `DELETE /resources/{id}` retorna `204` e marca o registro como excluído (`deleted_at`)
-- Coleções filtram registros excluídos por padrão
-- Para incluir excluídos: `GET /resources?include_deleted=true`
-- Para restaurar: `POST /resources/{id}/actions/restore`
-- Expor `deleted_at` no schema quando o estado importa para o consumidor
-- Em tabelas de alto volume, avaliar impacto de performance antes de adotar soft delete
+- **Processamento assíncrono:** `202 Accepted` + `Location` do job; cliente faz polling em `/jobs/{id}`
+- **Webhooks:** `POST` à URL do consumidor, payload assinado com HMAC-SHA256, retry com backoff
+- **Health check:** `GET /health` (liveness) e `/health/ready` (readiness), sem autenticação, sem detalhes internos
+- **Operações em lote:** `POST /resources/batch`, `207 Multi-Status` para resultados parciais
+- **Soft delete:** marcar `deleted_at`, filtrar por padrão, restaurar via `actions/restore`
 
 ---
 
