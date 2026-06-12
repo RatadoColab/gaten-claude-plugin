@@ -9,14 +9,14 @@ description: >
   "what's the best way to show a loading indicator?", "is this error message good?",
   "how do I make this accessible?", "write microcopy for this button",
   "design a toast notification pattern", "should I use a modal or inline here?".
-version: 0.2.0
+version: 0.2.1
 ---
 
 # User Experience — UX e Fluxos de Usuário
 
 ## Visão Geral
 
-Diretrizes para criar interfaces que oferecem experiência clara, previsível e satisfatória ao usuário, cobrindo desde princípios fundamentais até padrões específicos de estado, formulários, acessibilidade e microcopy.
+Diretrizes para criar interfaces claras e previsíveis: princípios, estados de UI, formulários, acessibilidade e microcopy.
 
 ---
 
@@ -41,12 +41,7 @@ Toda interface deve respeitar as dez heurísticas de usabilidade de Nielsen como
 
 Reduzir a carga cognitiva é o principal meio de diminuir fricção. Aplicar:
 
-- **Divulgação progressiva (progressive disclosure):** mostrar apenas o que é essencial agora; revelar opções avançadas sob demanda
-  ```
-  // Exemplo: formulário de endereço
-  // Exibir apenas CEP, rua e número inicialmente
-  // Revelar "Complemento" e "Referência" via toggle "Adicionar detalhes"
-  ```
+- **Divulgação progressiva (progressive disclosure):** mostrar apenas o que é essencial agora; revelar opções avançadas sob demanda (ex.: formulário de endereço exibe só CEP/rua/número; "Complemento" e "Referência" via toggle "Adicionar detalhes")
 - **Chunking:** agrupar informações relacionadas em blocos visuais distintos (max 5–7 itens por grupo)
 - **Defaults inteligentes:** pré-preencher campos com o valor mais provável para o contexto do usuário
 - **Persistir estado entre navegações:** filtros aplicados, posição de scroll e seleções devem sobreviver à navegação e ao recarregamento quando fizer sentido
@@ -167,9 +162,8 @@ Os tópicos abaixo foram movidos para references por tema — carregar apenas qu
 - **UX writing/microcopy, onboarding progressivo, fluxos de usuário e testes de usabilidade:** [`references/ux-writing-flows.md`](references/ux-writing-flows.md)
 
 Pontos a não esquecer mesmo sem abrir os references:
-- **Acessibilidade:** WCAG 2.2 AA é o mínimo; contraste 4.5:1 (texto normal); teclado + `focus-visible`; HTML semântico antes de ARIA. Fonte autoritativa de a11y: `../ui-components/SKILL.md`.
-- **Mobile:** alvo de toque mínimo 44×44px; projetar mobile-first.
-- **Motion:** respeitar `prefers-reduced-motion`.
+- **Acessibilidade** (contraste, teclado, alvos de toque, `prefers-reduced-motion`): WCAG 2.2 AA é o mínimo — fonte autoritativa: `../ui-components/SKILL.md` (§Acessibilidade).
+- **Mobile:** projetar mobile-first.
 
 ---
 

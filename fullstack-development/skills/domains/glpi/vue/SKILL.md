@@ -7,7 +7,7 @@ description: >
   tools", "create a reactive form in GLPI", "use Vue without webpack", or
   "add Vue 3 to a plugin page". Also load when the user mentions vue-loader.js,
   a global Vue build, or createApp() inside a Twig {% block javascripts %}.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # GLPI — Interfaces Vue (Global Build)
@@ -193,21 +193,7 @@ Dropdown::show('Computer', [
 ]);
 ```
 
-**Lado Twig** — hidden input com `v-model` ligado a `_pre_*`:
-
-```html
-<input type="hidden" id="items_field" v-model="formApp._pre_items" />
-```
-
-**Lado Vue** — `watch` no `_pre_*` que processa o JSON:
-
-```javascript
-watch(() => formApp._pre_items, () => {
-    if (formApp._pre_items !== '') {
-        formApp.items = JSON.parse(formApp._pre_items);
-    }
-});
-```
+**Lado Twig** — hidden input com `v-model` ligado a `_pre_*`: `<input type="hidden" id="items_field" v-model="formApp._pre_items" />`. **Lado Vue** — `watch` em `formApp._pre_items` que faz `JSON.parse` quando não vazio. Implementação completa dos três lados em `references/integration-patterns.md` (seção "hidden input bridge").
 
 A função `updateRelatedVueField()` em `vue-loader.js` lê as opções selecionadas, grava o JSON no hidden input e dispara um evento `input` para que o `v-model` do Vue capture a mudança.
 
@@ -250,13 +236,7 @@ Padrões detalhados com exemplos em [`references/runtime-patterns.md`](reference
 
 ---
 
-## 8. Compatibilidade com `languages/vue/SKILL.md`
-
-Todos os primitivos de reatividade e hooks do `languages/vue/SKILL.md` (`reactive()`, `ref()`, `computed()`, `watch()`, `onMounted()` etc.) e as diretivas de template funcionam de forma idêntica no global build. A diferença é apenas de entrega: `const { createApp } = Vue` em vez de `import { createApp } from 'vue'`, sem SFCs, sem TypeScript, sem Pinia.
-
----
-
-## 9. Checklist — Antes de Usar Vue em um Template
+## 8. Checklist — Antes de Usar Vue em um Template
 
 - [ ] `lib/vue/vue.global.prod.js` presente no plugin
 - [ ] `js/vue-loader.js` criado com as funções helper (ver `references/vue-loader.md`)

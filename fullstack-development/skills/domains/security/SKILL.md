@@ -1,7 +1,7 @@
 ---
 name: security
 description: This skill should be used when implementing security features, reviewing code for vulnerabilities, or applying security best practices. Typical triggers include "review this for security", "is this vulnerable to SQL injection?", "how do I prevent XSS/CSRF?", "secure this authentication flow", "how should I store passwords?", "audit this endpoint for OWASP issues". Covers OWASP Top 10 2021, input validation, authentication, authorization, data protection, secrets management, logging, and supply chain security.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Security — Segurança em Aplicações Web

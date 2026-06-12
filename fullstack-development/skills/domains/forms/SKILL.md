@@ -1,7 +1,7 @@
 ---
 name: forms
 description: This skill should be used when implementing forms, input validation, or form-related UX. Typical triggers include "build this form", "validate this input", "how should I show form errors?", "make this form accessible", "create a multi-step wizard", "add CPF/CNPJ/CEP validation", "handle file upload in this form". Covers validation strategies, error feedback patterns, accessibility requirements (WCAG 2.2), security, multi-step forms, file uploads, autocomplete, and user experience best practices for forms.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Forms — Formulários Frontend

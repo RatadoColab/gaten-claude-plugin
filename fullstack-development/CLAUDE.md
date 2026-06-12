@@ -37,6 +37,7 @@ commands/                      ← 3 slash commands
 - Versão do plugin em `.claude-plugin/plugin.json`; cada release bumpa a versão e adiciona uma entrada em `CHANGELOG.md` (formato Keep a Changelog) + link de release no rodapé.
 - Manter o `version:` no frontmatter de cada `SKILL.md` alinhado ao publicar — gotcha: skills ficam defasadas (ex.: `glpi/vue` ficou em `0.1.0` enquanto as demais em `0.2.0`).
 - Auditar tamanho dos corpos: `find skills -name SKILL.md -exec wc -w {} \;` (alvo ~1.500–2.000 palavras; ver política de progressive disclosure em Decisões de Design).
+- Validar ponteiros após editar skills: todo `references/*` citado em SKILL.md deve existir (atenção: sub-skills GLPI usam a forma `../references/`).
 
 ## Agentes e Gatilhos
 
@@ -70,6 +71,12 @@ Quando múltiplas skills são candidatas, a ordem de prioridade é: **GLPI > Lan
 
 As skills de plataforma do domínio devops (`openshift`, `azure-devops`) **complementam** as genéricas, não as substituem: ao detectar OpenShift, carregar `containers` + `openshift`; ao detectar Azure DevOps, carregar `ci-cd` + `azure-devops`. As específicas trazem só as diferenças da plataforma.
 
+### Sobreposições intencionais das skills GLPI (não deduplicar)
+
+- `glpi/ajax-handlers`: envelope `{success, code, message, errors}` sobrepõe deliberadamente o RFC 9457 de `api-rest` (handlers são endpoints internos).
+- `glpi/form-templates`: asterisco `<span class="required">*</span>` prevalece sobre o markup `aria-hidden`+`sr-only` de `domains/forms`.
+- Sub-skills GLPI disparam pela própria description, sem garantia da skill pai ou das genéricas em contexto — não remover conteúdo apostando que outra skill estará carregada; usar ponteiro explícito.
+
 ### Assimetrias intencionais do conjunto devops
 
 - **GitHub Actions/GitLab CI ficam inline em `ci-cd`**, enquanto **Azure DevOps é skill separada** (`azure-devops`). Não é inconsistência: GitHub/GitLab cabem como exemplo curto do conceito; o Azure DevOps tem modelo próprio rico (environments, service connections, variable groups, deployment jobs) que não cabe inline. Mesma lógica de `openshift` sobre `containers`.
@@ -96,7 +103,7 @@ Para conter o consumo de tokens (o corpo do SKILL.md é sempre carregado quando 
 
 - **Alvo de corpo:** ~1.500–2.000 palavras. Catálogos extensos, enumerações e exemplos longos vão para `references/` por tópico, deixando no corpo um resumo + ponteiro `> ... em [\`references/x.md\`](references/x.md)`.
 - **Código inline:** no máximo **1 bloco curto (<8 linhas) por seção**; exemplos maiores ou repetidos vão para `references/`.
-- **Sem duplicação:** uma informação vive em um único lugar — não repetir no corpo o que já está num reference (nem entre skills). Tópicos transversais têm fonte autoritativa única (ex.: segurança de aplicação → `domains/security`; acessibilidade → `domains/ui-components`); as demais skills apenas apontam.
+- **Sem duplicação:** uma informação vive em um único lugar — não repetir no corpo o que já está num reference (nem entre skills). Tópicos transversais têm fonte autoritativa única (ex.: segurança de aplicação → `domains/security`; acessibilidade WCAG 2.2 → `domains/ui-components`; performance Vue → `languages/vue`; UX de formulários → `domains/forms`); as demais skills apenas apontam.
 
 ## Autores
 

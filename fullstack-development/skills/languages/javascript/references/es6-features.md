@@ -53,6 +53,53 @@ let a = 1, b = 2;
 
 ---
 
+## Classes ES6
+
+```js
+class Animal {
+    // Private field (ES2022) — not accessible outside the class
+    #sound;
+
+    constructor(name, sound) {
+        this.name = name;   // public field
+        this.#sound = sound;
+    }
+
+    speak() {
+        return `${this.name} says ${this.#sound}`;
+    }
+
+    // Static method — called on class, not instance
+    static create(name, sound) {
+        return new Animal(name, sound);
+    }
+}
+
+class Dog extends Animal {
+    #tricks = [];
+
+    constructor(name) {
+        super(name, 'woof');    // must call super before using `this`
+    }
+
+    learn(trick) {
+        this.#tricks.push(trick);
+    }
+
+    // Override parent method
+    speak() {
+        return `${super.speak()}! Tricks: ${this.#tricks.join(', ')}`;
+    }
+}
+
+const dog = new Dog('Rex');
+dog.learn('sit');
+console.log(dog.speak());
+// console.log(dog.#tricks);   // SyntaxError — private field
+```
+
+---
+
 ## Generators
 
 Funções que podem pausar e retomar a execução, produzindo valores sob demanda.

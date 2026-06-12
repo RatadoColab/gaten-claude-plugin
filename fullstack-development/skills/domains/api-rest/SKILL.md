@@ -1,7 +1,7 @@
 ---
 name: api-rest
 description: This skill should be used when designing or implementing REST APIs. Typical triggers include "design a REST API", "which HTTP status code should I return?", "how do I paginate this endpoint?", "structure this API error response", "version this API", "write the OpenAPI spec for this". Covers HTTP verbs, status codes, URL patterns, versioning, request/response contracts, error handling (RFC 9457), pagination strategies, caching, idempotency, security, OpenAPI 3.1, and REST best practices.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # API REST — Padrões e Boas Práticas
@@ -34,7 +34,7 @@ Diretrizes para design e implementação de APIs REST consistentes, previsíveis
 | HEAD    | Metadados sem corpo           | Sim         | Sim    |
 | OPTIONS | Capacidades do endpoint       | Sim         | Sim    |
 
-> *PATCH não é idempotente por definição; o uso de Idempotency-Key garante segurança contra reenvio, mas não altera sua semântica HTTP.
+> *Ver a seção **Idempotência** abaixo.
 
 ---
 
@@ -61,7 +61,7 @@ Prefixar a URL com versão principal: `/api/v1/resources`
 |---------------------|--------------------------------------|-----------------------------------|-------------------------------|
 | URL path (preferida) | `/api/v2/users`                     | Visível, cacheável, testável      | URL muda entre versões        |
 | Query string        | `/users?version=2`                   | Simples de implementar            | Pode ser ignorada por caches  |
-| Header customizado  | `API-Version: 2`                     | URL estável                       | Menos visível, harder to test |
+| Header customizado  | `API-Version: 2`                     | URL estável                       | Menos visível, menos testável |
 | Content negotiation | `Accept: application/vnd.api.v2+json` | Padrão HTTP                      | Complexo para clientes        |
 
 **Regras de evolução:**
@@ -132,23 +132,14 @@ GET /users?fields=id,name,email          # sparse fieldsets
 
 ## Caching
 
-Use headers HTTP padrão para controle de cache:
+Use headers HTTP padrão para controle de cache e validação condicional (evita transferência desnecessária):
 
 ```http
 Cache-Control: public, max-age=300
 ETag: "abc123def456"
-Last-Modified: Tue, 27 May 2025 10:00:00 GMT
-```
 
-**Validação condicional (evita transferência desnecessária):**
-
-```http
-# Cliente envia ETag recebida anteriormente
-GET /products/42 HTTP/1.1
-If-None-Match: "abc123def456"
-
-# Servidor responde 304 se não mudou
-HTTP/1.1 304 Not Modified
+# Cliente reenvia a ETag em If-None-Match; servidor responde 304 se não mudou
+If-None-Match: "abc123def456"   →   HTTP/1.1 304 Not Modified
 ```
 
 **Regras:**
@@ -164,7 +155,7 @@ HTTP/1.1 304 Not Modified
 Garanta que operações possam ser repetidas com segurança em caso de falha de rede:
 
 - GET, PUT, DELETE são idempotentes por definição
-- POST e PATCH **não** são idempotentes nativamente — use `Idempotency-Key` (UUID no header); janela de retenção mínima de 24h, retornando o resultado armazenado em reenvios
+- POST e PATCH **não** são idempotentes nativamente — use `Idempotency-Key` (UUID no header); janela de retenção mínima de 24h, retornando o resultado armazenado em reenvios. A chave garante segurança contra reenvio, mas não altera a semântica HTTP do método
 
 > Comportamento completo e exemplo em [`references/advanced-endpoints.md`](references/advanced-endpoints.md).
 
@@ -182,14 +173,9 @@ Mais usados:
 
 ## Rate Limiting
 
-Retorne `429 Too Many Requests` com headers informativos e body RFC 9457.
+Contrato HTTP: retorne `429 Too Many Requests` com headers `RateLimit-*`/`Retry-After` e body RFC 9457; documente os limites por endpoint ou tier no OpenAPI. Políticas de limite (critérios por usuário/IP/device, backoff): ver `../security/SKILL.md` (§Rate Limiting) — fonte autoritativa.
 
 > Ver exemplo completo em [`references/http-patterns.md`](references/http-patterns.md).
-
-**Regras:**
-- Aplicar rate limit por token/usuário, não apenas por IP
-- Documentar limites por endpoint ou tier no OpenAPI
-- Orientar clientes a implementar exponential backoff usando o valor de `Retry-After` como base para o intervalo mínimo
 
 ---
 
@@ -197,7 +183,7 @@ Retorne `429 Too Many Requests` com headers informativos e body RFC 9457.
 
 Específico de API (autenticação/autorização completas em `../security/SKILL.md` — fonte autoritativa):
 
-- **Autenticação:** OAuth 2.0 + OIDC; JWT Bearer (15–60 min) + refresh token; API Keys só server-to-server; não pôr dados sensíveis no payload do JWT
+- **Autenticação:** OAuth 2.0 + OIDC; JWT Bearer (access token de 15 min + refresh token — parâmetros em `../security/SKILL.md`); API Keys só server-to-server; não pôr dados sensíveis no payload do JWT
 - **Transporte:** TLS 1.2+ e HSTS em todos os endpoints
 - **Input:** validar/sanitizar contra schema (JSON Schema / OpenAPI); nunca expor stack traces em produção
 - **CORS:** allowlist explícita de origens — nunca `*` em APIs autenticadas

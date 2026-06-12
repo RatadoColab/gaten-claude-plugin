@@ -64,7 +64,7 @@ Identifique o framework em uso e carregue se aplicável:
 - Aplicar padrões de segurança e validação de entrada
 - Auditar e corrigir vulnerabilidades (injeção, autorização, exposição de dados)
 - Registrar classes e hooks em `setup.php` via `Plugin::registerClass()` e `Plugin::addHook()` (em plugins GLPI)
-- Aplicar controle de acesso com `Session::haveRight()` em todo ponto de entrada (em plugins GLPI)
+- Aplicar controle de acesso em todo ponto de entrada com `Session::checkRight()` — ou `Session::haveRight()` para verificação condicional (em plugins GLPI)
 - Otimizar performance de queries, algoritmos e operações de I/O
 - Escrever código limpo seguindo convenções da linguagem e do framework
 - Garantir tratamento adequado de erros e casos de borda
@@ -91,5 +91,4 @@ Identifique o framework em uso e carregue se aplicável:
 - Não remover código existente sem confirmação
 - Não alterar arquivos fora do escopo do diretório do projeto
 - Não usar bibliotecas externas sem verificar se já existem equivalentes no projeto principal
-- Em plugins GLPI: nunca implementar autenticação própria — usar `Session::haveRight()`
-- Em plugins GLPI: nunca usar PDO diretamente — usar `$DB->request()` ou `$DB->queryOrDie()`
+- Em plugins GLPI: seguir as **Restrições Absolutas** de `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi/SKILL.md` (autenticação, PDO, estrutura, CSRF, i18n)

@@ -1,7 +1,7 @@
 ---
 name: twig
 description: This skill should be used when writing, reviewing, or refactoring Twig templates (3.11.x). Covers template syntax and delimiters, inheritance (extends/block/embed/use), variables and scope, built-in filters and functions, macros, control tags, auto-escaping and security, performance best practices, and anti-patterns. Use when the user asks to "write a Twig template", "create a base layout", "add a Twig macro", "use Twig filters", "configure Twig environment", "review Twig code", "add template inheritance", or "fix Twig escaping".
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Twig — Convenções e Boas Práticas (3.11.x)
@@ -19,19 +19,6 @@ Diretrizes para escrita de templates Twig limpos, reutilizáveis e seguros com b
 | `{{ expressão }}` | Output | Exibir variável, resultado de filtro ou função |
 | `{% tag %}` | Tag de controle | `if`, `for`, `block`, `extends`, `set`, `apply`, etc. |
 | `{# comentário #}` | Comentário | Notas que **não** aparecem no HTML renderizado |
-
-```twig
-{# Output com filtro — auto-escapado por padrão #}
-{{ user.name|upper }}
-
-{# Tag de controle #}
-{% if user.isActive %}
-    <span>Ativo</span>
-{% endif %}
-
-{# Comentário — não aparece no HTML gerado #}
-{# TODO: substituir por componente reutilizável #}
-```
 
 > Auto-escape está **ativo por padrão** no Twig 3. Todo `{{ }}` escapa HTML automaticamente via `htmlspecialchars`. Usar `|raw` apenas quando o conteúdo for HTML confiável gerado internamente.
 
@@ -71,24 +58,15 @@ Para padrões completos de herança, `embed`, `use` e exemplos de `base.html.twi
 ## Variáveis e Escopo
 
 ```twig
-{# Definir variável local #}
-{% set titulo = 'Relatório Anual' %}
-
-{# Variável a partir de expressão #}
-{% set total = items|length %}
-
-{# Acesso a atributos: dot notation (preferida) #}
-{{ user.name }}        {# chama user.name ou user['name'] ou user.getName() #}
-{{ user['email'] }}    {# equivalente — útil quando a chave tem caracteres especiais #}
-
-{# Variáveis globais disponíveis: _self, _context, _charset #}
-{{ _self.templateName }}   {# nome do template atual #}
-
-{# Bloco with — escopo isolado #}
-{% with { mensagem: 'Olá' } %}
-    {{ mensagem }}
+{% set total = items|length %}     {# variável local a partir de expressão #}
+{{ user.name }}                    {# dot notation (preferida) #}
+{{ user['email'] }}                {# equivalente — chave com caracteres especiais #}
+{% with { cor: 'azul' } only %}    {# escopo isolado #}
+    <div class="btn btn-{{ cor }}">Clique</div>
 {% endwith %}
 ```
+
+Variáveis globais disponíveis: `_self` (nome do template atual), `_context`, `_charset`.
 
 | Acesso | Comportamento |
 |---|---|
@@ -125,38 +103,11 @@ Functions mais usadas: `range()` (sequência), `cycle()` (alterna valores), `att
 {% else %}
     <li>Nenhum item encontrado.</li>
 {% endfor %}
-
-{# Variáveis do loop: loop.index (1-based), loop.index0, loop.first, loop.last, loop.length #}
-{% for produto in produtos %}
-    {% if loop.first %}<ul>{% endif %}
-    <li class="{{ cycle(['par', 'ímpar'], loop.index0) }}">{{ produto.nome }}</li>
-    {% if loop.last %}</ul>{% endif %}
-{% endfor %}
-
-{# if / elseif / else #}
-{% if usuario.papel == 'admin' %}
-    <a href="/admin">Painel</a>
-{% elseif usuario.papel == 'editor' %}
-    <a href="/editor">Editor</a>
-{% else %}
-    <a href="/perfil">Perfil</a>
-{% endif %}
-
-{# apply — aplica filtro a bloco de conteúdo #}
-{% apply upper %}
-    texto em maiúsculas
-{% endapply %}
-
-{# verbatim — evita que Twig processe o conteúdo (útil com Vue/Angular) #}
-{% verbatim %}
-    {{ variavel_do_vue }}
-{% endverbatim %}
-
-{# with — escopo isolado #}
-{% with { cor: 'azul', tamanho: 'lg' } only %}
-    <div class="btn btn-{{ cor }} btn-{{ tamanho }}">Clique</div>
-{% endwith %}
 ```
+
+- Variáveis do loop: `loop.index` (1-based), `loop.index0`, `loop.first`, `loop.last`, `loop.length`
+- `{% verbatim %}...{% endverbatim %}` — evita que o Twig processe `{{ }}` (essencial em templates com Vue/Angular)
+- `{% apply filtro %}...{% endapply %}` — aplica filtro a um bloco de conteúdo; `cycle()` alterna valores por iteração — exemplos em `references/filters-functions.md`
 
 ---
 

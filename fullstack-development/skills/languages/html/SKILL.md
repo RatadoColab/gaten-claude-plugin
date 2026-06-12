@@ -1,7 +1,7 @@
 ---
 name: html
-description: This skill should be used when writing, reviewing, or refactoring HTML markup. Covers semantic HTML5 document structure, Bootstrap 5 grid system and utilities, WCAG 2.1 AA accessibility standards, ARIA roles and attributes, native HTML5 form validation, anti-patterns, and best practices. Use when the user asks to "write HTML", "review markup", "add Bootstrap layout", "create a form", "fix accessibility issues", "add ARIA attributes", "use semantic elements", or "structure an HTML page".
-version: 0.2.0
+description: This skill should be used when writing, reviewing, or refactoring HTML markup. Covers semantic HTML5 document structure, Bootstrap 5 grid system and utilities, WCAG 2.2 AA accessibility standards, ARIA roles and attributes, native HTML5 form validation, anti-patterns, and best practices. Use when the user asks to "write HTML", "review markup", "add Bootstrap layout", "create a form", "fix accessibility issues", "add ARIA attributes", "use semantic elements", or "structure an HTML page".
+version: 0.2.1
 ---
 
 # HTML — Semântica, Bootstrap 5 e Acessibilidade
@@ -78,23 +78,18 @@ Estrutura `container > row > col-*`; combinar breakpoints para responsividade (`
 | `form` | `<form>` (com nome) | Formulário que não é busca |
 | `region` | `<section>` (com nome) | Seção com `aria-labelledby` |
 
-### Checklist WCAG 2.1 AA (resumido)
+### Checklist WCAG 2.2 AA — markup puro
 
 | # | Critério | Nível | Verificação rápida |
 |---|---|---|---|
 | 1.1.1 | Conteúdo não textual | A | Todo `<img>` tem `alt`; `alt=""` para decorativas |
 | 1.3.1 | Informação e relacionamentos | A | Estrutura HTML semântica; `<label>` vinculado |
-| 1.4.3 | Contraste (mínimo) | AA | Texto: 4.5:1; texto grande (≥18pt ou 14pt bold): 3:1 |
 | 1.4.4 | Redimensionar texto | AA | Conteúdo legível com 200% de zoom sem scroll horizontal |
-| 2.1.1 | Teclado | A | Toda funcionalidade acessível por teclado |
-| 2.1.2 | Sem armadilha de teclado | A | `Esc` fecha modals; foco não fica preso |
-| 2.4.3 | Ordem de foco | A | Foco em ordem lógica de leitura |
 | 2.4.4 | Propósito do link | A | Texto do link descritivo sem contexto extra |
 | 2.4.6 | Cabeçalhos e labels | AA | Cabeçalhos descritivos; labels em todos os campos |
-| 2.4.7 | Foco visível | AA | Indicador de foco visível em todos os interativos |
 | 3.1.1 | Idioma da página | A | `lang` correto em `<html>` |
-| 3.3.1 | Identificação de erro | A | Erros descritos em texto (não só por cor) |
-| 4.1.2 | Nome, função, valor | A | Componentes com `name`, `role` e `state` corretos |
+
+Critérios de contraste, foco visível, teclado e alvo de toque: ver `domains/ui-components/SKILL.md` (§Acessibilidade) — fonte autoritativa; identificação de erro em formulários: `domains/forms/SKILL.md` (§Acessibilidade).
 
 > Implementações completas de skip links, focus trap, teclado e contraste em **`references/accessibility.md`**.
 
@@ -104,25 +99,7 @@ Estrutura `container > row > col-*`; combinar breakpoints para responsividade (`
 
 ### Input Types
 
-| Type | Uso | Atributos específicos |
-|---|---|---|
-| `text` | Texto livre de linha única | `minlength`, `maxlength`, `pattern` |
-| `email` | Endereço de e-mail | Valida formato automaticamente |
-| `tel` | Número de telefone | `pattern` (formato varia por país) |
-| `url` | URL completa | Valida esquema (http/https) |
-| `number` | Valor numérico | `min`, `max`, `step` |
-| `date` | Data (YYYY-MM-DD) | `min`, `max` |
-| `datetime-local` | Data e hora sem fuso | `min`, `max`, `step` |
-| `time` | Horário (HH:MM) | `min`, `max`, `step` |
-| `range` | Controle deslizante | `min`, `max`, `step` |
-| `color` | Seletor de cor | — |
-| `file` | Upload de arquivo | `accept`, `multiple` |
-| `search` | Campo de busca | `list` (datalist) |
-| `password` | Senha (texto mascarado) | `minlength`, `autocomplete` |
-| `checkbox` | Seleção múltipla | `checked`, `indeterminate` (JS) |
-| `radio` | Seleção exclusiva em grupo | `checked` |
-| `select` | Lista de opções | `multiple`, `size` |
-| `textarea` | Texto livre multilinha | `rows`, `cols`, `resize` (CSS) |
+Usar sempre o type semanticamente correto — habilita teclado adequado em mobile e validação nativa: `text`, `email`, `tel`, `url`, `number`, `date`, `datetime-local`, `time`, `range`, `color`, `file`, `search`, `password`, `checkbox`, `radio` (+ `select` e `textarea`). Tabela completa com os atributos específicos de cada type em **`references/forms.md`**.
 
 ### Atributos de Validação Nativa
 
@@ -169,7 +146,7 @@ Consultar conforme necessário — carregados sob demanda:
 |---|---|
 | **`references/bootstrap5-layout.md`** | Grid completo, breakpoints com px, offset, order, nesting, flexbox e spacing utilities, layouts prontos |
 | **`references/bootstrap5-components.md`** | Navbar, Card, Modal, Alert, Badge, Spinner, Toast, Accordion, Tabs/Pills — exemplos completos |
-| **`references/accessibility.md`** | WCAG 2.1 AA detalhado, ARIA roles/states/properties, teclado, skip links, contraste, focus style |
+| **`references/accessibility.md`** | WCAG 2.2 AA detalhado, ARIA roles/states/properties, teclado, skip links, contraste, focus style |
 | **`references/forms.md`** | Input types, validação nativa, Constraint Validation API, Bootstrap 5 feedback, acessibilidade em forms |
 
 ---

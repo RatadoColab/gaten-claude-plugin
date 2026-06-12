@@ -1,7 +1,7 @@
 ---
 name: azure-devops
 description: This skill should be used when designing or implementing CI/CD pipelines on Azure DevOps (Azure Pipelines). Covers the YAML pipeline structure (stages/jobs/steps), triggers, agent pools, variable groups and Azure Key Vault integration, service connections, environments with approvals and gates, deployment jobs and strategies (runOnce, rolling, canary), pipeline templates, and azure-pipelines.yml examples deploying to OpenShift.
-version: 0.1.0
+version: 0.2.1
 ---
 
 # Azure DevOps — Azure Pipelines
@@ -101,50 +101,7 @@ variables:
 
 ## Exemplo — `azure-pipelines.yml` (build → scan → deploy no OpenShift)
 
-```yaml
-trigger:
-  branches: { include: [main, develop] }
-pr:
-  branches: { include: [main] }
-
-variables:
-  - group: prod-secrets                  # secrets via Key Vault
-  - name: imageTag
-    value: $(Build.SourceVersion)
-
-stages:
-  - stage: Build
-    jobs:
-      - job: build_test
-        pool: { vmImage: 'ubuntu-latest' }
-        steps:
-          - script: npm ci
-          - script: npm run lint
-          - script: npm test -- --coverage
-          - script: npm audit --audit-level=high      # SCA
-          - task: Docker@2                              # build + push imutável
-            inputs:
-              command: buildAndPush
-              repository: api
-              tags: $(imageTag)
-              containerRegistry: acr-connection         # service connection
-
-  - stage: DeployProd
-    dependsOn: Build
-    jobs:
-      - deployment: deploy
-        environment: production                         # exige approval configurado
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - task: oc-setup@2                       # requer a extensão "Red Hat OpenShift" na org
-                  inputs: { openshiftService: 'ocp-connection' }
-                - script: |
-                    oc set image deployment/api \
-                      api=image-registry.../api:$(imageTag)   # tag imutável
-                    oc rollout status deployment/api
-```
+Pipeline completo em **`references/azure-pipelines-openshift.md`**. Estrutura: 2 stages (Build com lint/test/SCA + `Docker@2` buildAndPush via service connection; DeployProd com `deployment:` job em `environment: production` exigindo approval), variable group ligado ao Key Vault, tag imutável `$(Build.SourceVersion)` e task `oc-setup@2` (requer a extensão "Red Hat OpenShift" na organização).
 
 ---
 

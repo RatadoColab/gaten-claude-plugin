@@ -1,5 +1,78 @@
 # GLPI Form Templates — Layouts
 
+## Estrutura Base do Formulário
+
+```twig
+{% import 'components/form/fields_macros.html.twig' as fields %}
+
+<form method="post" action="{{ baseurl }}/plugins/nomedoplugin/front/item.form.php">
+    <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}" />
+    <input type="hidden" name="id" value="{{ item.fields['id'] ?? 0 }}" />
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{{ __('Título da seção', 'nomedoplugin') }}</h3>
+        </div>
+        <div class="card-body row">
+
+            {# Campos aqui #}
+
+        </div>
+    </div>
+
+    <div class="card-footer d-flex justify-content-end gap-2 mt-3">
+        <button type="submit" class="btn btn-primary">
+            {{ __('Salvar', 'nomedoplugin') }}
+        </button>
+        <a href="{{ baseurl }}/plugins/nomedoplugin/front/item.php" class="btn btn-outline-secondary">
+            {{ __('Cancelar', 'nomedoplugin') }}
+        </a>
+    </div>
+</form>
+```
+
+---
+
+## Catálogo de Macros de Campo
+
+```twig
+{% set options = {
+    'rand': rand,
+    'is_horizontal': true,
+    'fields_template': itiltemplate,
+} %}
+
+{# Texto simples #}
+{{ fields.textField('name', item.fields['name'], __('Nome', 'nomedoplugin'), options) }}
+
+{# Número #}
+{{ fields.numberField('quantity', item.fields['quantity'], __('Quantidade', 'nomedoplugin'), options) }}
+
+{# Textarea com rich text (TinyMCE) #}
+{{ fields.textareaField('content', item.fields['content']|raw, __('Descrição', 'nomedoplugin'),
+    options|merge({'enable_richtext': true, 'enable_fileupload': true})
+) }}
+
+{# Data #}
+{{ fields.dateField('date_start', item.fields['date_start'], __('Data de início', 'nomedoplugin'), options) }}
+
+{# Data e hora #}
+{{ fields.datetimeField('date_mod', item.fields['date_mod'], __('Modificado em', 'nomedoplugin'), options) }}
+
+{# Checkbox (toggle) #}
+{{ fields.sliderField('is_active', item.fields['is_active'], __('Ativo', 'nomedoplugin'), options) }}
+
+{# Campo somente leitura #}
+{{ fields.readOnlyField('created_by', item.fields['created_by'], __('Criado por', 'nomedoplugin'), options) }}
+
+{# Campo obrigatório #}
+{{ fields.textField('name', item.fields['name'], __('Nome', 'nomedoplugin'),
+    options|merge({'required': true})
+) }}
+```
+
+---
+
 ## Layout 1: Formulário de Configuração com Múltiplos Cards
 
 Padrão para formulários de configuração de plugin (`front/config.form.php`).

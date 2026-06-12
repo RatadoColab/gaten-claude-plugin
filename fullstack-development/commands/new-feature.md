@@ -64,15 +64,15 @@ Avaliar a demanda do usuário em busca de **solicitações explícitas** de DevO
 ### Fase 4 — Plano final e aprovação
 
 7. Consolidar spec original + feedbacks dos agentes acionados em um **Plano Final** contendo:
-   - Spec revisada unificada (backend + frontend + DevOps, quando a trilha DevOps tiver sido acionada)
+   - Spec revisada unificada (todas as seções existentes)
    - Lista de arquivos a criar/modificar separados por escopo
-   - Pontos de atenção levantados pelos agentes (incluindo os do `devops-cicd`, quando aplicável)
+   - Pontos de atenção levantados pelos agentes
    - Estimativa de impacto em arquivos existentes
 8. Apresentar o Plano Final ao usuário e **aguardar aprovação explícita** antes de continuar
 
 ### Fase 5 — Implementação (somente após aprovação)
 
-9. Para cada parte aprovada (backend/frontend/DevOps, quando a trilha tiver sido acionada):
+9. Para cada parte aprovada:
    - Carregar skills de domínio conforme o contexto da feature
    - Implementar seguindo o Plano Final aprovado
 10. Ao final, listar arquivos criados/modificados e pontos de atenção para testes

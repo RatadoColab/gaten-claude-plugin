@@ -1,7 +1,7 @@
 ---
 name: glpi
 description: This skill should be loaded when the project is a GLPI 10.0.x plugin. GLPI context identifiers: presence of setup.php + hook.php at the project root, or explicit user mention ("plugin GLPI", "GLPI module", "GLPI 10", "CommonDBTM"). Covers general integration patterns with the GLPI framework — CommonDBTM, permission system, database access via global $DB, and hook registration. Specific sub-skills are available for plugin creation, AJAX handlers, Twig form templates, and Vue integration.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # GLPI 10.0.x — Padrões de Desenvolvimento de Plugins
@@ -20,55 +20,27 @@ Plugins GLPI não seguem a arquitetura tradicional de camadas (Controller → Se
 
 ## Estrutura Padrão de um Plugin
 
-```
-plugins/[nome-do-plugin]/
-├── setup.php                  ← bootstrap: versão, constantes, registro de hooks e menus
-├── hook.php                   ← install/uninstall: criação e remoção de tabelas
-├── src/                       ← classes PHP (uma classe por arquivo, PascalCase)
-│   └── MinhaClasse.php
-├── front/                     ← páginas acessadas diretamente pelo browser
-│   ├── minhaclasse.php        ← listagem
-│   └── minhaclasse.form.php   ← formulário de criação/edição
-├── ajax/                      ← endpoints AJAX (retornam JSON)
-│   └── minhaclasse.php
-├── templates/                 ← templates Twig (GLPI 10.x)
-│   └── minhaclasse.form.html.twig
-├── js/                        ← JavaScript do plugin
-├── css/                       ← CSS do plugin
-├── locales/                   ← traduções
-│   ├── pt_BR.po
-│   └── pt_BR.mo
-└── tests/
-    └── units/                 ← testes PHPUnit
-```
+Diretórios-chave em `plugins/[nome-do-plugin]/`: `setup.php` (bootstrap: versão, hooks, menus) e `hook.php` (install/uninstall) na raiz; `src/` (classes PHP, uma por arquivo); `front/` (páginas: listagem + `*.form.php`); `ajax/` (endpoints JSON); `templates/` (Twig); `js/`, `css/`, `locales/` (`.po`/`.mo`) e `tests/units/` (PHPUnit). Árvore completa anotada em `plugin-creation/SKILL.md`.
 
 ## Nomenclatura
 
 | Elemento | Convenção |
 |---|---|
+| Diretório do plugin | minúsculas, sem espaços (ex.: `meuplugin`) |
 | Tabelas | `glpi_plugin_[nomedoplugin]_[entidade]` — minúsculas, sem hífen |
-| Classes | `Entidade` (PascalCase) em `src/Entidade.php` |
-| Direitos | `plugin_[nomedoplugin]_[entidade]` |
-| Funções de hooks | `plugin_[nomedoplugin]_[hookname]` em `hook.php` |
+| Classes | `Entidade` (PascalCase, sem prefixo `Plugin`) em `src/Entidade.php` |
+| Direitos (`$rightname`) | `plugin_[nomedoplugin]_[entidade]` |
+| Funções de hooks/setup | `plugin_[nomedoplugin]_[hookname]` em `hook.php`/`setup.php` |
 
 ## CommonDBTM — Model + Repository
 
 Toda entidade de dados de um plugin estende `CommonDBTM`. Não criar repositórios separados.
 
 ```php
-<?php
-
-declare(strict_types=1);
-
 class MeuItem extends CommonDBTM
 {
-    /** @var string */
     static $rightname = 'plugin_meuplugin_meuitem';
 
-    /**
-     * @param int $nb
-     * @return string
-     */
     public static function getTypeName($nb = 0): string
     {
         return _n('Item', 'Itens', $nb, 'meuplugin');
@@ -92,7 +64,7 @@ Para referência completa de métodos, hooks de ciclo de vida e exemplos de JOIN
 
 ## Sistema de Permissões
 
-Verificar permissões **no início** de todo arquivo `front/` e `ajax/`. Plugins nunca implementam autenticação própria. Usar `Session::checkRight()` (lança exceção) ou `Session::haveRight()` (retorna bool). Constantes disponíveis: `READ`, `UPDATE`, `CREATE`, `DELETE`, `PURGE`, `ALLSTANDARDRIGHT`.
+Verificar permissões **no início** de todo arquivo `front/` e `ajax/`, usando `Session::checkRight()` (lança exceção) ou `Session::haveRight()` (retorna bool). Constantes disponíveis: `READ`, `UPDATE`, `CREATE`, `DELETE`, `PURGE`, `ALLSTANDARDRIGHT`.
 
 Exemplos completos de verificação em **`references/glpi-architecture.md`**.
 
@@ -107,7 +79,7 @@ Session::checkLoginUser(); // ou Session::checkRight() conforme necessário
 
 ## Acesso ao Banco de Dados
 
-Usar sempre `$DB` global. Nunca usar PDO diretamente.
+Usar sempre `$DB` global.
 
 ```php
 global $DB;
@@ -145,13 +117,13 @@ Hooks disponíveis listados em **`references/glpi-architecture.md`**.
 
 ## Segurança
 
-Aplicar sempre que houver input de usuário: cast explícito em IDs (`(int) $_POST['id']`), sanitização com `Toolbox::addslashes_deep()`, remoção de HTML com `strip_tags()`, salvamento de HTML com `Sanitizer::sanitize()`. CSRF obrigatório: `$PLUGIN_HOOKS['csrf_compliant']['meuplugin'] = true`.
+Aplicar sempre que houver input de usuário: cast explícito em IDs (`(int) $_POST['id']`), sanitização com `Toolbox::addslashes_deep()`, remoção de HTML com `strip_tags()`, salvamento de HTML com `Sanitizer::sanitize()`.
 
 Exemplos completos em **`references/glpi-architecture.md`**.
 
 ## Internacionalização
 
-Todo texto visível ao usuário deve usar as funções de tradução. Nunca usar strings hardcoded:
+Todo texto visível ao usuário deve usar as funções de tradução:
 
 ```php
 __('texto', 'nomedoplugin')

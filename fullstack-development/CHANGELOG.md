@@ -9,6 +9,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 Rodada de otimização de consumo de tokens: redução do vetor de dados externos, carregamento mínimo de skills e aplicação de progressive disclosure nos `SKILL.md` (corpos enxutos + conteúdo detalhado movido para `references/` por tópico, sem perda de informação).
 
+Segunda rodada de otimização de tokens: aplicação integral da regra de código inline (máx. 1 bloco curto por seção), eliminação de duplicações entre skills carregadas juntas e consolidação de fontes autoritativas únicas — preservando a precedência GLPI > Languages > Domains. Economia estimada de ~3.000+ palavras nos corpos carregados em runtime, sem perda de informação (conteúdo movido para `references/`).
+
 ### Alterado
 
 #### Agentes
@@ -26,13 +28,53 @@ Rodada de otimização de consumo de tokens: redução do vetor de dados externo
 - `languages/twig` (1.663→~1.320) — catálogo de filters/functions reduzido a resumo (duplicava `references/filters-functions.md`); regra `|raw`/HTMLPurifier deduplicada
 - `languages/html` (1.653→~1.520) — grid/breakpoints reduzidos a resumo (duplicava `references/bootstrap5-layout.md`)
 
+#### Skills GLPI (precedência preservada)
+- `glpi/ajax-handlers` — blocos de inicialização, validação, CRUD/`op`, respostas JSON, delegação e try-catch movidos para `references/patterns.md` (novas seções: Validação de Parâmetros, Operações Múltiplas via `op`, Estruturas de Resposta JSON); mantidos no corpo: sessão expirada em AJAX, nota RFC 9457 (sobrepõe `api-rest` deliberadamente), tabela de códigos HTTP e checklist de segurança
+- `glpi/form-templates` — estrutura base e catálogo de macros movidos para `references/layouts.md`; §9 (Regras de UX) agora aponta para `domains/forms` mantendo inline apenas os específicos GLPI (asterisco `<span class="required">`, botão à direita, verbos de ação)
+- `glpi` — árvore de estrutura condensada (completa em `plugin-creation`); tabela de Nomenclatura unificada (removida da sub-skill); repetições das Restrições Absolutas removidas das seções do próprio arquivo; bloco CommonDBTM reduzido
+- `glpi/vue` — §8 (Compatibilidade) removida por repetir a introdução; bridge de dropdowns reduzido a 1 bloco + ponteiro para `references/integration-patterns.md`
+
+#### Skills de linguagem (sintaxe básica condensada em tabelas)
+- `languages/javascript` — exemplos de var/arrow/destructuring/template literals/classes/async reduzidos; classes ES6 movidas para `references/es6-features.md`; `references/modules.md` agora referenciado
+- `languages/vue` — exemplos completos delegados a `references/` (composition-api, state-management, performance); tabelas mantidas
+- `languages/python` — Boas Práticas Essenciais viraram tabela; estrutura de projeto e tratamento de erros condensados
+- `languages/php` — blocos de PSR/tipos/8.3/erros encurtados; Boas Práticas viraram tabela
+- `languages/twig` — tags de controle reduzidas a `for/else` + notas (`verbatim`, `apply`, `cycle`)
+- `languages/html` — checklist WCAG restrito a markup puro (contraste/foco/teclado → `ui-components`); tabela de Input Types condensada (completa em `references/forms.md`); padronizado WCAG 2.2 (era 2.1)
+
+#### Skills DevOps (criados os primeiros `references/` do conjunto)
+- `domains/ci-cd` — YAMLs GitHub Actions/GitLab CI movidos para `references/pipeline-examples.md`; Segurança do Pipeline reduzida a ponteiro para `devsecops`
+- `domains/containers` — Dockerfile multi-stage e Deployment movidos para `references/examples.md`
+- `domains/azure-devops` — pipeline de ~43 linhas movido para `references/azure-pipelines-openshift.md`
+- `domains/openshift` — Route YAML movido para `references/examples.md`
+- `domains/iac` — bloco Terraform movido para `references/terraform-examples.md`
+- `base/devops-base` — dupla listagem de skills removida das Referências; seção DevSecOps reduzida a ponteiro
+
+#### Deduplicação entre pares carregados juntos
+- `base/backend-base` — tabela "Adaptação por Framework" substituída por frase de roteamento (a tabela vive em `domains/glpi`, que prevalece)
+- `base/spec-base` ↔ `domains/spec-review` — SCOPE em spec-base reduzido a definições conceituais; checklist operacional só em spec-review
+- `base/frontend-base` — seções Segurança e Performance viraram ponteiros (`domains/security`, `ui-components`/`languages/vue`)
+- `domains/ui-components` — §8 Performance aponta para `languages/vue`, mantendo só itens específicos de componente; `references/component-api.ts` e `composables.ts` agora referenciados
+- `domains/api-rest` — JWT alinhado com `security` (15 min); `Idempotency-Key` consolidado; Caching fundido em 1 bloco; Rate Limiting restrito ao contrato HTTP + ponteiro
+- `domains/user-experience` e `domains/database` — ajustes menores de duplicação e ponteiros
+
+#### Agentes e Commands
+- `backend-dev` — restrições GLPI substituídas por ponteiro às Restrições Absolutas de `domains/glpi`; alinhado `Session::checkRight()` como padrão em entry points
+- `devops-cicd` — restrição security/devsecops encurtada
+- `/fullstack-development:new-feature` — reafirmações da condicional DevOps removidas das Fases 4–5
+
 #### Skills — descriptions e versões
 - `domains/security`, `api-rest`, `database`, `forms` — adicionadas *trigger phrases* literais à `description` para melhorar a ativação
 - `domains/glpi/vue` — `version` da skill alinhada para `0.2.0`
 
 #### Projeto
-- `plugin.json` — versão `0.2.1`
+- `plugin.json` — versão `0.2.1`; `version:` de todos os 29 `SKILL.md` alinhados a `0.2.1`
 - `CLAUDE.md` — nova subseção "Política de progressive disclosure nos SKILL.md" (alvo de corpo ~1.500–2.000 palavras, máx. 1 bloco de código curto por seção, fonte autoritativa única por tópico transversal)
+- Descriptions com trigger phrases adicionadas: `ui-components`, `spec-base`, `ci-cd`, `containers`, `iac`, `observability`
+
+### Removido
+- `domains/forms/references/rhf-zod-example.tsx` (React Hook Form — fora da stack do plugin)
+- `domains/ui-components/references/storybook-example.ts` e `testing-examples.ts` (incoerentes com a nota "testes via PHPUnit, sem runner JS")
 
 ## [0.2.0] - 2026-06-10
 

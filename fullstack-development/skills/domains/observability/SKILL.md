@@ -1,7 +1,7 @@
 ---
 name: observability
-description: This skill should be used when instrumenting observability or implementing SRE practices. Covers the three pillars (metrics, logs, traces), OpenTelemetry, Prometheus/Grafana/Loki/Jaeger, the four golden signals, SLI/SLO/error budgets, and actionable alerting.
-version: 0.1.0
+description: This skill should be used when instrumenting observability or implementing SRE practices. Typical triggers include "add metrics/logging/tracing", "set up Prometheus/Grafana", "define SLIs and SLOs", "configure alerts". Covers the three pillars (metrics, logs, traces), OpenTelemetry, Prometheus/Grafana/Loki/Jaeger, the four golden signals, SLI/SLO/error budgets, and actionable alerting.
+version: 0.2.1
 ---
 
 # Observability — Observabilidade e SRE
