@@ -1,7 +1,6 @@
 ---
 name: backend-base
 description: This skill should be used when developing backend features, services, APIs, or data layers. Covers architecture principles, code organization patterns, and general best practices for backend development.
-version: 0.2.1
 ---
 
 # Backend Base — Fundamentos de Desenvolvimento Backend

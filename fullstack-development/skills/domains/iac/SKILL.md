@@ -1,7 +1,6 @@
 ---
 name: iac
 description: This skill should be used when provisioning infrastructure as code or implementing GitOps. Typical triggers include "write the Terraform config", "provision the infrastructure", "set up ArgoCD/Flux", "manage Terraform state". Covers IaC tools (Terraform, Pulumi, CloudFormation), GitOps with ArgoCD/Flux, Git as source of truth, state management, drift detection, secrets management (Vault, sealed secrets), and zero-trust principles.
-version: 0.2.1
 ---
 
 # IaC — Infraestrutura como Código e GitOps
@@ -89,15 +88,15 @@ Exemplo de backend remoto (S3 + DynamoDB lock) e recurso parametrizado em **`ref
 - Princípio de menor privilégio em todas as roles e políticas provisionadas
 - Não confiar implicitamente em rede; autenticar e autorizar cada acesso
 
-> Ver `../devsecops/SKILL.md` para o catálogo de IaC scanning (Checkov/tfsec/Terrascan/OPA) e gestão de secrets/credenciais no pipeline.
+> Ver `domains/devsecops/SKILL.md` para o catálogo de IaC scanning (Checkov/tfsec/Terrascan/OPA) e gestão de secrets/credenciais no pipeline.
 
 ---
 
 ## Referências
 
-- Ver `../containers/SKILL.md` para imagens e manifests Kubernetes aplicados via GitOps
-- Ver `../ci-cd/SKILL.md` para gates de `plan`/scan no pipeline
-- Ver `../observability/SKILL.md` para monitorar o estado da infraestrutura
-- Ver `../devsecops/SKILL.md` para IaC scanning, gestão de credenciais e secrets no pipeline
+- Ver `domains/containers/SKILL.md` para imagens e manifests Kubernetes aplicados via GitOps
+- Ver `domains/ci-cd/SKILL.md` para gates de `plan`/scan no pipeline
+- Ver `domains/observability/SKILL.md` para monitorar o estado da infraestrutura
+- Ver `domains/devsecops/SKILL.md` para IaC scanning, gestão de credenciais e secrets no pipeline
 - [Terraform — Best Practices](https://developer.hashicorp.com/terraform/language)
 - [OpenGitOps — Principles](https://opengitops.dev/)

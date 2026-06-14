@@ -1,7 +1,6 @@
 ---
 name: azure-devops
 description: This skill should be used when designing or implementing CI/CD pipelines on Azure DevOps (Azure Pipelines). Covers the YAML pipeline structure (stages/jobs/steps), triggers, agent pools, variable groups and Azure Key Vault integration, service connections, environments with approvals and gates, deployment jobs and strategies (runOnce, rolling, canary), pipeline templates, and azure-pipelines.yml examples deploying to OpenShift.
-version: 0.2.1
 ---
 
 # Azure DevOps — Azure Pipelines
@@ -62,7 +61,7 @@ variables:
     value: $(Build.SourceVersion)   # hash do commit como tag imutável
 ```
 
-> Ver `../devsecops/SKILL.md` para gestão de secrets e credenciais (OIDC) no pipeline.
+> Ver `domains/devsecops/SKILL.md` para gestão de secrets e credenciais (OIDC) no pipeline.
 
 ---
 
@@ -107,9 +106,9 @@ Pipeline completo em **`references/azure-pipelines-openshift.md`**. Estrutura: 2
 
 ## Referências
 
-- Ver `../ci-cd/SKILL.md` para estágios, gates de qualidade e estratégias de deploy (base desta skill)
-- Ver `../openshift/SKILL.md` para o alvo de deploy (Route, SCC, `oc`)
-- Ver `../containers/SKILL.md` para o build da imagem publicada no registry
-- Ver `../devsecops/SKILL.md` para SAST/SCA/DAST e gestão de secrets no pipeline
+- Ver `domains/ci-cd/SKILL.md` para estágios, gates de qualidade e estratégias de deploy (base desta skill)
+- Ver `domains/openshift/SKILL.md` para o alvo de deploy (Route, SCC, `oc`)
+- Ver `domains/containers/SKILL.md` para o build da imagem publicada no registry
+- Ver `domains/devsecops/SKILL.md` para SAST/SCA/DAST e gestão de secrets no pipeline
 - [Azure Pipelines — YAML schema](https://learn.microsoft.com/azure/devops/pipelines/yaml-schema/)
 - [Azure Pipelines — Deployment jobs](https://learn.microsoft.com/azure/devops/pipelines/process/deployment-jobs)

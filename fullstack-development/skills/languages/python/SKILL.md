@@ -1,7 +1,6 @@
 ---
 name: python
 description: This skill should be used when writing, reviewing, or refactoring Python code. Covers Python 3.11+ features, PEP 8 conventions, modern type system (type hints, Protocol, TypedDict, Pydantic v2), async patterns, project structure, testing with pytest, and Python-specific best practices. Use when the user asks to "write Python code", "review Python", "create a Python class", "implement async", "add type hints", "write pytest tests", "use match/case", "configure pyproject.toml", or "upgrade to Python 3.11".
-version: 0.2.1
 ---
 
 # Python — Convenções e Boas Práticas (3.11+)

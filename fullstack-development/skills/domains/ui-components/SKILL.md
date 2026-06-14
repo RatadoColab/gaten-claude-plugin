@@ -1,7 +1,6 @@
 ---
 name: ui-components
 description: This skill should be used when creating, reviewing, or refactoring UI components. Typical triggers include "create a reusable component", "design the props API", "make this component accessible", "add design tokens", "review this component". Covers component design principles, reusability patterns, props/slots/events API design, responsiveness, accessibility (WCAG 2.2), design tokens, and atomic design.
-version: 0.2.1
 ---
 
 # UI Components — Componentes de Interface
@@ -98,7 +97,7 @@ Mapear valores de prop para classes CSS que consomem tokens — sem estilos inli
 
 > Ver exemplo completo em [`references/design-tokens.css`](references/design-tokens.css).
 
-> Para implementação de dark mode via tokens semânticos CSS (`prefers-color-scheme`, variáveis CSS por tema), ver `../user-experience/SKILL.md` — Seção de Dark Mode.
+> Para implementação de dark mode via tokens semânticos CSS (`prefers-color-scheme`, variáveis CSS por tema), ver `domains/user-experience/SKILL.md` — Seção de Dark Mode.
 
 ---
 
@@ -125,7 +124,7 @@ Mapear valores de prop para classes CSS que consomem tokens — sem estilos inli
 - Mínimo normativo WCAG AA: **24×24 px** — requisito de conformidade
 - Recomendação prática de usabilidade: **44×44 px** (Apple HIG) / **48×48 px** (Material Design) — usar como padrão do design system
 - O mínimo normativo é o piso, não o alvo — preferir sempre o tamanho de usabilidade prático
-- Ver `../user-experience/SKILL.md` para diretrizes de toque em mobile
+- Ver `domains/user-experience/SKILL.md` para diretrizes de toque em mobile
 
 **Movimento e animação (WCAG 2.3.3):**
 - Usar `prefers-reduced-motion` para desativar animações não essenciais.
@@ -177,7 +176,7 @@ Quando um componente pai precisa coordenar múltiplos filhos sem prop drilling (
 
 ## 8. Performance
 
-Técnicas de performance Vue (defineAsyncComponent, v-show vs v-if, shallowRef, markRaw, keep-alive): ver a tabela de Performance em `../../languages/vue/SKILL.md` — fonte autoritativa. Específicos de componente:
+Técnicas de performance Vue (defineAsyncComponent, v-show vs v-if, shallowRef, markRaw, keep-alive): ver a tabela de Performance em `languages/vue/SKILL.md` — fonte autoritativa. Específicos de componente:
 
 - Evitar `v-if` + `v-for` no mesmo elemento — separar em componente filho ou usar `computed`.
 - Aplicar `key` única e estável em listas — nunca usar o índice como `key` em listas que mudam de ordem.

@@ -1,7 +1,6 @@
 ---
 name: html
 description: This skill should be used when writing, reviewing, or refactoring HTML markup. Covers semantic HTML5 document structure, Bootstrap 5 grid system and utilities, WCAG 2.2 AA accessibility standards, ARIA roles and attributes, native HTML5 form validation, anti-patterns, and best practices. Use when the user asks to "write HTML", "review markup", "add Bootstrap layout", "create a form", "fix accessibility issues", "add ARIA attributes", "use semantic elements", or "structure an HTML page".
-version: 0.2.1
 ---
 
 # HTML — Semântica, Bootstrap 5 e Acessibilidade

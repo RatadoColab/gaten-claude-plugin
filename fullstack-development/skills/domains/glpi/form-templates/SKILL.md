@@ -5,7 +5,6 @@ description: >
   "add a twig form", "build a GLPI form", "create a modal with form",
   "add a dropdown to a twig template", "create a config form", "build a
   wizard form", or mentions the templates/ directory in a GLPI plugin context.
-version: 0.2.1
 ---
 
 # GLPI — Templates de Formulários (Twig)

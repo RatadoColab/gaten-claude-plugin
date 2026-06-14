@@ -1,7 +1,6 @@
 ---
 name: security
 description: This skill should be used when implementing security features, reviewing code for vulnerabilities, or applying security best practices. Typical triggers include "review this for security", "is this vulnerable to SQL injection?", "how do I prevent XSS/CSRF?", "secure this authentication flow", "how should I store passwords?", "audit this endpoint for OWASP issues". Covers OWASP Top 10 2021, input validation, authentication, authorization, data protection, secrets management, logging, and supply chain security.
-version: 0.2.1
 ---
 
 # Security — Segurança em Aplicações Web
@@ -106,8 +105,8 @@ Usar como referência rápida em code reviews e antes de merges para produção:
 
 - [`references/owasp-top10.md`](references/owasp-top10.md) — catálogo detalhado das 10 categorias
 - [`references/web-defenses.md`](references/web-defenses.md) — XSS, CSRF, upload, CORS, secrets, supply chain
-- Ver `../devsecops/SKILL.md` para segurança no pipeline e na infraestrutura (SAST/SCA/DAST, IaC/image scanning, SBOM, supply chain, secrets) — escopo de DevSecOps complementar a este
-- Ver `../api-rest/SKILL.md` para autenticação, autorização e contratos de API
-- Ver `../database/SKILL.md` para queries parametrizadas e proteção de dados
+- Ver `domains/devsecops/SKILL.md` para segurança no pipeline e na infraestrutura (SAST/SCA/DAST, IaC/image scanning, SBOM, supply chain, secrets) — escopo de DevSecOps complementar a este
+- Ver `domains/api-rest/SKILL.md` para autenticação, autorização e contratos de API
+- Ver `domains/database/SKILL.md` para queries parametrizadas e proteção de dados
 - [OWASP Top 10:2021](https://owasp.org/Top10/)
 - [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/)

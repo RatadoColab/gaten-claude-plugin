@@ -1,7 +1,6 @@
 ---
 name: ci-cd
 description: This skill should be used when designing or implementing CI/CD pipelines. Typical triggers include "create the CI pipeline", "set up GitHub Actions/GitLab CI", "which deploy strategy should I use?", "add quality gates to the pipeline". Covers pipeline stages, automated testing gates, build artifacts, deployment strategies (rolling, blue-green, canary, feature flags), quality gates, pipeline security, and GitHub Actions/GitLab CI examples.
-version: 0.2.1
 ---
 
 # CI/CD — Pipelines de Integração e Entrega Contínua
@@ -84,7 +83,7 @@ Critérios objetivos que bloqueiam a progressão do pipeline:
 
 ## Segurança do Pipeline
 
-Segurança do pipeline (OIDC vs chaves longevas, secrets via cofre, pinning por hash, isolamento de runners, scans SAST/SCA/DAST/IaC/imagem, supply chain) é coberta integralmente em `../devsecops/SKILL.md` — fonte autoritativa.
+Segurança do pipeline (OIDC vs chaves longevas, secrets via cofre, pinning por hash, isolamento de runners, scans SAST/SCA/DAST/IaC/imagem, supply chain) é coberta integralmente em `domains/devsecops/SKILL.md` — fonte autoritativa.
 
 ---
 
@@ -96,9 +95,9 @@ Pipelines completos em **`references/pipeline-examples.md`**. Pontos-chave dos e
 
 ## Referências
 
-- Ver `../containers/SKILL.md` para empacotar artefatos como imagens
-- Ver `../iac/SKILL.md` para GitOps e provisionamento dos ambientes de deploy
-- Ver `../observability/SKILL.md` para verificação pós-deploy e decisão de canary
-- Ver `../devsecops/SKILL.md` para SAST/SCA/DAST, supply chain e gestão de secrets no pipeline
+- Ver `domains/containers/SKILL.md` para empacotar artefatos como imagens
+- Ver `domains/iac/SKILL.md` para GitOps e provisionamento dos ambientes de deploy
+- Ver `domains/observability/SKILL.md` para verificação pós-deploy e decisão de canary
+- Ver `domains/devsecops/SKILL.md` para SAST/SCA/DAST, supply chain e gestão de secrets no pipeline
 - [DORA — Capabilities](https://dora.dev/capabilities/)
 - [GitHub Actions Documentation](https://docs.github.com/actions)

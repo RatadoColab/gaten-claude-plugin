@@ -9,7 +9,6 @@ description: >
   "what's the best way to show a loading indicator?", "is this error message good?",
   "how do I make this accessible?", "write microcopy for this button",
   "design a toast notification pattern", "should I use a modal or inline here?".
-version: 0.2.1
 ---
 
 # User Experience — UX e Fluxos de Usuário
@@ -144,7 +143,7 @@ Micro-interações comunicam estado, guiam atenção e tornam a interface respon
 
 ## 5. Formulários (ângulo UX)
 
-Princípios de UX para formulários — implementação completa (validação, erros, acessibilidade, multi-step, upload, inputs BR) em `../forms/SKILL.md`, a fonte autoritativa:
+Princípios de UX para formulários — implementação completa (validação, erros, acessibilidade, multi-step, upload, inputs BR) em `domains/forms/SKILL.md`, a fonte autoritativa:
 
 - **Ordem e layout:** seguir a sequência que o usuário pensa; labels acima dos campos; coluna única até 5 campos
 - **Validação:** no `blur`, nunca a cada tecla; erros inline e específicos ("Informe um e-mail válido (ex: usuario@dominio.com)")
@@ -162,7 +161,7 @@ Os tópicos abaixo foram movidos para references por tema — carregar apenas qu
 - **UX writing/microcopy, onboarding progressivo, fluxos de usuário e testes de usabilidade:** [`references/ux-writing-flows.md`](references/ux-writing-flows.md)
 
 Pontos a não esquecer mesmo sem abrir os references:
-- **Acessibilidade** (contraste, teclado, alvos de toque, `prefers-reduced-motion`): WCAG 2.2 AA é o mínimo — fonte autoritativa: `../ui-components/SKILL.md` (§Acessibilidade).
+- **Acessibilidade** (contraste, teclado, alvos de toque, `prefers-reduced-motion`): WCAG 2.2 AA é o mínimo — fonte autoritativa: `domains/ui-components/SKILL.md` (§Acessibilidade).
 - **Mobile:** projetar mobile-first.
 
 ---

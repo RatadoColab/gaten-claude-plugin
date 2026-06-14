@@ -1,7 +1,6 @@
 ---
 name: observability
 description: This skill should be used when instrumenting observability or implementing SRE practices. Typical triggers include "add metrics/logging/tracing", "set up Prometheus/Grafana", "define SLIs and SLOs", "configure alerts". Covers the three pillars (metrics, logs, traces), OpenTelemetry, Prometheus/Grafana/Loki/Jaeger, the four golden signals, SLI/SLO/error budgets, and actionable alerting.
-version: 0.2.1
 ---
 
 # Observability — Observabilidade e SRE
@@ -116,9 +115,9 @@ groups:
 
 ## Referências
 
-- Ver `../ci-cd/SKILL.md` para verificação pós-deploy e decisão de canary/rollback
-- Ver `../containers/SKILL.md` para probes de liveness/readiness em Kubernetes
-- Ver `../iac/SKILL.md` para monitorar o estado da infraestrutura
+- Ver `domains/ci-cd/SKILL.md` para verificação pós-deploy e decisão de canary/rollback
+- Ver `domains/containers/SKILL.md` para probes de liveness/readiness em Kubernetes
+- Ver `domains/iac/SKILL.md` para monitorar o estado da infraestrutura
 - [OpenTelemetry Documentation](https://opentelemetry.io/docs/)
 - [Google SRE — Monitoring Distributed Systems](https://sre.google/sre-book/monitoring-distributed-systems/)
 - [Prometheus — Alerting Best Practices](https://prometheus.io/docs/practices/alerting/)
