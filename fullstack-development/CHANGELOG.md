@@ -5,6 +5,32 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.3.0] - 2026-06-14
+
+Expansão do plugin para desenvolvimento mobile: novo agente `mobile-dev` com suporte a Android nativo (Kotlin + Jetpack Compose) e Flutter (Dart), acompanhado de skill base, 3 domínios e 3 linguagens com política de progressive disclosure.
+
+### Adicionado
+
+#### Agente
+- `mobile-dev` — desenvolvimento mobile Android nativo (Kotlin/Compose) e Flutter (Dart) (color magenta); carregamento mínimo de skills por stack detectada; Compose e Flutter mutuamente exclusivos
+
+#### Skill base
+- `base/mobile-base` — fundamentos mobile independentes de stack: Clean Architecture (camadas data/domain/ui), MVVM/MVI, estados obrigatórios (loading/erro/vazio/sucesso), ciclo de vida Android e Flutter, KDoc/DartDoc
+
+#### Skills de domínio mobile
+- `domains/android-architecture` — ViewModel + StateFlow, Lifecycle (`repeatOnLifecycle`), Navigation Component, Hilt (DI), Repository pattern, Room (`@Upsert`, Flow, `exportSchema`); refs: `jetpack.md`, `room.md`, `di-hilt.md`
+- `domains/jetpack-compose` — composables, state hoisting, `remember`/`derivedStateOf`, Modifier, `LazyColumn`/`LazyRow`, navegação Compose, Material3, performance; refs: `state.md`, `performance.md`
+- `domains/flutter` — widget tree, StatelessWidget/StatefulWidget, state management (Provider/Riverpod/BLoC — resumo + referência), GoRouter, layout widgets, FutureBuilder/StreamBuilder; refs: `state-management.md`, `widgets.md`
+
+#### Skills de linguagem mobile
+- `languages/kotlin` — null safety, data/sealed classes, extension functions, scope functions, coroutines (visão geral), coleções, anti-patterns; refs: `coroutines-flow.md`, `idioms.md`
+- `languages/gradle` — Kotlin DSL vs Groovy, `build.gradle.kts`, version catalog (`libs.versions.toml`), build types, product flavors, signing config, multi-módulo; refs: `build-config.md`, `dependencies.md`
+- `languages/dart` — null safety, sound type system, async/await, Futures, Streams, classes/mixins/extensions, coleções, anti-patterns; refs: `async.md`, `language-tour.md`
+
+#### Projeto
+- `plugin.json` — versão `0.3.0`; description atualizada para incluir mobile
+- `CLAUDE.md` — tabela de agentes atualizada (mobile-dev + magenta); organização de skills atualizada (3 novos domínios, 3 novas linguagens, mobile-base); assimetrias intencionais do conjunto mobile; gatilhos de split futuro (`room`, `flutter-state`)
+
 ## [0.2.1] - 2026-06-11
 
 Rodada de otimização de consumo de tokens: redução do vetor de dados externos, carregamento mínimo de skills e aplicação de progressive disclosure nos `SKILL.md` (corpos enxutos + conteúdo detalhado movido para `references/` por tópico, sem perda de informação).
@@ -154,6 +180,7 @@ Segunda rodada de otimização de tokens: aplicação integral da regra de códi
 - Documentação do projeto (`CLAUDE.md`) com estrutura, agentes e decisões de design
 - Precedência de carregamento de skills: GLPI > Languages > Domains
 
+[0.3.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.3.0
 [0.2.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.2.1
 [0.2.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.2.0
 [0.1.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.1.0

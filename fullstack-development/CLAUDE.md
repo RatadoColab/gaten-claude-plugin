@@ -24,18 +24,18 @@ cc --plugin-dir .
 
 ```
 .claude-plugin/plugin.json     ← manifesto (nome: fullstack-development)
-agents/                        ← 4 agentes: spec-dev, backend-dev, frontend-dev, devops-cicd
+agents/                        ← 5 agentes: spec-dev, backend-dev, frontend-dev, devops-cicd, mobile-dev
 skills/
-  base/                        ← 1 skill base por agente
-  domains/                     ← 15 skills de domínio (glpi tem 4 sub-skills)
-  languages/                   ← 6 skills de linguagem
+  base/                        ← 1 skill base por agente (inclui mobile-base)
+  domains/                     ← 18 skills de domínio (glpi tem 4 sub-skills; mobile tem 3)
+  languages/                   ← 9 skills de linguagem
 commands/                      ← 3 slash commands
 ```
 
 ## Versão e Release
 
 - Versão do plugin em `.claude-plugin/plugin.json`; cada release bumpa a versão e adiciona uma entrada em `CHANGELOG.md` (formato Keep a Changelog) + link de release no rodapé.
-- Manter o `version:` no frontmatter de cada `SKILL.md` alinhado ao publicar — gotcha: skills ficam defasadas (ex.: `glpi/vue` ficou em `0.1.0` enquanto as demais em `0.2.0`).
+- **Versionamento centralizado no `plugin.json`** — os `SKILL.md` **não** carregam campo `version:` no frontmatter (apenas `name` + `description`). Decisão tomada para simplificar releases e eliminar o drift de versões entre skills.
 - Auditar tamanho dos corpos: `find skills -name SKILL.md -exec wc -w {} \;` (alvo ~1.500–2.000 palavras; ver política de progressive disclosure em Decisões de Design).
 - Validar ponteiros após editar skills: todo `references/*` citado em SKILL.md deve existir (atenção: sub-skills GLPI usam a forma `../references/`).
 
@@ -47,13 +47,14 @@ commands/                      ← 3 slash commands
 | `backend-dev` | "desenvolva o backend", "implemente a API", "crie o endpoint" | green |
 | `frontend-dev` | "desenvolva o frontend", "crie o componente", "implemente o formulário" | cyan |
 | `devops-cicd` | "crie o pipeline", "configure o CI/CD", "configure o Azure DevOps", "escreva o Dockerfile", "faça deploy no OpenShift", "provisione a infraestrutura" | yellow |
+| `mobile-dev` | "desenvolva o app Android", "crie a tela em Compose", "implemente a ViewModel", "configure o Gradle", "revise o código Kotlin", "crie o app Flutter", "implemente o widget Flutter", "configure o estado no Flutter" | magenta |
 
 ## Organização das Skills
 
-- **Base** (`skills/base/`): carregadas automaticamente por cada agente ao iniciar (inclui `devops-base`)
-- **Domínio** (`skills/domains/`): `spec-review`, `api-rest`, `database`, `security`, `forms`, `glpi`, `ui-components`, `user-experience`, `ci-cd`, `containers`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`
+- **Base** (`skills/base/`): carregadas automaticamente por cada agente ao iniciar (inclui `devops-base` e `mobile-base`)
+- **Domínio** (`skills/domains/`): `spec-review`, `api-rest`, `database`, `security`, `forms`, `glpi`, `ui-components`, `user-experience`, `ci-cd`, `containers`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`, `android-architecture`, `jetpack-compose`, `flutter`
   - `glpi` tem sub-skills aninhadas em `skills/domains/glpi/`: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`
-- **Linguagem** (`skills/languages/`): `python`, `php`, `javascript`, `vue`, `twig`, `html`
+- **Linguagem** (`skills/languages/`): `python`, `php`, `javascript`, `vue`, `twig`, `html`, `kotlin`, `gradle`, `dart`
 
 ## Padrão de Carregamento de Skills pelos Agentes
 
@@ -82,12 +83,20 @@ As skills de plataforma do domínio devops (`openshift`, `azure-devops`) **compl
 - **GitHub Actions/GitLab CI ficam inline em `ci-cd`**, enquanto **Azure DevOps é skill separada** (`azure-devops`). Não é inconsistência: GitHub/GitLab cabem como exemplo curto do conceito; o Azure DevOps tem modelo próprio rico (environments, service connections, variable groups, deployment jobs) que não cabe inline. Mesma lógica de `openshift` sobre `containers`.
 - **`security` (app) e `devsecops` (pipeline/infra) são distintas por audiência:** o `backend-dev` carrega `security` (OWASP Top 10, XSS, CSRF, JWT — segurança de aplicação web/API); o `devops-cicd` carrega `devsecops` (SAST/SCA/DAST no pipeline, IaC/image scanning, SBOM/cosign, OIDC, supply chain). Elas se referenciam mutuamente.
 
+### Assimetrias intencionais do conjunto mobile
+
+- **`android-architecture` e `jetpack-compose` são distintas por camada:** `android-architecture` cobre a camada de dados e domínio (ViewModel, Hilt, Room, Navigation, Repository); `jetpack-compose` cobre exclusivamente a camada de UI (composables, state, Modifier, listas lazy). Carregar ambas em tarefas de tela Android.
+- **`flutter` cobre widgets + estado + navegação**, enquanto `dart` (linguagem) cobre null safety, async, Streams e idioms. Compose e Flutter são **mutuamente exclusivos por contexto** — nunca carregar ambos ao mesmo tempo.
+- **Room fica inline em `android-architecture`** com reference próprio (`references/room.md`) — não há domínio `database` mobile separado para evitar fragmentação prematura.
+
 ### Gatilhos de split futuro (evitar fragmentação prematura)
 
 Manter unido até o conteúdo amadurecer; extrair quando:
 - **`kubernetes`** ← separar de `containers` quando a parte de orquestração (probes, HPA, StatefulSets, Helm/Kustomize, RBAC) passar de ~80 linhas isoladas.
 - **`gitops`** ← separar de `iac` se ArgoCD/Flux crescer (App-of-apps, ApplicationSets, progressive sync, multi-cluster).
 - **`github-actions`** ← extrair de `ci-cd` se ganhar profundidade equivalente à de `azure-devops` (reusable workflows, OIDC, matrix, environments).
+- **`room`** ← separar de `android-architecture` se migrações, FTS, relações e TypeConverters crescerem para além das ~80 linhas atuais de referência.
+- **`flutter-state`** ← separar de `flutter` se a seção de gerenciamento de estado (Provider/Riverpod/BLoC) crescer e precisar de skill própria como `azure-devops`.
 
 ## Decisões de Design
 
@@ -95,7 +104,6 @@ Manter unido até o conteúdo amadurecer; extrair quando:
 - Commands em `commands/` (formato legado, mas intencional para slash commands diretos)
 - Skills com conteúdo mínimo — intencionalmente para expansão posterior
 - JavaScript cobre backend (Node.js) e frontend no mesmo arquivo de skill
-- `authors` no plugin.json (array) em vez de `author` (objeto único)
 
 ### Política de progressive disclosure nos SKILL.md
 
