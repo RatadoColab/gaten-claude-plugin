@@ -1,7 +1,6 @@
 ---
 name: api-rest
 description: This skill should be used when designing or implementing REST APIs. Typical triggers include "design a REST API", "which HTTP status code should I return?", "how do I paginate this endpoint?", "structure this API error response", "version this API", "write the OpenAPI spec for this". Covers HTTP verbs, status codes, URL patterns, versioning, request/response contracts, error handling (RFC 9457), pagination strategies, caching, idempotency, security, OpenAPI 3.1, and REST best practices.
-version: 0.2.1
 ---
 
 # API REST — Padrões e Boas Práticas
@@ -173,7 +172,7 @@ Mais usados:
 
 ## Rate Limiting
 
-Contrato HTTP: retorne `429 Too Many Requests` com headers `RateLimit-*`/`Retry-After` e body RFC 9457; documente os limites por endpoint ou tier no OpenAPI. Políticas de limite (critérios por usuário/IP/device, backoff): ver `../security/SKILL.md` (§Rate Limiting) — fonte autoritativa.
+Contrato HTTP: retorne `429 Too Many Requests` com headers `RateLimit-*`/`Retry-After` e body RFC 9457; documente os limites por endpoint ou tier no OpenAPI. Políticas de limite (critérios por usuário/IP/device, backoff): ver `domains/security/SKILL.md` (§Rate Limiting) — fonte autoritativa.
 
 > Ver exemplo completo em [`references/http-patterns.md`](references/http-patterns.md).
 
@@ -181,9 +180,9 @@ Contrato HTTP: retorne `429 Too Many Requests` com headers `RateLimit-*`/`Retry-
 
 ## Segurança
 
-Específico de API (autenticação/autorização completas em `../security/SKILL.md` — fonte autoritativa):
+Específico de API (autenticação/autorização completas em `domains/security/SKILL.md` — fonte autoritativa):
 
-- **Autenticação:** OAuth 2.0 + OIDC; JWT Bearer (access token de 15 min + refresh token — parâmetros em `../security/SKILL.md`); API Keys só server-to-server; não pôr dados sensíveis no payload do JWT
+- **Autenticação:** OAuth 2.0 + OIDC; JWT Bearer (access token de 15 min + refresh token — parâmetros em `domains/security/SKILL.md`); API Keys só server-to-server; não pôr dados sensíveis no payload do JWT
 - **Transporte:** TLS 1.2+ e HSTS em todos os endpoints
 - **Input:** validar/sanitizar contra schema (JSON Schema / OpenAPI); nunca expor stack traces em produção
 - **CORS:** allowlist explícita de origens — nunca `*` em APIs autenticadas
@@ -264,7 +263,7 @@ Padrões detalhados (com exemplos) em [`references/advanced-endpoints.md`](refer
 
 ## Referências
 
-- Ver `../security/SKILL.md` para autenticação e autorização em APIs
+- Ver `domains/security/SKILL.md` para autenticação e autorização em APIs
 - [RFC 9457 — Problem Details for HTTP APIs](https://www.rfc-editor.org/rfc/rfc9457.html)
 - [OpenAPI Specification 3.1](https://spec.openapis.org/oas/v3.1.0)
 - [Microsoft Azure REST API Guidelines](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design)

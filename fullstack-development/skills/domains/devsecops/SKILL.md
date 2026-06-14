@@ -1,7 +1,6 @@
 ---
 name: devsecops
 description: This skill should be used when integrating security into CI/CD pipelines and infrastructure (shift-left security). Covers pipeline scans (SAST, SCA, DAST, secret scanning, IaC scanning, image scanning), security gates that fail the build, supply chain security (dependency/action pinning, SBOM, cosign/Sigstore signing, SLSA), secrets management in pipelines (vault injection, OIDC and short-lived credentials), and runner isolation. For application/API web security (OWASP Top 10, XSS, CSRF, JWT), use the security skill instead.
-version: 0.2.1
 ---
 
 # DevSecOps — Segurança no Pipeline e na Infraestrutura
@@ -14,7 +13,7 @@ auditoria final. Esta skill cobre a segurança do **caminho de entrega** (scans,
 secrets, credenciais do pipeline).
 
 > Para segurança de **aplicação web/API** (OWASP Top 10, XSS, CSRF, JWT, validação de entrada,
-> upload), carregar `../security/SKILL.md` — escopo distinto e complementar.
+> upload), carregar `domains/security/SKILL.md` — escopo distinto e complementar.
 
 ---
 
@@ -41,7 +40,7 @@ Cada classe de scan cobre uma superfície diferente; combinar todas para defesa 
 | **Image scanning**  | CVEs e pacotes vulneráveis na imagem de container     | Após build da imagem  |
 | **DAST**            | Vulnerabilidades em runtime (app implantado)          | Após deploy em staging |
 
-> Ver `../ci-cd/SKILL.md` para a ordem dos estágios e os gates de qualidade que esses scans alimentam.
+> Ver `domains/ci-cd/SKILL.md` para a ordem dos estágios e os gates de qualidade que esses scans alimentam.
 
 ---
 
@@ -97,10 +96,10 @@ security_scan:
 
 ## Referências
 
-- Ver `../ci-cd/SKILL.md` para estágios do pipeline e gates de qualidade
-- Ver `../containers/SKILL.md` para scan/assinatura de imagens e registry
-- Ver `../iac/SKILL.md` para IaC scanning (Checkov/tfsec) e gestão de secrets na infra
-- Ver `../openshift/SKILL.md` para SCC e hardening específicos da plataforma
-- Ver `../security/SKILL.md` para segurança de aplicação web/API (OWASP Top 10)
+- Ver `domains/ci-cd/SKILL.md` para estágios do pipeline e gates de qualidade
+- Ver `domains/containers/SKILL.md` para scan/assinatura de imagens e registry
+- Ver `domains/iac/SKILL.md` para IaC scanning (Checkov/tfsec) e gestão de secrets na infra
+- Ver `domains/openshift/SKILL.md` para SCC e hardening específicos da plataforma
+- Ver `domains/security/SKILL.md` para segurança de aplicação web/API (OWASP Top 10)
 - [OWASP CI/CD Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/CI_CD_Security_Cheat_Sheet.html)
 - [SLSA — Supply-chain Levels for Software Artifacts](https://slsa.dev/)

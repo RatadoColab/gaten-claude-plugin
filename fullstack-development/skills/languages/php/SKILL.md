@@ -1,7 +1,6 @@
 ---
 name: php
 description: This skill should be used when writing, reviewing, or refactoring PHP code. Covers PHP 8.3 features (readonly classes, typed constants, json_validate, #[\Override]), PSR-12 standards, modern type system (enums, union types, intersection types, never return type, constructor promotion), design patterns (DTOs, Value Objects, Repository), dependency injection, error handling with typed exceptions, PHPUnit testing, Composer best practices, security (PDO, XSS, CSRF, password hashing), and performance optimization (OPcache, generators, N+1 prevention). Use when the user asks to "write PHP code", "review PHP", "create a PHP class", "implement a repository", "add a PHP enum", "configure OPcache", "write PHPUnit tests", or "upgrade to PHP 8.3".
-version: 0.2.1
 ---
 
 # PHP — Convenções e Boas Práticas (8.3.x)

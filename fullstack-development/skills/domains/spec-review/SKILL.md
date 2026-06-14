@@ -1,7 +1,6 @@
 ---
 name: spec-review
 description: This skill should be used when performing a structured review of a feature specification, evaluating completeness, clarity, and suitability for AI-driven development. Covers review protocol, quality checklist, output format, and scoring criteria.
-version: 0.2.1
 ---
 
 # Spec Review — Protocolo de Revisão de Especificações

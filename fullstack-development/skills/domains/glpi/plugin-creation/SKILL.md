@@ -1,7 +1,6 @@
 ---
 name: glpi-plugin-creation
 description: This skill should be loaded when the user asks to "create a GLPI plugin", "start a new plugin", "scaffold a GLPI module", "generate the initial plugin structure", "create setup.php", "create hook.php", "create install.php", or "create the plugin main class". Provides a complete step-by-step guide for creating a valid GLPI 10.0.x plugin from scratch, including required files, hook registration, initial CommonDBTM class, and install script.
-version: 0.2.1
 ---
 
 # Criação de Plugin GLPI 10.0.x
@@ -36,7 +35,7 @@ Arquivos adicionais conforme a funcionalidade:
 
 ## Convenções de Nomenclatura
 
-Seguir a tabela **Nomenclatura** da skill pai (`../SKILL.md`): diretório, tabelas, classes, direitos e funções de hooks/setup.
+Seguir a tabela **Nomenclatura** da skill pai (`domains/glpi/SKILL.md`): diretório, tabelas, classes, direitos e funções de hooks/setup.
 
 ## Passo a Passo
 

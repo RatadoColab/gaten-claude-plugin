@@ -1,7 +1,6 @@
 ---
 name: database
 description: This skill should be used when modeling databases, writing queries, designing migrations, or working with data access layers. Typical triggers include "design this database schema", "which index should I add?", "optimize this slow query", "write a zero-downtime migration", "should I use SQL or NoSQL?", "fix this N+1 query". Covers relational modeling, normalization vs denormalization trade-offs, index strategies (B-Tree, composite, partial, covering), zero-downtime migration patterns, query optimization, transactions, connection pooling, ORM pitfalls, and SQL vs NoSQL decision framework.
-version: 0.2.1
 ---
 
 # Database — Modelagem e Boas Práticas
@@ -105,7 +104,7 @@ Regras essenciais (detalhe completo, incluindo Expand-Contract e operações de 
 
 - **Sempre use parâmetros preparados** (prepared statements / bind parameters) para evitar SQL injection. Nunca concatene input do usuário em strings SQL.
 
-> Prevenção de SQL Injection em `../security/SKILL.md`; comparação errado/correto e demais padrões em [`references/query-patterns.sql`](references/query-patterns.sql); permissões mínimas para usuários de banco (aplicação e somente leitura) em [`references/access-control.sql`](references/access-control.sql).
+> Prevenção de SQL Injection em `domains/security/SKILL.md`; comparação errado/correto e demais padrões em [`references/query-patterns.sql`](references/query-patterns.sql); permissões mínimas para usuários de banco (aplicação e somente leitura) em [`references/access-control.sql`](references/access-control.sql).
 
 ### 5.2 Performance
 
@@ -154,7 +153,7 @@ Regras essenciais (detalhe completo, incluindo Expand-Contract e operações de 
 
 ## 7. Auditoria de Dados
 
-> Auditoria implementada via código da aplicação ou triggers no banco. Em plugins GLPI, todo acesso passa pelo `$DB` do framework (nunca configurar conexão própria) — ver `../glpi/SKILL.md` (§Acesso ao Banco de Dados).
+> Auditoria implementada via código da aplicação ou triggers no banco. Em plugins GLPI, todo acesso passa pelo `$DB` do framework (nunca configurar conexão própria) — ver `domains/glpi/SKILL.md` (§Acesso ao Banco de Dados).
 
 Para rastrear quem alterou o quê e quando (além de `date_creation`/`date_mod`):
 

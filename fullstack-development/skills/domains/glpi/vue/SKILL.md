@@ -7,7 +7,6 @@ description: >
   tools", "create a reactive form in GLPI", "use Vue without webpack", or
   "add Vue 3 to a plugin page". Also load when the user mentions vue-loader.js,
   a global Vue build, or createApp() inside a Twig {% block javascripts %}.
-version: 0.2.1
 ---
 
 # GLPI — Interfaces Vue (Global Build)

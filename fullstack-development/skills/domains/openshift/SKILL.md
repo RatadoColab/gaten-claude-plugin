@@ -1,7 +1,6 @@
 ---
 name: openshift
 description: This skill should be used when deploying to or working with Red Hat OpenShift (OKD). Covers the differences from vanilla Kubernetes (Route vs Ingress, Project vs Namespace, DeploymentConfig, BuildConfig/ImageStream), Security Context Constraints (SCC), restricted-v2 defaults and their Dockerfile implications, Source-to-Image (S2I), the internal registry, the `oc` CLI, and OpenShift GitOps (ArgoCD).
-version: 0.2.1
 ---
 
 # OpenShift — Kubernetes Enterprise da Red Hat
@@ -116,16 +115,16 @@ oc logs -f deployment/api                         # logs em streaming
 
 - **OpenShift GitOps** empacota o ArgoCD como operador — Git é a fonte de verdade dos manifests
   (Deployment, Route, BuildConfig), com reconciliação automática e detecção de drift
-- Versionar os recursos OpenShift no repositório e deixar o ArgoCD aplicar — ver `../iac/SKILL.md`
+- Versionar os recursos OpenShift no repositório e deixar o ArgoCD aplicar — ver `domains/iac/SKILL.md`
 
 ---
 
 ## Referências
 
-- Ver `../containers/SKILL.md` para fundamentos de imagem, probes e Kubernetes (base desta skill)
-- Ver `../azure-devops/SKILL.md` para o pipeline que builda e faz deploy no OpenShift
-- Ver `../ci-cd/SKILL.md` para estágios, gates e estratégias de deploy
-- Ver `../iac/SKILL.md` para GitOps (OpenShift GitOps/ArgoCD)
-- Ver `../devsecops/SKILL.md` para scan de imagens, SBOM/assinatura e hardening do pipeline
+- Ver `domains/containers/SKILL.md` para fundamentos de imagem, probes e Kubernetes (base desta skill)
+- Ver `domains/azure-devops/SKILL.md` para o pipeline que builda e faz deploy no OpenShift
+- Ver `domains/ci-cd/SKILL.md` para estágios, gates e estratégias de deploy
+- Ver `domains/iac/SKILL.md` para GitOps (OpenShift GitOps/ArgoCD)
+- Ver `domains/devsecops/SKILL.md` para scan de imagens, SBOM/assinatura e hardening do pipeline
 - [OpenShift — Managing security context constraints](https://docs.openshift.com/container-platform/latest/authentication/managing-security-context-constraints.html)
 - [OpenShift — Creating routes](https://docs.openshift.com/container-platform/latest/networking/routes/route-configuration.html)

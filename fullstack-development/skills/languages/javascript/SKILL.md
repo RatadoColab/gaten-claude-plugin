@@ -1,7 +1,6 @@
 ---
 name: javascript
 description: This skill should be used when writing, reviewing, or refactoring JavaScript code for both frontend and backend (Node.js). Covers ES6+ features (arrow functions, destructuring, classes, optional chaining, nullish coalescing), async patterns (Promises, async/await, combinators), DOM manipulation, and JavaScript best practices. Use when the user asks to "write JavaScript", "review JS code", "implement async logic", "use ES6 classes", "handle DOM events", or "refactor to modern JS".
-version: 0.2.1
 ---
 
 # JavaScript — Convenções e Boas Práticas (ES6+)

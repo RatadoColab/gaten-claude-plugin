@@ -1,7 +1,6 @@
 ---
 name: containers
 description: This skill should be used when writing Dockerfiles or working with containers and Kubernetes. Typical triggers include "write the Dockerfile", "containerize this app", "create the Kubernetes manifest", "configure probes and resource limits". Covers image best practices (multi-stage, non-root, minimal base, pinned versions), image scanning, registries, immutable infrastructure, and Kubernetes fundamentals (probes, resource limits, namespaces, secrets).
-version: 0.2.1
 ---
 
 # Containers — Docker e Kubernetes
@@ -49,7 +48,7 @@ Dockerfile multi-stage completo (Node.js) em **`references/examples.md`**.
 - Assinar imagens (cosign/Sigstore) e verificar a assinatura no deploy
 - Gerar SBOM da imagem para rastrear a cadeia de suprimentos
 
-> Ver `../devsecops/SKILL.md` para o catálogo de image scanning, SBOM/assinatura e supply chain no pipeline.
+> Ver `domains/devsecops/SKILL.md` para o catálogo de image scanning, SBOM/assinatura e supply chain no pipeline.
 
 ---
 
@@ -80,9 +79,9 @@ Deployment completo com probes, `securityContext` e requests/limits em **`refere
 
 ## Referências
 
-- Ver `../ci-cd/SKILL.md` para construir e publicar imagens no pipeline
-- Ver `../iac/SKILL.md` para provisionar clusters e aplicar manifests via GitOps
-- Ver `../observability/SKILL.md` para monitorar workloads em Kubernetes
-- Ver `../devsecops/SKILL.md` para scan de imagens, SBOM/assinatura e hardening do pipeline
+- Ver `domains/ci-cd/SKILL.md` para construir e publicar imagens no pipeline
+- Ver `domains/iac/SKILL.md` para provisionar clusters e aplicar manifests via GitOps
+- Ver `domains/observability/SKILL.md` para monitorar workloads em Kubernetes
+- Ver `domains/devsecops/SKILL.md` para scan de imagens, SBOM/assinatura e hardening do pipeline
 - [Docker — Best practices for building images](https://docs.docker.com/build/building/best-practices/)
 - [Kubernetes — Configuration Best Practices](https://kubernetes.io/docs/concepts/configuration/overview/)

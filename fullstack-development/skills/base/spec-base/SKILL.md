@@ -1,7 +1,6 @@
 ---
 name: spec-base
 description: This skill should be used when reviewing, evaluating, or improving specifications for AI-driven development. Typical triggers include "review this spec", "is this specification complete?", "improve this feature spec", "write acceptance criteria". Covers quality criteria (SCOPE framework), structure standards, and completeness checks for feature and system specifications.
-version: 0.2.1
 ---
 
 # Spec Base — Fundamentos de Especificações para IA

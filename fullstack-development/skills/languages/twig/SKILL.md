@@ -1,7 +1,6 @@
 ---
 name: twig
 description: This skill should be used when writing, reviewing, or refactoring Twig templates (3.11.x). Covers template syntax and delimiters, inheritance (extends/block/embed/use), variables and scope, built-in filters and functions, macros, control tags, auto-escaping and security, performance best practices, and anti-patterns. Use when the user asks to "write a Twig template", "create a base layout", "add a Twig macro", "use Twig filters", "configure Twig environment", "review Twig code", "add template inheritance", or "fix Twig escaping".
-version: 0.2.1
 ---
 
 # Twig — Convenções e Boas Práticas (3.11.x)

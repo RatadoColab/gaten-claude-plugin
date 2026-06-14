@@ -1,7 +1,6 @@
 ---
 name: vue
 description: This skill should be used when writing, reviewing, or refactoring Vue.js components or applications. Covers Vue 3 Composition API with <script setup>, reactivity system (ref, reactive, computed, watch), component design (props, emits, slots, expose), Pinia state management, Vue Router, performance optimization (v-memo, shallowRef, keep-alive, defineAsyncComponent), and Vue-specific best practices. Use when the user asks to "write a Vue component", "review Vue code", "create a composable", "set up Pinia", "configure Vue Router", "optimize Vue performance", or "migrate from Options API".
-version: 0.2.1
 ---
 
 # Vue.js 3 — Convenções e Boas Práticas

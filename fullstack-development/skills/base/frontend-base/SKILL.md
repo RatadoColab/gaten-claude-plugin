@@ -1,7 +1,6 @@
 ---
 name: frontend-base
 description: This skill should be used when developing frontend features, components, pages, or templates. Covers component architecture, state management principles, accessibility basics, and general best practices for frontend development.
-version: 0.2.1
 ---
 
 # Frontend Base — Fundamentos de Desenvolvimento Frontend

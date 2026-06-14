@@ -1,7 +1,6 @@
 ---
 name: devops-base
 description: This skill should be used when planning or implementing DevOps and CI/CD work. Covers DevOps culture, automation principles, shift-left and DevSecOps, immutability, idempotency, the four DORA metrics, and how to navigate the CI/CD, containers, OpenShift, Azure DevOps, IaC, observability, and DevSecOps domains.
-version: 0.2.1
 ---
 
 # DevOps Base — Fundamentos de DevOps e CI/CD
@@ -43,7 +42,7 @@ código e sua entrega em produção com segurança e confiabilidade.
 
 ## DevSecOps — Segurança Integrada
 
-Segurança é responsabilidade de todos e deve estar embutida no pipeline, não ser uma etapa final — práticas completas (scans SAST/SCA/DAST/IaC, secrets, SBOM, supply chain) em `../../domains/devsecops/SKILL.md`. Para segurança de aplicação web/API (OWASP Top 10), ver `../../domains/security/SKILL.md`.
+Segurança é responsabilidade de todos e deve estar embutida no pipeline, não ser uma etapa final — práticas completas (scans SAST/SCA/DAST/IaC, secrets, SBOM, supply chain) em `domains/devsecops/SKILL.md`. Para segurança de aplicação web/API (OWASP Top 10), ver `domains/security/SKILL.md`.
 
 ## Métricas DORA
 
@@ -78,13 +77,13 @@ Ao trabalhar uma tarefa de DevOps, carregar o domínio pertinente sobre esta bas
 
 | Tarefa                                          | Skill de domínio a carregar          |
 |-------------------------------------------------|--------------------------------------|
-| Pipeline, build, testes, deploy, releases       | `../../domains/ci-cd/SKILL.md`       |
-| Pipeline no Azure DevOps / Azure Pipelines      | `../../domains/azure-devops/SKILL.md` (+ `ci-cd`) |
-| Dockerfile, imagens, Kubernetes, registries     | `../../domains/containers/SKILL.md`  |
-| Deploy/manifests no OpenShift (Route, SCC, oc)  | `../../domains/openshift/SKILL.md` (+ `containers`) |
-| Terraform/IaC, GitOps, provisionamento, secrets | `../../domains/iac/SKILL.md`         |
-| Métricas, logs, traces, alertas, SLO/SLI        | `../../domains/observability/SKILL.md` |
-| Scans no pipeline, IaC/image scanning, SBOM, supply chain, secrets | `../../domains/devsecops/SKILL.md` |
+| Pipeline, build, testes, deploy, releases       | `domains/ci-cd/SKILL.md`       |
+| Pipeline no Azure DevOps / Azure Pipelines      | `domains/azure-devops/SKILL.md` (+ `ci-cd`) |
+| Dockerfile, imagens, Kubernetes, registries     | `domains/containers/SKILL.md`  |
+| Deploy/manifests no OpenShift (Route, SCC, oc)  | `domains/openshift/SKILL.md` (+ `containers`) |
+| Terraform/IaC, GitOps, provisionamento, secrets | `domains/iac/SKILL.md`         |
+| Métricas, logs, traces, alertas, SLO/SLI        | `domains/observability/SKILL.md` |
+| Scans no pipeline, IaC/image scanning, SBOM, supply chain, secrets | `domains/devsecops/SKILL.md` |
 
 ## Referências
 

@@ -1,7 +1,6 @@
 ---
 name: forms
 description: This skill should be used when implementing forms, input validation, or form-related UX. Typical triggers include "build this form", "validate this input", "how should I show form errors?", "make this form accessible", "create a multi-step wizard", "add CPF/CNPJ/CEP validation", "handle file upload in this form". Covers validation strategies, error feedback patterns, accessibility requirements (WCAG 2.2), security, multi-step forms, file uploads, autocomplete, and user experience best practices for forms.
-version: 0.2.1
 ---
 
 # Forms — Formulários Frontend
@@ -159,7 +158,7 @@ Padrões detalhados (wizard, estado multi-step, acessibilidade, upload acessíve
 
 ## 9. Segurança
 
-Aplicar no contexto de formulário (segurança de aplicação completa em `../security/SKILL.md` — fonte autoritativa):
+Aplicar no contexto de formulário (segurança de aplicação completa em `domains/security/SKILL.md` — fonte autoritativa):
 
 - **CSRF:** token em todo formulário de escrita, via mecanismo do framework (ex.: `_glpi_csrf_token` em plugins GLPI)
 - **XSS:** sanitizar input do usuário via biblioteca do framework (ex.: `Sanitizer::sanitize()` no GLPI) antes de persistir/renderizar; CSP no servidor

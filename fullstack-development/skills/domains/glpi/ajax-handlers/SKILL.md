@@ -5,7 +5,6 @@ description: >
   "add an ajax endpoint", "create a file in ajax/", "handle an AJAX request",
   "return JSON from PHP in GLPI", "create a dropdown handler", or mentions
   the ajax/ directory in a GLPI plugin context.
-version: 0.2.1
 ---
 
 # GLPI — Handlers AJAX
