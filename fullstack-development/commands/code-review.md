@@ -18,11 +18,11 @@ Revisar código detectando automaticamente se é backend, frontend ou mobile e a
    - **Mobile Android:** Kotlin, `.kt`, `@Composable`, imports `androidx.*`, `AndroidManifest.xml`
    - **Mobile Flutter:** Dart, `.dart`, `pubspec.yaml`, `flutter/material.dart`
 4. Carregar skills pertinentes:
-   - `${CLAUDE_PLUGIN_ROOT}/skills/base/<tipo>-base/SKILL.md`
+   - `${CLAUDE_PLUGIN_ROOT}/skills/base/<tipo>-base/SKILL.md` (para mobile: `mobile-base`)
    - Skills de domínio conforme o código analisado
    - Skill de linguagem correspondente
-   - **Mobile Android:** `${CLAUDE_PLUGIN_ROOT}/skills/base/mobile-base/SKILL.md` + `kotlin` + `android-architecture` + `jetpack-compose` (se UI Compose) + `gradle` (se build/dependências)
-   - **Mobile Flutter:** `${CLAUDE_PLUGIN_ROOT}/skills/base/mobile-base/SKILL.md` + `dart` + `flutter`
+   - **Mobile Android:** `kotlin` + `android-architecture` + `jetpack-compose` (se UI Compose) + `gradle` (se build/dependências)
+   - **Mobile Flutter:** `dart` + `flutter`
    - Compose e Flutter são mutuamente exclusivos — nunca carregar ambos
 5. Avaliar o código nas dimensões:
    - **Qualidade:** legibilidade, nomenclatura, responsabilidades

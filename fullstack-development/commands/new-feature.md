@@ -18,7 +18,7 @@ Avaliar a demanda do usuário e o projeto em busca de sinais mobile. Considerar 
 - o código usar `@Composable`, imports Jetpack (`androidx.*`), ou `flutter/material.dart`
 - o usuário solicitar explicitamente app/tela/componente mobile, Android, Compose, Flutter ou Dart
 
-**Quando acionado:** substituir (projeto só-mobile) ou complementar (fullstack com cliente mobile) a trilha Frontend, gerando seção **Mobile** na spec. Compose e Flutter são mutuamente exclusivos — nunca carregar ambos sem necessidade explícita.
+**Quando acionado:** gerar seção **Mobile** na spec. A trilha Mobile e a trilha Frontend web são **independentes e podem coexistir** (projeto só-mobile → apenas Mobile; fullstack com app → Backend + Mobile; fullstack com web + app → Backend + Frontend + Mobile). Em projetos sem qualquer frontend web, a trilha Mobile assume o papel de cliente único.
 
 **Quando não acionado:** seguir o fluxo backend/frontend inalterado. Projetos web sem sinal mobile **não** criam seção Mobile.
 
@@ -43,15 +43,15 @@ Avaliar a demanda do usuário em busca de **solicitações explícitas** de DevO
 2. Ler `${CLAUDE_PLUGIN_ROOT}/skills/base/backend-base/SKILL.md`
 3. **Se trilha Mobile acionada:**
    - Ler `${CLAUDE_PLUGIN_ROOT}/skills/base/mobile-base/SKILL.md`
-   - **Android nativo:** carregar `${CLAUDE_PLUGIN_ROOT}/skills/languages/kotlin/SKILL.md`, `${CLAUDE_PLUGIN_ROOT}/skills/domains/android-architecture/SKILL.md` e, quando houver UI Compose, `${CLAUDE_PLUGIN_ROOT}/skills/domains/jetpack-compose/SKILL.md`; carregar `${CLAUDE_PLUGIN_ROOT}/skills/languages/gradle/SKILL.md` se tocar build/dependências
+   - **Android nativo:** carregar `${CLAUDE_PLUGIN_ROOT}/skills/languages/kotlin/SKILL.md`, `${CLAUDE_PLUGIN_ROOT}/skills/domains/android-architecture/SKILL.md` e, quando houver UI Compose, `${CLAUDE_PLUGIN_ROOT}/skills/domains/jetpack-compose/SKILL.md`; carregar `${CLAUDE_PLUGIN_ROOT}/skills/languages/gradle/SKILL.md` se tocar build/dependências — **Compose e Flutter são mutuamente exclusivos: nunca carregar ambos**
    - **Flutter:** carregar `${CLAUDE_PLUGIN_ROOT}/skills/languages/dart/SKILL.md` e `${CLAUDE_PLUGIN_ROOT}/skills/domains/flutter/SKILL.md`; carregar `${CLAUDE_PLUGIN_ROOT}/skills/languages/gradle/SKILL.md` se tocar build Android nativo do projeto Flutter
-4. **Se trilha Frontend web acionada (projeto web ou fullstack sem cliente exclusivamente mobile):**
+4. **Se trilha Frontend web acionada** (presença de `.vue`/`.html`/`.twig`, componentes web, páginas, CSS, ou pedido explícito de UI web):
    - Ler `${CLAUDE_PLUGIN_ROOT}/skills/base/frontend-base/SKILL.md`
 5. Com base na stack identificada, carregar skills de linguagem pertinentes adicionais (ex.: `php`, `python`, `javascript`, `vue`)
 
 ### Fase 2 — Especificação da feature (spec-dev)
 
-5. Usar o agente `spec-dev` para criar a especificação a partir da demanda:
+6. Usar o agente `spec-dev` para criar a especificação a partir da demanda:
    - Se o usuário já tiver uma spec, validá-la e melhorá-la em vez de criar do zero
    - Sempre incluir seção **Backend**
    - **Se trilha Mobile acionada:** incluir seção **Mobile** (em vez de, ou além de, **Frontend** web) cobrindo: arquitetura de telas e navegação, gerenciamento de estado, integração com o backend (endpoints, DTOs, tratamento de erros/timeouts), estados de borda (loading/erro/vazio/sucesso) e arquivos/módulos esperados
@@ -62,7 +62,7 @@ Avaliar a demanda do usuário em busca de **solicitações explícitas** de DevO
 
 ### Fase 3 — Revisão paralela de domínio
 
-6. Acionar **em paralelo** os agentes de domínio das trilhas ativas, cada um revisando apenas sua seção:
+7. Acionar **em paralelo** os agentes de domínio das trilhas ativas, cada um revisando apenas sua seção:
    - `backend-dev` — instrução: **"Revise apenas a seção Backend da spec em `.claude/specs/<nome>.md`. Aponte lacunas, riscos técnicos e ajustes necessários. NÃO escreva código — retorne somente o relatório de revisão e a seção Backend corrigida."**
    - `frontend-dev` **(quando trilha Frontend web ativa)** — instrução: **"Revise apenas a seção Frontend da spec em `.claude/specs/<nome>.md`. Aponte lacunas, riscos de UX/integração e ajustes necessários. NÃO escreva código — retorne somente o relatório de revisão e a seção Frontend corrigida."**
    - `mobile-dev` **(quando trilha Mobile ativa)** — instrução: **"Revise apenas a seção Mobile da spec em `.claude/specs/<nome>.md`. Aponte lacunas de arquitetura (MVVM/MVI, camadas data/domain/ui), gerenciamento de estado, consumo do backend (DTOs, erros, timeouts) e estados de borda (loading/erro/vazio). NÃO escreva código — retorne somente o relatório de revisão e a seção Mobile corrigida."**
@@ -87,19 +87,19 @@ Avaliar a demanda do usuário em busca de **solicitações explícitas** de DevO
 
 ### Fase 4 — Plano final e aprovação
 
-7. Consolidar spec original + feedbacks dos agentes acionados em um **Plano Final** contendo:
+8. Consolidar spec original + feedbacks dos agentes acionados em um **Plano Final** contendo:
    - Spec revisada unificada (todas as seções existentes: Backend, Frontend, Mobile e/ou DevOps/Infraestrutura conforme ativas)
    - Lista de arquivos a criar/modificar separados por escopo (backend / frontend / mobile / devops)
    - Pontos de atenção levantados pelos agentes
    - Estimativa de impacto em arquivos existentes
-8. Apresentar o Plano Final ao usuário e **aguardar aprovação explícita** antes de continuar
+9. Apresentar o Plano Final ao usuário e **aguardar aprovação explícita** antes de continuar
 
 ### Fase 5 — Implementação (somente após aprovação)
 
-9. Para cada parte aprovada:
-   - Carregar skills de domínio conforme o contexto da feature
-   - Implementar seguindo o Plano Final aprovado
-10. Ao final, listar arquivos criados/modificados e pontos de atenção para testes
+10. Para cada parte aprovada:
+    - Carregar skills de domínio conforme o contexto da feature
+    - Implementar seguindo o Plano Final aprovado
+11. Ao final, listar arquivos criados/modificados e pontos de atenção para testes
 
 ## Dicas de Uso
 
