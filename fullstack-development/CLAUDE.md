@@ -70,6 +70,8 @@ ${CLAUDE_PLUGIN_ROOT}/skills/languages/<linguagem>/SKILL.md      ← conforme st
 
 Quando múltiplas skills são candidatas, a ordem de prioridade é: **GLPI > Languages > Domains**. Skills de domínio GLPI têm precedência sobre skills de linguagem, que têm precedência sobre domínios genéricos.
 
+> O conjunto mobile (`mobile-base`, `kotlin`, `gradle`, `dart`, `android-architecture`, `jetpack-compose`, `flutter`) está **fora deste conflito de precedência**: não há sub-skills GLPI mobile, portanto a regra GLPI > Languages > Domains não se aplica a projetos exclusivamente mobile.
+
 As skills de plataforma do domínio devops (`openshift`, `azure-devops`) **complementam** as genéricas, não as substituem: ao detectar OpenShift, carregar `containers` + `openshift`; ao detectar Azure DevOps, carregar `ci-cd` + `azure-devops`. As específicas trazem só as diferenças da plataforma.
 
 ### Sobreposições intencionais das skills GLPI (não deduplicar)

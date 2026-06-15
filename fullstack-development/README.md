@@ -1,6 +1,8 @@
 # fullstack-development
 
-Plugin Claude Code modular para desenvolvimento fullstack. Fornece agentes especializados em especificação, backend, frontend e DevOps/CI-CD, com skills organizadas por domínio e linguagem de programação.
+> Versão 0.3.0
+
+Plugin Claude Code modular para desenvolvimento fullstack e mobile. Fornece agentes especializados em especificação, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter), com skills organizadas por domínio e linguagem de programação.
 
 ## Agentes
 
@@ -10,6 +12,7 @@ Plugin Claude Code modular para desenvolvimento fullstack. Fornece agentes espec
 | `backend-dev` | Desenvolvimento backend com boas práticas por linguagem e domínio |
 | `frontend-dev` | Desenvolvimento frontend com foco em componentes, formulários e UX |
 | `devops-cicd` | DevOps, CI/CD, containerização, infraestrutura como código e observabilidade |
+| `mobile-dev` | Desenvolvimento mobile Android nativo (Kotlin/Compose) e Flutter (Dart) |
 
 ## Skills
 
@@ -19,6 +22,7 @@ Carregadas automaticamente ao ativar cada agente:
 - `base/backend-base` — arquitetura e padrões backend
 - `base/frontend-base` — arquitetura e padrões frontend
 - `base/devops-base` — fundamentos de DevOps, princípios transversais e métricas DORA
+- `base/mobile-base` — fundamentos mobile: Clean Architecture (camadas data/domain/ui), MVVM/MVI, estados obrigatórios (loading/erro/vazio/sucesso), KDoc/DartDoc
 
 ### Domínios
 Carregadas conforme o contexto da tarefa:
@@ -37,6 +41,9 @@ Carregadas conforme o contexto da tarefa:
 - `domains/iac` — infraestrutura como código e GitOps (Terraform, ArgoCD/Flux)
 - `domains/observability` — métricas, logs, traces, SLI/SLO e alerting
 - `domains/devsecops` — segurança no pipeline e na infraestrutura (SAST/SCA/DAST, SBOM, supply chain)
+- `domains/android-architecture` — ViewModel + StateFlow, Hilt, Room, Navigation Component, Repository pattern
+- `domains/jetpack-compose` — composables, state hoisting, Modifier, listas lazy, Material3, performance
+- `domains/flutter` — widget tree, state management (Provider/Riverpod/BLoC), GoRouter, FutureBuilder/StreamBuilder
 
 ### Linguagens
 Carregadas conforme a stack identificada:
@@ -46,6 +53,9 @@ Carregadas conforme a stack identificada:
 - `languages/vue` — Vue.js (frontend)
 - `languages/twig` — Twig (frontend)
 - `languages/html` — HTML (frontend)
+- `languages/kotlin` — null safety, coroutines, data/sealed classes, scope functions
+- `languages/gradle` — Kotlin DSL, version catalog, build types, product flavors, multi-módulo
+- `languages/dart` — null safety, async/await, Futures, Streams, classes/mixins/extensions
 
 ## Commands
 
