@@ -10,7 +10,7 @@ Este repositório centraliza plugins reutilizáveis para o [Claude Code](https:/
 
 | Plugin | Versão | Descrição |
 |--------|--------|-----------|
-| [`fullstack-development`](./fullstack-development/) | 0.2.1 | Desenvolvimento fullstack com agentes especializados em spec, backend, frontend e DevOps/CI-CD |
+| [`fullstack-development`](./fullstack-development/) | 0.3.0 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
 
 ## Como usar
 
@@ -41,6 +41,7 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 | `backend-dev` | green | "desenvolva o backend", "implemente a API", "crie o endpoint" |
 | `frontend-dev` | cyan | "desenvolva o frontend", "crie o componente", "implemente o formulário" |
 | `devops-cicd` | yellow | "crie o pipeline", "configure o CI/CD", "configure o Azure DevOps", "escreva o Dockerfile", "faça deploy no OpenShift", "provisione a infraestrutura" |
+| `mobile-dev` | magenta | "desenvolva o app Android", "crie a tela em Compose", "implemente a ViewModel", "configure o Gradle", "crie o app Flutter", "implemente o widget Flutter" |
 
 ### Slash commands
 
@@ -53,15 +54,17 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 ### Skills incluídas
 
 **Base** (carregadas automaticamente por cada agente):
-- `spec-base`, `backend-base`, `frontend-base`, `devops-base`
+- `spec-base`, `backend-base`, `frontend-base`, `devops-base`, `mobile-base`
 
 **Domínios:**
 - `spec-review`, `api-rest`, `database`, `security`, `forms`, `ui-components`, `user-experience`
 - DevOps/CI-CD: `ci-cd`, `containers`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`
 - `glpi` — com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`
+- Mobile: `android-architecture`, `jetpack-compose`, `flutter`
 
 **Linguagens:**
 - `python`, `php`, `javascript`, `vue`, `twig`, `html`
+- Mobile: `kotlin`, `gradle`, `dart`
 
 **Precedência de carregamento:** GLPI > Languages > Domains
 
@@ -76,7 +79,7 @@ gaten-claude-plugin/
 ├── fullstack-development/        ← plugin fullstack
 │   ├── .claude-plugin/
 │   │   └── plugin.json           ← manifesto do plugin
-│   ├── agents/                   ← spec-dev, backend-dev, frontend-dev, devops-cicd
+│   ├── agents/                   ← spec-dev, backend-dev, frontend-dev, devops-cicd, mobile-dev
 │   ├── commands/                 ← review-spec, new-feature, code-review
 │   ├── skills/                  ← cada skill: SKILL.md + references/ (detalhes sob demanda)
 │   │   ├── base/                 ← skills base por agente
