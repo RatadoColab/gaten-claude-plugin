@@ -27,7 +27,7 @@ cc --plugin-dir .
 agents/                        ← 5 agentes: spec-dev, backend-dev, frontend-dev, devops-cicd, mobile-dev
 skills/
   base/                        ← 1 skill base por agente (inclui mobile-base)
-  domains/                     ← 18 skills de domínio (glpi tem 4 sub-skills; mobile tem 3)
+  domains/                     ← 20 skills de domínio (glpi tem 4 sub-skills; mobile tem 3)
   languages/                   ← 9 skills de linguagem
 commands/                      ← 3 slash commands
 ```
@@ -46,13 +46,13 @@ commands/                      ← 3 slash commands
 | `spec-dev` | "revise esta spec", "valide a especificação" | blue |
 | `backend-dev` | "desenvolva o backend", "implemente a API", "crie o endpoint" | green |
 | `frontend-dev` | "desenvolva o frontend", "crie o componente", "implemente o formulário" | cyan |
-| `devops-cicd` | "crie o pipeline", "configure o CI/CD", "configure o Azure DevOps", "escreva o Dockerfile", "faça deploy no OpenShift", "provisione a infraestrutura" | yellow |
+| `devops-cicd` | "crie o pipeline", "configure o CI/CD", "configure o Azure DevOps", "escreva o Dockerfile/Containerfile", "crie a unidade Quadlet (Podman)", "crie o manifest Kubernetes", "faça deploy no OpenShift", "provisione a infraestrutura" | yellow |
 | `mobile-dev` | "desenvolva o app Android", "crie a tela em Compose", "implemente a ViewModel", "configure o Gradle", "revise o código Kotlin", "crie o app Flutter", "implemente o widget Flutter", "configure o estado no Flutter" | magenta |
 
 ## Organização das Skills
 
 - **Base** (`skills/base/`): carregadas automaticamente por cada agente ao iniciar (inclui `devops-base` e `mobile-base`)
-- **Domínio** (`skills/domains/`): `spec-review`, `api-rest`, `database`, `security`, `forms`, `glpi`, `ui-components`, `user-experience`, `ci-cd`, `containers`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`, `android-architecture`, `jetpack-compose`, `flutter`
+- **Domínio** (`skills/domains/`): `spec-review`, `api-rest`, `database`, `security`, `forms`, `glpi`, `ui-components`, `user-experience`, `ci-cd`, `containers`, `podman`, `kubernetes`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`, `android-architecture`, `jetpack-compose`, `flutter`
   - `glpi` tem sub-skills aninhadas em `skills/domains/glpi/`: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`
 - **Linguagem** (`skills/languages/`): `python`, `php`, `javascript`, `vue`, `twig`, `html`, `kotlin`, `gradle`, `dart`
 
@@ -72,7 +72,7 @@ Quando múltiplas skills são candidatas, a ordem de prioridade é: **GLPI > Lan
 
 > O conjunto mobile (`mobile-base`, `kotlin`, `gradle`, `dart`, `android-architecture`, `jetpack-compose`, `flutter`) está **fora deste conflito de precedência**: não há sub-skills GLPI mobile, portanto a regra GLPI > Languages > Domains não se aplica a projetos exclusivamente mobile.
 
-As skills de plataforma do domínio devops (`openshift`, `azure-devops`) **complementam** as genéricas, não as substituem: ao detectar OpenShift, carregar `containers` + `openshift`; ao detectar Azure DevOps, carregar `ci-cd` + `azure-devops`. As específicas trazem só as diferenças da plataforma.
+As skills de plataforma do domínio devops (`openshift`, `azure-devops`) **complementam** as genéricas, não as substituem: ao detectar OpenShift, carregar `kubernetes` + `openshift` (+ `containers` se houver build de imagem); ao detectar Azure DevOps, carregar `ci-cd` + `azure-devops`. As específicas trazem só as diferenças da plataforma.
 
 ### Sobreposições intencionais das skills GLPI (não deduplicar)
 
@@ -82,8 +82,10 @@ As skills de plataforma do domínio devops (`openshift`, `azure-devops`) **compl
 
 ### Assimetrias intencionais do conjunto devops
 
-- **GitHub Actions/GitLab CI ficam inline em `ci-cd`**, enquanto **Azure DevOps é skill separada** (`azure-devops`). Não é inconsistência: GitHub/GitLab cabem como exemplo curto do conceito; o Azure DevOps tem modelo próprio rico (environments, service connections, variable groups, deployment jobs) que não cabe inline. Mesma lógica de `openshift` sobre `containers`.
+- **GitHub Actions/GitLab CI ficam inline em `ci-cd`**, enquanto **Azure DevOps é skill separada** (`azure-devops`). Não é inconsistência: GitHub/GitLab cabem como exemplo curto do conceito; o Azure DevOps tem modelo próprio rico (environments, service connections, variable groups, deployment jobs) que não cabe inline. Mesma lógica de `openshift` sobre `kubernetes`.
 - **`security` (app) e `devsecops` (pipeline/infra) são distintas por audiência:** o `backend-dev` carrega `security` (OWASP Top 10, XSS, CSRF, JWT — segurança de aplicação web/API); o `devops-cicd` carrega `devsecops` (SAST/SCA/DAST no pipeline, IaC/image scanning, SBOM/cosign, OIDC, supply chain). Elas se referenciam mutuamente.
+- **Eixo imagem → runtime → orquestração → plataforma:** `containers` cobre só a imagem OCI (Containerfile/Dockerfile, runtime-agnóstica); `podman` cobre execução em host único via Quadlet/systemd; `kubernetes` cobre orquestração em cluster (workloads, probes, Gateway API, Helm/Kustomize); `openshift` complementa `kubernetes` com as particularidades da plataforma (SCC, Route, S2I). Cada camada soma a anterior — `containers` soma a `podman` ou `kubernetes` quando a tarefa também envolve execução/deploy; quando a demanda for exclusivamente a imagem (Containerfile/Dockerfile), carregar apenas `containers`.
+- **`podman` e `kubernetes` são mutuamente exclusivos por contexto** (mesma lógica de Compose × Flutter no conjunto mobile): um host único gerenciado por systemd **ou** um cluster orquestrado — nunca carregar as duas ao mesmo tempo.
 
 ### Assimetrias intencionais do conjunto mobile
 
@@ -94,7 +96,8 @@ As skills de plataforma do domínio devops (`openshift`, `azure-devops`) **compl
 ### Gatilhos de split futuro (evitar fragmentação prematura)
 
 Manter unido até o conteúdo amadurecer; extrair quando:
-- **`kubernetes`** ← separar de `containers` quando a parte de orquestração (probes, HPA, StatefulSets, Helm/Kustomize, RBAC) passar de ~80 linhas isoladas.
+- **`gateway-api`** ← separar de `kubernetes` se a seção de rede/exposição crescer além do essencial (roteamento avançado, TLS multi-domínio, service mesh).
+- **`helm`** ← separar de `kubernetes` se o empacotamento via Helm ganhar profundidade equivalente à de `azure-devops` (templating avançado, hooks, subcharts, testes de chart).
 - **`gitops`** ← separar de `iac` se ArgoCD/Flux crescer (App-of-apps, ApplicationSets, progressive sync, multi-cluster).
 - **`github-actions`** ← extrair de `ci-cd` se ganhar profundidade equivalente à de `azure-devops` (reusable workflows, OIDC, matrix, environments).
 - **`room`** ← separar de `android-architecture` se migrações, FTS, relações e TypeConverters crescerem para além das ~80 linhas atuais de referência.

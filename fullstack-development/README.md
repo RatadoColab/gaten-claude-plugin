@@ -1,6 +1,6 @@
 # fullstack-development
 
-> Versão 0.3.0
+> Versão 0.4.0
 
 Plugin Claude Code modular para desenvolvimento fullstack e mobile. Fornece agentes especializados em especificação, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter), com skills organizadas por domínio e linguagem de programação.
 
@@ -35,7 +35,9 @@ Carregadas conforme o contexto da tarefa:
 - `domains/ui-components` — componentes UI
 - `domains/user-experience` — UX e fluxos de usuário
 - `domains/ci-cd` — pipelines, gates de qualidade e estratégias de deploy
-- `domains/containers` — Docker e Kubernetes
+- `domains/containers` — imagens OCI (Containerfile/Dockerfile) runtime-agnósticas (Docker/Podman)
+- `domains/podman` — runtime daemonless/rootless, Quadlet + systemd em produção
+- `domains/kubernetes` — workloads, probes, HPA/PDB, Pod Security Standards, Gateway API, Helm/Kustomize
 - `domains/openshift` — especificidades do OpenShift (Route, SCC, BuildConfig, S2I, `oc`)
 - `domains/azure-devops` — Azure Pipelines (stages, service connections, environments)
 - `domains/iac` — infraestrutura como código e GitOps (Terraform, ArgoCD/Flux)

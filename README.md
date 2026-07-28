@@ -10,7 +10,7 @@ Este repositório centraliza plugins reutilizáveis para o [Claude Code](https:/
 
 | Plugin | Versão | Descrição |
 |--------|--------|-----------|
-| [`fullstack-development`](./fullstack-development/) | 0.3.0 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
+| [`fullstack-development`](./fullstack-development/) | 0.4.0 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
 
 ## Como usar
 
@@ -40,7 +40,7 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 | `spec-dev` | blue | "revise esta spec", "valide a especificação" |
 | `backend-dev` | green | "desenvolva o backend", "implemente a API", "crie o endpoint" |
 | `frontend-dev` | cyan | "desenvolva o frontend", "crie o componente", "implemente o formulário" |
-| `devops-cicd` | yellow | "crie o pipeline", "configure o CI/CD", "configure o Azure DevOps", "escreva o Dockerfile", "faça deploy no OpenShift", "provisione a infraestrutura" |
+| `devops-cicd` | yellow | "crie o pipeline", "configure o CI/CD", "configure o Azure DevOps", "escreva o Dockerfile/Containerfile", "crie a unidade Quadlet (Podman)", "crie o manifest Kubernetes", "faça deploy no OpenShift", "provisione a infraestrutura" |
 | `mobile-dev` | magenta | "desenvolva o app Android", "crie a tela em Compose", "implemente a ViewModel", "configure o Gradle", "crie o app Flutter", "implemente o widget Flutter" |
 
 ### Slash commands
@@ -58,7 +58,7 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 
 **Domínios:**
 - `spec-review`, `api-rest`, `database`, `security`, `forms`, `ui-components`, `user-experience`
-- DevOps/CI-CD: `ci-cd`, `containers`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`
+- DevOps/CI-CD: `ci-cd`, `containers`, `podman`, `kubernetes`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`
 - `glpi` — com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`
 - Mobile: `android-architecture`, `jetpack-compose`, `flutter`
 

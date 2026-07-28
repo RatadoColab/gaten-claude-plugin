@@ -5,6 +5,36 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.4.0] - 2026-07-28
+
+Especialização do agente `devops-cicd` em infraestrutura de containers moderna: duas novas skills de domínio (`podman` e `kubernetes`), executando o split de orquestração já previsto em `CLAUDE.md`, e refatoração de `containers` para a camada de imagem OCI runtime-agnóstica. Conteúdo alinhado aos padrões atuais do ecossistema (jul/2026): Quadlet como padrão de produção do Podman, Pod Security Standards `restricted`, e Gateway API como padrão de tráfego norte-sul após o fim de vida do `ingress-nginx` (24/03/2026).
+
+### Adicionado
+
+#### Skills de domínio
+- `domains/podman` — runtime OCI daemonless/rootless; paridade de CLI com Docker, Quadlet + systemd em produção (`.container`/`.pod`/`.volume`/`.network`/`.kube`), rootless (subuid/subgid, portas privilegiadas), `podman-auto-update`, ecossistema (Buildah/Skopeo), ponte `podman kube play` para Kubernetes; refs: `quadlet-units.md`, `rootless-e-cli.md`
+- `domains/kubernetes` — workloads de aplicação (Deployment/StatefulSet/DaemonSet/Job/CronJob), as três probes, QoS/resources, confiabilidade (PDB, topologySpreadConstraints, HPA/VPA), Pod Security Standards `restricted`, RBAC de menor privilégio, NetworkPolicy, Gateway API (primário) e Ingress (legado, com nota de migração via `ingress2gateway`), Kustomize × Helm, validação de manifests; refs: `manifests.md`, `gateway-api.md`, `packaging.md`
+
+### Alterado
+
+#### Skills de domínio
+- `domains/containers` (550→~610 palavras) — vira camada de imagem OCI runtime-agnóstica (Docker/Podman/Buildah); adicionado Containerfile≡Dockerfile, pin por digest, `.containerignore`, labels `org.opencontainers.image.*`, nota sobre `HEALTHCHECK` vs probes; seção "Fundamentos de Kubernetes" removida (migrada para `domains/kubernetes`); `references/examples.md` ganhou variante de Dockerfile com digest pinado e labels OCI, Deployment YAML movido para `domains/kubernetes/references/manifests.md`
+- `domains/openshift` — cross-refs realinhados para `kubernetes` (orquestração) + `containers` (imagem); notas curtas SCC×Pod Security Standards e Route×Gateway API
+
+#### Skill base
+- `base/devops-base` — tabela de precedência de domínios atualizada com `podman` e `kubernetes`; description e listagem de domínios atualizadas
+
+#### Agente
+- `devops-cicd` — gatilhos e exemplo para Podman/Quadlet; skills a carregar incluem `podman`/`kubernetes`; nota de exclusividade reescrita (`containers` soma a `podman`/`kubernetes`, não é alternativa)
+
+#### Commands
+- `/fullstack-development:new-feature` — sinais de detecção DevOps ampliados (Podman/Quadlet/rootless, Gateway API, Helm/Kustomize)
+
+#### Projeto
+- `plugin.json` — versão `0.4.0`
+- `CLAUDE.md` — inventário de domínios (18→20); gatilho de split `kubernetes` consumido e substituído por `gateway-api`/`helm`; nova assimetria documentando o eixo imagem→runtime→orquestração→plataforma e a exclusividade `podman`×`kubernetes`
+- `README.md` — catálogo de skills e versão atualizados
+
 ## [0.3.0] - 2026-06-14
 
 Expansão do plugin para desenvolvimento mobile: novo agente `mobile-dev` com suporte a Android nativo (Kotlin + Jetpack Compose) e Flutter (Dart), acompanhado de skill base, 3 domínios e 3 linguagens com política de progressive disclosure.
@@ -180,6 +210,7 @@ Segunda rodada de otimização de tokens: aplicação integral da regra de códi
 - Documentação do projeto (`CLAUDE.md`) com estrutura, agentes e decisões de design
 - Precedência de carregamento de skills: GLPI > Languages > Domains
 
+[0.4.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.4.0
 [0.3.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.3.0
 [0.2.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.2.1
 [0.2.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.2.0

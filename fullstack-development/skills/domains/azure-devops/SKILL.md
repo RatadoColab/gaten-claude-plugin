@@ -107,6 +107,7 @@ Pipeline completo em **`references/azure-pipelines-openshift.md`**. Estrutura: 2
 ## Referências
 
 - Ver `domains/ci-cd/SKILL.md` para estágios, gates de qualidade e estratégias de deploy (base desta skill)
+- Ver `domains/kubernetes/SKILL.md` para o cluster alvo da service connection Kubernetes/OpenShift
 - Ver `domains/openshift/SKILL.md` para o alvo de deploy (Route, SCC, `oc`)
 - Ver `domains/containers/SKILL.md` para o build da imagem publicada no registry
 - Ver `domains/devsecops/SKILL.md` para SAST/SCA/DAST e gestão de secrets no pipeline

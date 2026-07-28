@@ -29,8 +29,9 @@ Avaliar a demanda do usuário e o projeto em busca de sinais mobile. Considerar 
 Avaliar a demanda do usuário em busca de **solicitações explícitas** de DevOps. Considerar a trilha DevOps **acionada** quando a demanda mencionar qualquer um destes sinais:
 
 - pipeline / CI-CD / build automatizado
-- Dockerfile / containerização / imagem
-- deploy / OpenShift / Kubernetes / manifests / Route
+- Dockerfile/Containerfile / containerização / imagem
+- Podman / Quadlet / rootless / systemd
+- deploy / OpenShift / Kubernetes / manifests / Route / Gateway API / Helm / Kustomize
 - infraestrutura / Terraform / IaC / provisionamento / GitOps
 - observabilidade / monitoramento / métricas / logs / alertas / SLO
 - segurança de pipeline / DevSecOps / scans / secrets no pipeline
@@ -68,7 +69,7 @@ Avaliar a demanda do usuário em busca de **solicitações explícitas** de DevO
    - `mobile-dev` **(quando trilha Mobile ativa)** — instrução: **"Revise apenas a seção Mobile da spec em `.claude/specs/<nome>.md`. Aponte lacunas de arquitetura (MVVM/MVI, camadas data/domain/ui), gerenciamento de estado, consumo do backend (DTOs, erros, timeouts) e estados de borda (loading/erro/vazio). NÃO escreva código — retorne somente o relatório de revisão e a seção Mobile corrigida."**
    - `devops-cicd` **(apenas quando a seção DevOps/Infraestrutura existir)** — instrução: **"Revise apenas a seção DevOps/Infraestrutura da spec em `.claude/specs/<nome>.md`, limitando-se a CI/CD, containers, infraestrutura/IaC, deploy/rollback, observabilidade e segurança de pipeline. NÃO opine sobre regra de negócio do backend, modelagem de dados de aplicação nem UI/UX. NÃO escreva código — retorne somente o relatório de revisão e a seção DevOps corrigida."**
    - Cada agente deve carregar suas skills de domínio conforme a stack identificada na Fase 1:
-     - `devops-cicd` carrega `devops-base` sempre e `ci-cd`/`containers`/`openshift`/`azure-devops`/`iac`/`observability`/`devsecops` conforme os sinais detectados
+     - `devops-cicd` carrega `devops-base` sempre e `ci-cd`/`containers`/`podman`/`kubernetes`/`openshift`/`azure-devops`/`iac`/`observability`/`devsecops` conforme os sinais detectados
      - `mobile-dev` carrega `mobile-base` sempre e as skills pertinentes à stack (Android ou Flutter) identificada na Fase 1
 
    Formato esperado de cada relatório de revisão:

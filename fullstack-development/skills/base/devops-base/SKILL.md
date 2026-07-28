@@ -1,6 +1,6 @@
 ---
 name: devops-base
-description: This skill should be used when planning or implementing DevOps and CI/CD work. Covers DevOps culture, automation principles, shift-left and DevSecOps, immutability, idempotency, the four DORA metrics, and how to navigate the CI/CD, containers, OpenShift, Azure DevOps, IaC, observability, and DevSecOps domains.
+description: This skill should be used when planning or implementing DevOps and CI/CD work. Covers DevOps culture, automation principles, shift-left and DevSecOps, immutability, idempotency, the four DORA metrics, and how to navigate the CI/CD, containers, Podman, Kubernetes, OpenShift, Azure DevOps, IaC, observability, and DevSecOps domains.
 ---
 
 # DevOps Base — Fundamentos de DevOps e CI/CD
@@ -9,8 +9,9 @@ description: This skill should be used when planning or implementing DevOps and 
 
 Fornece os princípios culturais e técnicos transversais ao trabalho de DevOps, independente de
 ferramenta ou plataforma. As práticas detalhadas de cada disciplina ficam nas skills de domínio
-(`ci-cd`, `containers`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`); esta
-base estabelece o vocabulário comum, os princípios inegociáveis e a forma de medir sucesso.
+(`ci-cd`, `containers`, `podman`, `kubernetes`, `openshift`, `azure-devops`, `iac`, `observability`,
+`devsecops`); esta base estabelece o vocabulário comum, os princípios inegociáveis e a forma de
+medir sucesso.
 
 DevOps é a união de cultura, práticas e ferramentas que encurta o ciclo entre uma mudança de
 código e sua entrega em produção com segurança e confiabilidade.
@@ -79,11 +80,16 @@ Ao trabalhar uma tarefa de DevOps, carregar o domínio pertinente sobre esta bas
 |-------------------------------------------------|--------------------------------------|
 | Pipeline, build, testes, deploy, releases       | `domains/ci-cd/SKILL.md`       |
 | Pipeline no Azure DevOps / Azure Pipelines      | `domains/azure-devops/SKILL.md` (+ `ci-cd`) |
-| Dockerfile, imagens, Kubernetes, registries     | `domains/containers/SKILL.md`  |
-| Deploy/manifests no OpenShift (Route, SCC, oc)  | `domains/openshift/SKILL.md` (+ `containers`) |
+| Imagem OCI, Containerfile/Dockerfile, registries | `domains/containers/SKILL.md`  |
+| Runtime rootless em host único, Quadlet/systemd | `domains/podman/SKILL.md` (+ `containers`) |
+| Manifests Kubernetes, workloads, probes, Gateway API, Helm/Kustomize | `domains/kubernetes/SKILL.md` (+ `containers`) |
+| Deploy/manifests no OpenShift (Route, SCC, oc)  | `domains/openshift/SKILL.md` (+ `kubernetes`) |
 | Terraform/IaC, GitOps, provisionamento, secrets | `domains/iac/SKILL.md`         |
 | Métricas, logs, traces, alertas, SLO/SLI        | `domains/observability/SKILL.md` |
 | Scans no pipeline, IaC/image scanning, SBOM, supply chain, secrets | `domains/devsecops/SKILL.md` |
+
+> `podman` e `kubernetes` são mutuamente exclusivas por tarefa — host único gerenciado por systemd
+> **ou** cluster orquestrado, nunca as duas ao mesmo tempo.
 
 ## Referências
 

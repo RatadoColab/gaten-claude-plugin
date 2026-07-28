@@ -94,7 +94,8 @@ Exemplo de backend remoto (S3 + DynamoDB lock) e recurso parametrizado em **`ref
 
 ## Referências
 
-- Ver `domains/containers/SKILL.md` para imagens e manifests Kubernetes aplicados via GitOps
+- Ver `domains/containers/SKILL.md` para as imagens consumidas pelos manifests
+- Ver `domains/kubernetes/SKILL.md` para os manifests aplicados via GitOps (Kustomize/Helm)
 - Ver `domains/ci-cd/SKILL.md` para gates de `plan`/scan no pipeline
 - Ver `domains/observability/SKILL.md` para monitorar o estado da infraestrutura
 - Ver `domains/devsecops/SKILL.md` para IaC scanning, gestão de credenciais e secrets no pipeline

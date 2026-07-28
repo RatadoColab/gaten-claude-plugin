@@ -1,6 +1,6 @@
 # Containers — Exemplos
 
-## Dockerfile multi-stage (Node.js)
+## Dockerfile/Containerfile multi-stage (Node.js)
 
 ```dockerfile
 # Estágio de build com toolchain completo
@@ -26,31 +26,33 @@ CMD ["node", "dist/server.js"]
 
 ---
 
-## Deployment Kubernetes com probes e limites
+## Variante com pin por digest e labels OCI
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: api
-spec:
-  replicas: 3
-  template:
-    spec:
-      securityContext:
-        runAsNonRoot: true          # reforça não-root
-      containers:
-        - name: api
-          image: registry.example.com/api:1.4.2   # tag imutável
-          ports:
-            - containerPort: 3000
-          resources:
-            requests: { cpu: "100m", memory: "128Mi" }
-            limits:   { cpu: "500m", memory: "256Mi" }
-          readinessProbe:
-            httpGet: { path: /health/ready, port: 3000 }
-            initialDelaySeconds: 5
-          livenessProbe:
-            httpGet: { path: /health, port: 3000 }
-            initialDelaySeconds: 15
+Mesmo Dockerfile acima, trocando a base por tag pela mesma imagem fixada por digest e adicionando
+rastreabilidade até o commit de origem:
+
+```dockerfile
+# Digest imutável em vez de tag — a tag "20-slim" pode ser sobrescrita no registry
+FROM node:20-slim@sha256:1a2b3c4d5e6f... AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-slim@sha256:1a2b3c4d5e6f... AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+RUN useradd --system --create-home app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+USER app
+EXPOSE 3000
+
+# Rastreabilidade: liga a imagem publicada ao commit/versão que a gerou
+LABEL org.opencontainers.image.source="https://github.com/org/app" \
+      org.opencontainers.image.revision="$GIT_SHA" \
+      org.opencontainers.image.version="1.4.2"
+
+CMD ["node", "dist/server.js"]
 ```

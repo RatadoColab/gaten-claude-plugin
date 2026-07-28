@@ -116,7 +116,7 @@ groups:
 ## Referências
 
 - Ver `domains/ci-cd/SKILL.md` para verificação pós-deploy e decisão de canary/rollback
-- Ver `domains/containers/SKILL.md` para probes de liveness/readiness em Kubernetes
+- Ver `domains/kubernetes/SKILL.md` para probes de liveness/readiness e encerramento gracioso
 - Ver `domains/iac/SKILL.md` para monitorar o estado da infraestrutura
 - [OpenTelemetry Documentation](https://opentelemetry.io/docs/)
 - [Google SRE — Monitoring Distributed Systems](https://sre.google/sre-book/monitoring-distributed-systems/)

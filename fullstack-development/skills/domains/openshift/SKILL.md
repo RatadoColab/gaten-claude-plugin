@@ -10,8 +10,8 @@ description: This skill should be used when deploying to or working with Red Hat
 Diretrizes específicas para empacotar e operar aplicações no OpenShift (e seu upstream OKD). O
 OpenShift é uma distribuição enterprise de Kubernetes: tudo que vale para Kubernetes continua
 valendo, mas a plataforma acrescenta recursos próprios (Routes, BuildConfig, ImageStreams) e adota
-defaults de segurança mais restritivos. Carregar esta skill junto de `containers` — aqui ficam
-apenas as diferenças em relação ao Kubernetes vanilla.
+defaults de segurança mais restritivos. Carregar esta skill junto de `kubernetes` (orquestração) e
+`containers` (imagem) — aqui ficam apenas as diferenças em relação ao Kubernetes vanilla.
 
 ---
 
@@ -55,6 +55,11 @@ A SCC `restricted-v2` (default) impõe restrições que quebram imagens mal proj
 - **Evitar `anyuid`:** conceder a SCC `anyuid` apenas em último caso e com justificativa — quebra o
   modelo de segurança da plataforma
 
+> **SCC × Pod Security Standards:** o OpenShift aplica SCC (mecanismo próprio, anterior ao PSS) por
+> padrão; os labels `pod-security.kubernetes.io/*` de `domains/kubernetes/SKILL.md` também são
+> reconhecidos pela admissão nativa do Kubernetes e coexistem com a SCC — a SCC continua sendo a
+> política que efetivamente determina UID/capabilities no OpenShift.
+
 ### Implicações no Dockerfile
 
 ```dockerfile
@@ -95,11 +100,17 @@ Manifest completo de `Route` (host automático vs fixo, `insecureEdgeTermination
 | **passthrough** | No pod (o app serve TLS)                    | mTLS ou requisito de criptografia ponta a ponta |
 | **reencrypt**   | Reencripta do router até o pod              | TLS interno obrigatório com cert do router externo |
 
+> **Route × Gateway API:** o OpenShift 4.x suporta Gateway API (via OpenShift Service Mesh/Istio ou
+> operador dedicado) como alternativa a `Route` para tráfego norte-sul — mesma lógica de
+> `domains/kubernetes/SKILL.md`. `Route` continua sendo o recurso mais simples e nativo da
+> plataforma; avaliar Gateway API quando já houver adoção em ambiente Kubernetes vanilla ou
+> necessidade de roteamento avançado (canário por peso, cross-namespace).
+
 ---
 
 ## Deploy e Rollback com `oc`
 
-Reusar probes, requests/limits e `securityContext` da skill `containers`. Operação via `oc`:
+Reusar probes, requests/limits e `securityContext` da skill `kubernetes`. Operação via `oc`:
 
 ```bash
 oc new-app --image=image-registry.../api:1.4.2   # cria Deployment + Service
@@ -121,7 +132,9 @@ oc logs -f deployment/api                         # logs em streaming
 
 ## Referências
 
-- Ver `domains/containers/SKILL.md` para fundamentos de imagem, probes e Kubernetes (base desta skill)
+- Ver `domains/kubernetes/SKILL.md` para workloads, probes e segurança de pod (base desta skill)
+- Ver `domains/containers/SKILL.md` para fundamentos de imagem (Containerfile/Dockerfile)
+- Ver `domains/podman/SKILL.md` para build local com Podman/Buildah, sem depender do Docker
 - Ver `domains/azure-devops/SKILL.md` para o pipeline que builda e faz deploy no OpenShift
 - Ver `domains/ci-cd/SKILL.md` para estágios, gates e estratégias de deploy
 - Ver `domains/iac/SKILL.md` para GitOps (OpenShift GitOps/ArgoCD)

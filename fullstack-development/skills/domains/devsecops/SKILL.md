@@ -53,6 +53,7 @@ Cada classe de scan cobre uma superfície diferente; combinar todas para defesa 
 | **Dependências (SCA)** | `npm audit`, `pip-audit`, OWASP Dependency-Check, Snyk |
 | **Secrets**         | Gitleaks, TruffleHog, detect-secrets                  |
 | **SAST**            | Semgrep, CodeQL, SonarQube                             |
+| **Manifests Kubernetes** | kubeconform (schema), kube-linter/Polaris (boas práticas), Kyverno/OPA-Gatekeeper (política admissional) |
 
 Bloquear a publicação/promoção quando houver achados de severidade alta/crítica — ver exemplo abaixo.
 
@@ -98,6 +99,8 @@ security_scan:
 
 - Ver `domains/ci-cd/SKILL.md` para estágios do pipeline e gates de qualidade
 - Ver `domains/containers/SKILL.md` para scan/assinatura de imagens e registry
+- Ver `domains/kubernetes/SKILL.md` para segurança de workload (Pod Security Standards,
+  `securityContext`, RBAC, NetworkPolicy) que os scanners de manifests acima validam
 - Ver `domains/iac/SKILL.md` para IaC scanning (Checkov/tfsec) e gestão de secrets na infra
 - Ver `domains/openshift/SKILL.md` para SCC e hardening específicos da plataforma
 - Ver `domains/security/SKILL.md` para segurança de aplicação web/API (OWASP Top 10)

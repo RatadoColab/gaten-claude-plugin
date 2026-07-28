@@ -96,6 +96,7 @@ Pipelines completos em **`references/pipeline-examples.md`**. Pontos-chave dos e
 ## Referências
 
 - Ver `domains/containers/SKILL.md` para empacotar artefatos como imagens
+- Ver `domains/kubernetes/SKILL.md` ou `domains/podman/SKILL.md` conforme o alvo de execução do artefato (cluster ou host único)
 - Ver `domains/iac/SKILL.md` para GitOps e provisionamento dos ambientes de deploy
 - Ver `domains/observability/SKILL.md` para verificação pós-deploy e decisão de canary
 - Ver `domains/devsecops/SKILL.md` para SAST/SCA/DAST, supply chain e gestão de secrets no pipeline
