@@ -42,9 +42,9 @@ Organizar componentes por nível de abstração e dependência, não como regra 
 
 ---
 
-## 3. API do Componente (Vue 3 — Options API / Global Build)
+## 3. API do Componente (Vue 3 — Composition API / SFC)
 
-> **Em plugins GLPI:** usar Vue 3 via **global build** (`vue.global.prod.js`) sem bundler. Não usar `<script setup>` nem SFCs — definir componentes com `Vue.defineComponent({})` ou Options API inline.
+> **Em plugins GLPI, a abordagem depende da versão:** no GLPI 10, Vue é um **global build** (`vue.global.prod.js`) carregado pelo próprio plugin, sem bundler — não usar `<script setup>` nem SFCs, definir componentes com `Vue.defineComponent({})` ou Options API inline (ver `domains/glpi-10/vue/SKILL.md`). No GLPI 11, Vue é fornecido pelo core via `window._vue`/`window.Vue` e o plugin traz seu próprio webpack — componentes são SFCs com Composition API, Options API proibida (ver `domains/glpi-11/vue/SKILL.md`).
 
 ### 3.1 Props
 
@@ -170,7 +170,7 @@ Quando um componente pai precisa coordenar múltiplos filhos sem prop drilling (
 
 > Exemplos (useDisclosure, par provide/inject tipado) em [`references/composables.ts`](references/composables.ts).
 
-> Testes de componentes Vue em plugins GLPI são feitos via **PHPUnit** no lado servidor — não há runner JavaScript separado.
+> Testes de componentes Vue em plugins GLPI 10 são feitos via **PHPUnit** no lado servidor — o global build não traz toolchain de testes JS. Em GLPI 11, o webpack do plugin permite (mas não exige) um runner JS de componente (ex.: Vitest) além do PHPUnit para a parte PHP.
 
 ---
 
@@ -188,7 +188,7 @@ Técnicas de performance Vue (defineAsyncComponent, v-show vs v-if, shallowRef, 
 ## Referências
 
 - Ver `domains/user-experience/SKILL.md` para estados de UI e feedback visual.
-- Ver `domains/glpi/vue/SKILL.md` para padrões de integração Vue 3 Global Build em plugins GLPI.
+- Ver `domains/glpi-10/vue/SKILL.md` (Vue 3 Global Build) ou `domains/glpi-11/vue/SKILL.md` (Vue via core, `window._vue`) para padrões de integração Vue em plugins GLPI, conforme a versão-alvo.
 - [WCAG 2.2 — W3C](https://www.w3.org/WAI/standards-guidelines/wcag/)
 - [Atomic Design — Brad Frost](https://bradfrost.com/blog/post/atomic-web-design/)
 - [CSS Custom Properties — Design Tokens Guide](https://www.frontendtools.tech/blog/css-variables-guide-design-tokens-theming-2025)

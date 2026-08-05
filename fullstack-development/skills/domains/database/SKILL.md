@@ -153,7 +153,7 @@ Regras essenciais (detalhe completo, incluindo Expand-Contract e operações de 
 
 ## 7. Auditoria de Dados
 
-> Auditoria implementada via código da aplicação ou triggers no banco. Em plugins GLPI, todo acesso passa pelo `$DB` do framework (nunca configurar conexão própria) — ver `domains/glpi/SKILL.md` (§Acesso ao Banco de Dados).
+> Auditoria implementada via código da aplicação ou triggers no banco. Em plugins GLPI, todo acesso passa pelo `$DB` do framework (nunca configurar conexão própria) — ver `domains/glpi-10/SKILL.md` ou `domains/glpi-11/SKILL.md` (§Acesso ao Banco de Dados), conforme a versão-alvo.
 
 Para rastrear quem alterou o quê e quando (além de `date_creation`/`date_mod`):
 

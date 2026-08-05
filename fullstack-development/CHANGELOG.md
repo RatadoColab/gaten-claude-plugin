@@ -5,6 +5,34 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.5.0] - 2026-08-05
+
+Divisão da skill `glpi` (GLPI 10.0.x) em duas árvores independentes e mutuamente exclusivas — `glpi-10` e `glpi-11` — para cobrir tecnicamente o GLPI 11 (estável desde out/2025) sem risco de o agente aplicar padrão de uma versão em plugin da outra. As 4 sub-skills (`plugin-creation`, `ajax-handlers`, `form-templates`, `vue`) foram duplicadas por versão em vez de compartilhadas, dado o número de rupturas reais entre 10 e 11 (fim de `include inc/includes.php`, `csrf_compliant` depreciado, `$DB->query()`/`queryOrDie()` proibidos, auto-sanitização removida, Controllers Symfony, assets em `public/`, Vue fornecido pelo core via `window._vue`). Conteúdo do `glpi-11` verificado contra o `CHANGELOG.md` e `src/Glpi/Plugin/Hooks.php` do core GLPI (branch `11.0/bugfixes`) onde a doc oficial de plugins está desatualizada. Revisado pelo agente `plugin-dev:skill-reviewer`, com correções de nomenclatura (`plugin_init_<nome>()`), do modelo `window._vue`/`window.Vue` na sub-skill `vue`, de exemplos que contradiziam regras do próprio texto (prefixo `/ajax`, exceção de `exit()` em handler legado), e de duas divergências deixadas fora da árvore GLPI pela duplicação (`ui-components`, `forms`).
+
+### Adicionado
+
+#### Skills de domínio
+- `domains/glpi-11` — plugins GLPI 11: Controllers Symfony (`src/Controller/`, `#[Route]`) como caminho recomendado com suporte a `front/`/`ajax/` legados via `Firewall::addPluginStrategyForLegacyScripts()`, `$DB->request()`/`doQuery()` (query builder obrigatório, `query()`/`queryOrDie()` proibidos), fim da auto-sanitização (`htmlescape()`/`jsescape()`), namespace PSR-4 `GlpiPlugin\Nomedoplugin\`, diretório `public/` para assets web-acessíveis, tabela de hooks removidos/depreciados/novos (`csrf_compliant`, `show_in_timeline`→`timeline_items`, ~50 hooks novos); refs: `architecture.md`, `migration-10-to-11.md` (checklist de migração agrupado por severidade, ~35 itens)
+  - `glpi-11/plugin-creation` — scaffold completo com `setup.php` + `boot()` opcional, Controller de exemplo, `install.php` via `Migration`+`doQuery`; ref: `plugin-structure.md`
+  - `glpi-11/ajax-handlers` — duas rotas documentadas (Controller recomendado + `ajax/` legado sem `$AJAX_INCLUDE`), erros via `Glpi\Exception\Http\*`; ref: `patterns.md`; preserva a sobreposição intencional com `api-rest` (RFC 9457)
+  - `glpi-11/form-templates` — mesmas macros/grid Bootstrap 5 do GLPI 10.x com os deltas do 11 (`|verbatim_value` removido, `path()` no lugar de `get_plugin_web_dir()`); refs: `layouts.md`, `dropdowns.md`; preserva a sobreposição intencional com `domains/forms` (asterisco de campo obrigatório)
+  - `glpi-11/vue` — reescrita: Vue consumido via `window._vue` do core (não um build próprio do plugin), webpack com `externals: { vue: 'window _vue' }`, SFC exclusivamente Composition API, componentes em `js/src/Plugin/Nomedoplugin/`; refs: `vue-build.md` (novo), `integration-patterns.md`, `runtime-patterns.md`, `twig-integration.md`
+
+### Alterado
+
+#### Skills de domínio
+- `domains/glpi` → renomeada para `domains/glpi-10` (conteúdo preservado, escopo GLPI 10.0.x inalterado); `references/glpi-architecture.md` → `references/architecture.md`; `description` de todas as 10 SKILL.md GLPI (2 pais + 8 sub-skills) ganhou heurísticas explícitas de detecção de versão, cláusula de fallback cruzado e instrução de perguntar ao usuário quando a versão for indeterminável; `glpi-10/form-templates` trocou um indício negativo (ausência de `|verbatim_value`) por indícios positivos observáveis
+- `domains/ui-components` — orientação de API de componente Vue em plugins GLPI (§3) e nota sobre testes (§7) qualificadas por versão — descreviam só o modelo GLPI 10 (global build/Options API/PHPUnit) e contradiziam `glpi-11/vue` (SFC/Composition API/webpack)
+- `domains/forms` — referência a `Sanitizer::sanitize()` como mecanismo GLPI de proteção contra XSS qualificada por versão (depreciada no GLPI 11 em favor de `htmlescape()`)
+
+#### Agente
+- `backend-dev` — carregamento de skill GLPI passa por detecção de versão-alvo (indícios em `setup.php`/estrutura de diretório/menção do usuário) antes de escolher entre `domains/glpi-10` e `domains/glpi-11`; sem indício em nenhuma direção, o agente pergunta ao usuário antes de gerar código; corrigida instrução de registro de hooks (`Plugin::addHook()`, que não existe no GLPI, → array `$PLUGIN_HOOKS`)
+
+#### Projeto
+- `plugin.json` — versão `0.5.0`
+- `CLAUDE.md` — inventário de domínios (20→21); lista de domínios GLPI atualizada; precedência de carregamento "GLPI > Languages > Domains" reinterpretada para a árvore da versão detectada; sobreposições intencionais GLPI reescritas para valer nas duas versões; nova assimetria documentando a duplicação deliberada `glpi-10`/`glpi-11` e o contrato de detecção de versão; gap pré-existente (`frontend-dev` sem sub-skills GLPI) registrado em Próximos Passos
+- `README.md` (raiz e do plugin) — catálogo de skills e versão atualizados para refletir `glpi-10`/`glpi-11`
+
 ## [0.4.0] - 2026-07-28
 
 Especialização do agente `devops-cicd` em infraestrutura de containers moderna: duas novas skills de domínio (`podman` e `kubernetes`), executando o split de orquestração já previsto em `CLAUDE.md`, e refatoração de `containers` para a camada de imagem OCI runtime-agnóstica. Conteúdo alinhado aos padrões atuais do ecossistema (jul/2026): Quadlet como padrão de produção do Podman, Pod Security Standards `restricted`, e Gateway API como padrão de tráfego norte-sul após o fim de vida do `ingress-nginx` (24/03/2026).
@@ -210,6 +238,7 @@ Segunda rodada de otimização de tokens: aplicação integral da regra de códi
 - Documentação do projeto (`CLAUDE.md`) com estrutura, agentes e decisões de design
 - Precedência de carregamento de skills: GLPI > Languages > Domains
 
+[0.5.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.5.0
 [0.4.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.4.0
 [0.3.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.3.0
 [0.2.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.2.1

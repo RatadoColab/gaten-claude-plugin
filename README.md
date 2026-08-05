@@ -10,7 +10,7 @@ Este repositório centraliza plugins reutilizáveis para o [Claude Code](https:/
 
 | Plugin | Versão | Descrição |
 |--------|--------|-----------|
-| [`fullstack-development`](./fullstack-development/) | 0.4.0 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
+| [`fullstack-development`](./fullstack-development/) | 0.5.0 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
 
 ## Como usar
 
@@ -59,14 +59,15 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 **Domínios:**
 - `spec-review`, `api-rest`, `database`, `security`, `forms`, `ui-components`, `user-experience`
 - DevOps/CI-CD: `ci-cd`, `containers`, `podman`, `kubernetes`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`
-- `glpi` — com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`
+- `glpi-10` — plugins GLPI 10.0.x, com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`
+- `glpi-11` — plugins GLPI 11, com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`; ambas carregadas de forma mutuamente exclusiva conforme a versão-alvo detectada
 - Mobile: `android-architecture`, `jetpack-compose`, `flutter`
 
 **Linguagens:**
 - `python`, `php`, `javascript`, `vue`, `twig`, `html`
 - Mobile: `kotlin`, `gradle`, `dart`
 
-**Precedência de carregamento:** GLPI > Languages > Domains
+**Precedência de carregamento:** GLPI > Languages > Domains — "GLPI" refere-se à árvore da versão detectada (`glpi-10` ou `glpi-11`, nunca as duas ao mesmo tempo, exceto em tarefa de migração)
 
 **Progressive disclosure:** cada `SKILL.md` mantém o corpo enxuto (~1.500–2.000 palavras) com o detalhamento (catálogos, exemplos longos) extraído para `references/` por tópico, carregados apenas quando necessários — foco em economia de tokens, evitando carregar conteúdo fora do contexto da tarefa.
 
@@ -83,7 +84,7 @@ gaten-claude-plugin/
 │   ├── commands/                 ← review-spec, new-feature, code-review
 │   ├── skills/                  ← cada skill: SKILL.md + references/ (detalhes sob demanda)
 │   │   ├── base/                 ← skills base por agente
-│   │   ├── domains/              ← skills de domínio (inclui glpi/)
+│   │   ├── domains/              ← skills de domínio (inclui glpi-10/ e glpi-11/)
 │   │   └── languages/            ← skills por linguagem
 │   ├── CLAUDE.md
 │   └── CHANGELOG.md
