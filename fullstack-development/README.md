@@ -1,6 +1,6 @@
 # fullstack-development
 
-> Versão 0.4.0
+> Versão 0.5.0
 
 Plugin Claude Code modular para desenvolvimento fullstack e mobile. Fornece agentes especializados em especificação, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter), com skills organizadas por domínio e linguagem de programação.
 
@@ -31,7 +31,8 @@ Carregadas conforme o contexto da tarefa:
 - `domains/database` — modelagem e queries
 - `domains/security` — segurança (OWASP, autenticação)
 - `domains/forms` — formulários frontend
-- `domains/glpi` — plugins GLPI 10.x (ajax-handlers, form-templates, plugin-creation, vue)
+- `domains/glpi-10` — plugins GLPI 10.0.x (ajax-handlers, form-templates, plugin-creation, vue)
+- `domains/glpi-11` — plugins GLPI 11 (ajax-handlers, form-templates, plugin-creation, vue); migração 10→11 documentada em `glpi-11/references/migration-10-to-11.md`
 - `domains/ui-components` — componentes UI
 - `domains/user-experience` — UX e fluxos de usuário
 - `domains/ci-cd` — pipelines, gates de qualidade e estratégias de deploy

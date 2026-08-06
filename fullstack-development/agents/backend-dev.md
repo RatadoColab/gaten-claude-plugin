@@ -53,9 +53,13 @@ Identifique a linguagem em uso e carregue:
 - `${CLAUDE_PLUGIN_ROOT}/skills/languages/php/SKILL.md` (para PHP)
 - `${CLAUDE_PLUGIN_ROOT}/skills/languages/javascript/SKILL.md` (para JavaScript/Node.js)
 
-Identifique o framework em uso e carregue se aplicável:
-- `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi/SKILL.md` (para plugins GLPI — projeto com `setup.php` + `hook.php` na raiz, ou menção explícita do usuário a "GLPI", "CommonDBTM", "plugin GLPI")
-- `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi/plugin-creation/SKILL.md` (adicionar quando a tarefa for criar um plugin do zero ou gerar sua estrutura inicial)
+Identifique o framework em uso e, se for um plugin GLPI, determine a versão-alvo antes de carregar a skill:
+- Indícios de GLPI 10: `include('../../../inc/includes.php')`, `$PLUGIN_HOOKS['csrf_compliant']`, `$DB->queryOrDie(`, `requirements.glpi.min` iniciando em "10.", ou menção explícita a "GLPI 10"
+- Indícios de GLPI 11: diretório `public/` na raiz, `src/Controller/` com `#[Route]`, `$DB->doQuery(`, `plugin_<nome>_boot()`, `requirements.glpi.min` iniciando em "11.", ou menção explícita a "GLPI 11"
+- Sem indício em nenhuma direção: perguntar ao usuário qual versão antes de gerar código — nunca assumir um default
+- Carregar **apenas uma** das duas árvores por vez (`domains/glpi-10/SKILL.md` **ou** `domains/glpi-11/SKILL.md`), exceto em tarefa explícita de migração, onde `glpi-11` é autoritativa e `glpi-10` serve de referência do código de origem
+- `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi-10/SKILL.md` ou `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi-11/SKILL.md` (framework GLPI, versão detectada)
+- `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi-10/plugin-creation/SKILL.md` ou `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi-11/plugin-creation/SKILL.md` (adicionar quando a tarefa for criar um plugin do zero ou gerar sua estrutura inicial)
 
 ## Responsabilidades
 
@@ -63,7 +67,7 @@ Identifique o framework em uso e carregue se aplicável:
 - Modelar estruturas de dados e scripts de instalação/migração
 - Aplicar padrões de segurança e validação de entrada
 - Auditar e corrigir vulnerabilidades (injeção, autorização, exposição de dados)
-- Registrar classes e hooks em `setup.php` via `Plugin::registerClass()` e `Plugin::addHook()` (em plugins GLPI)
+- Registrar classes em `setup.php` via `Plugin::registerClass()` e hooks via o array `$PLUGIN_HOOKS` (em plugins GLPI)
 - Aplicar controle de acesso em todo ponto de entrada com `Session::checkRight()` — ou `Session::haveRight()` para verificação condicional (em plugins GLPI)
 - Otimizar performance de queries, algoritmos e operações de I/O
 - Escrever código limpo seguindo convenções da linguagem e do framework
@@ -91,4 +95,4 @@ Identifique o framework em uso e carregue se aplicável:
 - Não remover código existente sem confirmação
 - Não alterar arquivos fora do escopo do diretório do projeto
 - Não usar bibliotecas externas sem verificar se já existem equivalentes no projeto principal
-- Em plugins GLPI: seguir as **Restrições Absolutas** de `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi/SKILL.md` (autenticação, PDO, estrutura, CSRF, i18n)
+- Em plugins GLPI: seguir as **Restrições Absolutas** da skill da versão detectada (`domains/glpi-10/SKILL.md` ou `domains/glpi-11/SKILL.md`) — autenticação, acesso a banco, estrutura, CSRF/segurança, i18n

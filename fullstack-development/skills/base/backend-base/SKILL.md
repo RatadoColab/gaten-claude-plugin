@@ -42,11 +42,11 @@ Fornece os princípios de arquitetura e boas práticas gerais aplicáveis ao des
 
 ## Adaptação por Framework
 
-As camadas acima são genéricas. Frameworks com arquitetura própria exigem adaptação: em projetos GLPI, carregar `domains/glpi/SKILL.md` — a tabela de equivalências de camadas e as convenções do framework vivem lá e **prevalecem** sobre os padrões genéricos desta base.
+As camadas acima são genéricas. Frameworks com arquitetura própria exigem adaptação: em projetos GLPI, carregar `domains/glpi-10/SKILL.md` ou `domains/glpi-11/SKILL.md` conforme a versão-alvo — a tabela de equivalências de camadas e as convenções do framework vivem lá e **prevalecem** sobre os padrões genéricos desta base.
 
 ## Referências
 
 - Ver `domains/api-rest/SKILL.md` para padrões de APIs REST
 - Ver `domains/database/SKILL.md` para modelagem e queries
 - Ver `domains/security/SKILL.md` para práticas de segurança
-- Ver `domains/glpi/SKILL.md` para plugins GLPI 10.0.x
+- Ver `domains/glpi-10/SKILL.md` (GLPI 10.0.x) ou `domains/glpi-11/SKILL.md` (GLPI 11) para plugins GLPI

@@ -27,7 +27,7 @@ cc --plugin-dir .
 agents/                        ← 5 agentes: spec-dev, backend-dev, frontend-dev, devops-cicd, mobile-dev
 skills/
   base/                        ← 1 skill base por agente (inclui mobile-base)
-  domains/                     ← 20 skills de domínio (glpi tem 4 sub-skills; mobile tem 3)
+  domains/                     ← 21 skills de domínio (glpi-10 e glpi-11 têm 4 sub-skills cada; mobile tem 3)
   languages/                   ← 9 skills de linguagem
 commands/                      ← 3 slash commands
 ```
@@ -37,7 +37,7 @@ commands/                      ← 3 slash commands
 - Versão do plugin em `.claude-plugin/plugin.json`; cada release bumpa a versão e adiciona uma entrada em `CHANGELOG.md` (formato Keep a Changelog) + link de release no rodapé.
 - **Versionamento centralizado no `plugin.json`** — os `SKILL.md` **não** carregam campo `version:` no frontmatter (apenas `name` + `description`). Decisão tomada para simplificar releases e eliminar o drift de versões entre skills.
 - Auditar tamanho dos corpos: `find skills -name SKILL.md -exec wc -w {} \;` (alvo ~1.500–2.000 palavras; ver política de progressive disclosure em Decisões de Design).
-- Validar ponteiros após editar skills: todo `references/*` citado em SKILL.md deve existir (atenção: sub-skills GLPI usam a forma `../references/`).
+- Validar ponteiros após editar skills: todo `references/*` citado em SKILL.md deve existir (atenção: sub-skills GLPI usam a forma `../references/` para apontar para `domains/glpi-10/references/` ou `domains/glpi-11/references/`, conforme a árvore).
 
 ## Agentes e Gatilhos
 
@@ -52,8 +52,8 @@ commands/                      ← 3 slash commands
 ## Organização das Skills
 
 - **Base** (`skills/base/`): carregadas automaticamente por cada agente ao iniciar (inclui `devops-base` e `mobile-base`)
-- **Domínio** (`skills/domains/`): `spec-review`, `api-rest`, `database`, `security`, `forms`, `glpi`, `ui-components`, `user-experience`, `ci-cd`, `containers`, `podman`, `kubernetes`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`, `android-architecture`, `jetpack-compose`, `flutter`
-  - `glpi` tem sub-skills aninhadas em `skills/domains/glpi/`: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`
+- **Domínio** (`skills/domains/`): `spec-review`, `api-rest`, `database`, `security`, `forms`, `glpi-10`, `glpi-11`, `ui-components`, `user-experience`, `ci-cd`, `containers`, `podman`, `kubernetes`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`, `android-architecture`, `jetpack-compose`, `flutter`
+  - `glpi-10` e `glpi-11` têm sub-skills aninhadas em `skills/domains/glpi-10/` e `skills/domains/glpi-11/`, respectivamente: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue` em cada uma — árvores paralelas completas, carregadas de forma mutuamente exclusiva conforme a versão-alvo detectada
 - **Linguagem** (`skills/languages/`): `python`, `php`, `javascript`, `vue`, `twig`, `html`, `kotlin`, `gradle`, `dart`
 
 ## Padrão de Carregamento de Skills pelos Agentes
@@ -68,7 +68,7 @@ ${CLAUDE_PLUGIN_ROOT}/skills/languages/<linguagem>/SKILL.md      ← conforme st
 
 ## Precedência de Carregamento de Skills
 
-Quando múltiplas skills são candidatas, a ordem de prioridade é: **GLPI > Languages > Domains**. Skills de domínio GLPI têm precedência sobre skills de linguagem, que têm precedência sobre domínios genéricos.
+Quando múltiplas skills são candidatas, a ordem de prioridade é: **GLPI > Languages > Domains**. Skills de domínio GLPI têm precedência sobre skills de linguagem, que têm precedência sobre domínios genéricos. "GLPI" aqui significa a árvore da versão detectada (`glpi-10` ou `glpi-11`) — nunca as duas simultaneamente, exceto em tarefa explícita de migração 10→11, onde `glpi-11` é autoritativa e `glpi-10` serve apenas de referência do código de origem.
 
 > O conjunto mobile (`mobile-base`, `kotlin`, `gradle`, `dart`, `android-architecture`, `jetpack-compose`, `flutter`) está **fora deste conflito de precedência**: não há sub-skills GLPI mobile, portanto a regra GLPI > Languages > Domains não se aplica a projetos exclusivamente mobile.
 
@@ -76,9 +76,15 @@ As skills de plataforma do domínio devops (`openshift`, `azure-devops`) **compl
 
 ### Sobreposições intencionais das skills GLPI (não deduplicar)
 
-- `glpi/ajax-handlers`: envelope `{success, code, message, errors}` sobrepõe deliberadamente o RFC 9457 de `api-rest` (handlers são endpoints internos).
-- `glpi/form-templates`: asterisco `<span class="required">*</span>` prevalece sobre o markup `aria-hidden`+`sr-only` de `domains/forms`.
+- `glpi-10/ajax-handlers` e `glpi-11/ajax-handlers`: envelope `{success, code, message, errors}` sobrepõe deliberadamente o RFC 9457 de `api-rest` (handlers/controllers são endpoints internos). Válido nas duas versões.
+- `glpi-10/form-templates` e `glpi-11/form-templates`: asterisco `<span class="required">*</span>` prevalece sobre o markup `aria-hidden`+`sr-only` de `domains/forms`. Válido nas duas versões.
 - Sub-skills GLPI disparam pela própria description, sem garantia da skill pai ou das genéricas em contexto — não remover conteúdo apostando que outra skill estará carregada; usar ponteiro explícito.
+
+### Assimetrias intencionais do conjunto GLPI
+
+- **`glpi-10` e `glpi-11` são árvores paralelas completas e deliberadamente duplicadas**, não uma skill compartilhada com variantes — decisão tomada para eliminar o risco de o agente aplicar padrão de uma versão em projeto da outra (ex.: `include inc/includes.php` num plugin GLPI 11, ou `$DB->doQuery()` sem query builder num plugin GLPI 10). O custo é que `form-templates` fica ~95% idêntico entre as duas — correções de conteúdo comum devem ser replicadas manualmente nas duas árvores; auditar paridade com `diff <(ls skills/domains/glpi-10) <(ls skills/domains/glpi-11)`.
+- **Contrato de detecção de versão:** cada `description` de `glpi-10`/`glpi-11` (pai e sub-skills) lista indícios de projeto (`setup.php`, diretório `public/`, `#[Route]`, `$DB->doQuery`/`queryOrDie`, `csrf_compliant`) e menção explícita do usuário. Sem indício em nenhuma direção, o agente **pergunta** qual versão antes de gerar código — nenhuma das duas assume um default.
+- **Migração 10→11** vive como reference dentro de `glpi-11` (`glpi-11/references/migration-10-to-11.md`), não como skill separada — migrar *para* o 11 já implica que `glpi-11` é o alvo correto a carregar.
 
 ### Assimetrias intencionais do conjunto devops
 
@@ -126,3 +132,4 @@ Para conter o consumo de tokens (o corpo do SKILL.md é sempre carregado quando 
 ## Próximos Passos Sugeridos
 
 - Considerar hooks para validação automática de specs antes de commits
+- `agents/frontend-dev.md` não referencia nenhuma sub-skill GLPI hoje — `glpi-10/form-templates`, `glpi-10/vue`, `glpi-11/form-templates` e `glpi-11/vue` não estão ligadas a agente algum (gap pré-existente à divisão glpi-10/glpi-11, fora do escopo da mudança que criou as duas árvores)

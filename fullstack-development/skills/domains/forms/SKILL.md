@@ -161,7 +161,7 @@ Padrões detalhados (wizard, estado multi-step, acessibilidade, upload acessíve
 Aplicar no contexto de formulário (segurança de aplicação completa em `domains/security/SKILL.md` — fonte autoritativa):
 
 - **CSRF:** token em todo formulário de escrita, via mecanismo do framework (ex.: `_glpi_csrf_token` em plugins GLPI)
-- **XSS:** sanitizar input do usuário via biblioteca do framework (ex.: `Sanitizer::sanitize()` no GLPI) antes de persistir/renderizar; CSP no servidor
+- **XSS:** sanitizar input do usuário via biblioteca do framework antes de persistir/renderizar (ex.: `Sanitizer::sanitize()` no GLPI 10 — família depreciada no GLPI 11 em favor de `htmlescape()`/sanitização explícita no save, ver `domains/glpi-11/references/architecture.md`); CSP no servidor
 - **Server-side:** revalidar/normalizar todo dado recebido; allowlist em campos enumerados; nunca expor erros internos do banco
 
 ---
