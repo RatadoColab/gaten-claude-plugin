@@ -13,7 +13,7 @@ Revisar código detectando automaticamente se é backend, frontend ou mobile e a
 1. Se nenhum argumento fornecido, usar o diretório atual
 2. Ler os arquivos indicados ou fazer listagem do diretório
 3. Detectar o tipo de código:
-   - **Backend:** PHP, Python, JS (Node.js), SQL, controllers, services, repositories
+   - **Backend:** PHP, Python, JS/Node.js, Go, SQL, controllers, services, repositories
    - **Frontend:** Vue, HTML, Twig, CSS, componentes, páginas
    - **Mobile Android:** Kotlin, `.kt`, `@Composable`, imports `androidx.*`, `AndroidManifest.xml`
    - **Mobile Flutter:** Dart, `.dart`, `pubspec.yaml`, `flutter/material.dart`
@@ -22,6 +22,7 @@ Revisar código detectando automaticamente se é backend, frontend ou mobile e a
    - `${CLAUDE_PLUGIN_ROOT}/skills/base/<tipo>-base/SKILL.md` (para mobile: `mobile-base`; para DevOps/Infra: `devops-base`)
    - Skills de domínio conforme o código analisado
    - Skill de linguagem correspondente
+   - **Backend Node.js:** `javascript` + `nodejs` (carregar as duas juntas)
    - **Mobile Android:** `kotlin` + `android-architecture` + `jetpack-compose` (se UI Compose) + `gradle` (se build/dependências)
    - **Mobile Flutter:** `dart` + `flutter`
    - Compose e Flutter são mutuamente exclusivos — nunca carregar ambos

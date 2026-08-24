@@ -10,7 +10,7 @@ Este repositório centraliza plugins reutilizáveis para o [Claude Code](https:/
 
 | Plugin | Versão | Descrição |
 |--------|--------|-----------|
-| [`fullstack-development`](./fullstack-development/) | 0.5.0 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
+| [`fullstack-development`](./fullstack-development/) | 0.6.0 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
 
 ## Como usar
 
@@ -64,7 +64,7 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 - Mobile: `android-architecture`, `jetpack-compose`, `flutter`
 
 **Linguagens:**
-- `python`, `php`, `javascript`, `vue`, `twig`, `html`
+- `python`, `php`, `javascript`, `nodejs`, `golang`, `vue`, `twig`, `html`
 - Mobile: `kotlin`, `gradle`, `dart`
 
 **Precedência de carregamento:** GLPI > Languages > Domains — "GLPI" refere-se à árvore da versão detectada (`glpi-10` ou `glpi-11`, nunca as duas ao mesmo tempo, exceto em tarefa de migração)
@@ -94,7 +94,7 @@ gaten-claude-plugin/
 ## Adicionando um novo plugin
 
 1. Crie um diretório com o nome do plugin na raiz deste repositório.
-2. Adicione o manifesto `.claude-plugin/plugin.json` com `name`, `version`, `description` e `authors`.
+2. Adicione o manifesto `.claude-plugin/plugin.json` com `name`, `version`, `description` e `author`.
 3. Registre o plugin em `.claude-plugin/marketplace.json`:
 
 ```json

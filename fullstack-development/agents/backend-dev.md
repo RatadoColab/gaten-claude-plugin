@@ -51,7 +51,8 @@ Identifique o domínio da tarefa e carregue conforme necessário:
 Identifique a linguagem em uso e carregue:
 - `${CLAUDE_PLUGIN_ROOT}/skills/languages/python/SKILL.md` (para Python)
 - `${CLAUDE_PLUGIN_ROOT}/skills/languages/php/SKILL.md` (para PHP)
-- `${CLAUDE_PLUGIN_ROOT}/skills/languages/javascript/SKILL.md` (para JavaScript/Node.js)
+- `${CLAUDE_PLUGIN_ROOT}/skills/languages/javascript/SKILL.md` (para sintaxe JavaScript) + `${CLAUDE_PLUGIN_ROOT}/skills/languages/nodejs/SKILL.md` (para o runtime Node.js — carregar as duas juntas em projeto Node)
+- `${CLAUDE_PLUGIN_ROOT}/skills/languages/golang/SKILL.md` (para Go)
 
 Identifique o framework em uso e, se for um plugin GLPI, determine a versão-alvo antes de carregar a skill:
 - Indícios de GLPI 10: `include('../../../inc/includes.php')`, `$PLUGIN_HOOKS['csrf_compliant']`, `$DB->queryOrDie(`, `requirements.glpi.min` iniciando em "10.", ou menção explícita a "GLPI 10"

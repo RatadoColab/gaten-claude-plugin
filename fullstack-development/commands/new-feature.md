@@ -48,7 +48,7 @@ Avaliar a demanda do usuário em busca de **solicitações explícitas** de DevO
    - **Flutter:** carregar `${CLAUDE_PLUGIN_ROOT}/skills/languages/dart/SKILL.md` e `${CLAUDE_PLUGIN_ROOT}/skills/domains/flutter/SKILL.md`; carregar `${CLAUDE_PLUGIN_ROOT}/skills/languages/gradle/SKILL.md` se tocar build Android nativo do projeto Flutter
 4. **Se trilha Frontend web acionada** (presença de `.vue`/`.html`/`.twig`, componentes web, páginas, CSS, ou pedido explícito de UI web):
    - Ler `${CLAUDE_PLUGIN_ROOT}/skills/base/frontend-base/SKILL.md`
-5. Com base na stack identificada, carregar skills de linguagem pertinentes adicionais (ex.: `php`, `python`, `javascript`, `vue`)
+5. Com base na stack identificada, carregar skills de linguagem pertinentes adicionais (ex.: `php`, `python`, `javascript`+`nodejs`, `golang`, `vue`)
 
 ### Fase 2 — Especificação da feature (spec-dev)
 
