@@ -1,6 +1,6 @@
 # fullstack-development
 
-> Versão 0.6.0
+> Versão 0.6.1
 
 Plugin Claude Code modular para desenvolvimento fullstack e mobile. Fornece agentes especializados em especificação, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter), com skills organizadas por domínio e linguagem de programação.
 

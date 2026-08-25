@@ -5,6 +5,12 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.6.1] - 2026-08-24
+
+### Fix
+
+- Correção de erro no parâmetro 'author' do arquivo plugin.json.
+
 ## [0.6.0] - 2026-08-24
 
 Adição de duas skills de linguagem — `nodejs` e `golang` — cobrindo backend Node.js e Go, ausentes até então (Node.js estava diluído em `languages/javascript`, sem orientação de runtime; Go não tinha skill alguma). Conteúdo pesquisado contra as versões estáveis mais atuais de cada ecossistema (ago/2026): Node.js 26.x (TypeScript nativo estável via type stripping, test runner nativo, permission model) e Go 1.27.x (métodos genéricos, `encoding/json/v2` GA, `goroutineleak` estável). `nodejs` foi desenhada como skill de runtime — plataforma, módulos, toolchain, deploy —, deliberadamente separada de `languages/javascript`, que permanece responsável apenas pela sintaxe da linguagem; as duas se carregam juntas em projeto Node, evitando tanto a duplicação quanto a lacuna anterior.
