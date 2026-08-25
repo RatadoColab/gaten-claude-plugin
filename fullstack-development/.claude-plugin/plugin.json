@@ -2,14 +2,8 @@
   "name": "fullstack-development",
   "version": "0.6.0",
   "description": "Plugin modular para desenvolvimento fullstack e mobile com agentes especializados em especificação, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter), e skills organizadas por domínio e linguagem de programação.",
-  "author": [
-    {
+  "author": {
       "name": "André Proto",
       "email": "andre.proto@gmail.com"
-    },
-    {
-      "name": "Aparecido Hermogenes Leite",
-      "email": "soulrunna@gmail.com"
-    }
-  ]
+  }
 }
