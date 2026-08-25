@@ -74,7 +74,8 @@ Identifique o domínio da tarefa e carregue **apenas o que corresponder ao foco*
 
 Identifique a linguagem de scripting/automação em uso e carregue se aplicável:
 - `${CLAUDE_PLUGIN_ROOT}/skills/languages/python/SKILL.md` (para scripts Python)
-- `${CLAUDE_PLUGIN_ROOT}/skills/languages/javascript/SKILL.md` (para scripts Node.js)
+- `${CLAUDE_PLUGIN_ROOT}/skills/languages/javascript/SKILL.md` (para sintaxe JavaScript) + `${CLAUDE_PLUGIN_ROOT}/skills/languages/nodejs/SKILL.md` (para o runtime Node.js — carregar as duas juntas em scripts Node)
+- `${CLAUDE_PLUGIN_ROOT}/skills/languages/golang/SKILL.md` (para CLIs e ferramentas de build em Go)
 
 ## Responsabilidades
 

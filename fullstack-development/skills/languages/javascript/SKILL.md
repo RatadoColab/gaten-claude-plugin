@@ -1,6 +1,6 @@
 ---
 name: javascript
-description: This skill should be used when writing, reviewing, or refactoring JavaScript code for both frontend and backend (Node.js). Covers ES6+ features (arrow functions, destructuring, classes, optional chaining, nullish coalescing), async patterns (Promises, async/await, combinators), DOM manipulation, and JavaScript best practices. Use when the user asks to "write JavaScript", "review JS code", "implement async logic", "use ES6 classes", "handle DOM events", or "refactor to modern JS".
+description: This skill should be used when writing, reviewing, or refactoring JavaScript language syntax, used in both frontend and backend (Node.js) code — for Node.js runtime concerns (ESM, `node:` APIs, deployment), see the companion `nodejs` skill instead. Covers ES6+ features (arrow functions, destructuring, classes, optional chaining, nullish coalescing), async patterns (Promises, async/await, combinators), DOM manipulation, and JavaScript best practices. Use when the user asks to "write JavaScript", "review JS code", "implement async logic", "use ES6 classes", "handle DOM events", or "refactor to modern JS".
 ---
 
 # JavaScript — Convenções e Boas Práticas (ES6+)
@@ -147,5 +147,6 @@ Consultar conforme necessário — carregados sob demanda:
 
 ## Também consultar
 
+- `languages/nodejs/SKILL.md` — runtime Node.js (ESM, APIs `node:`, deploy) para código que roda fora do browser
 - `languages/vue/SKILL.md` — uso de JavaScript no contexto Vue.js (reatividade, composables, lifecycle)
 - `domains/security/SKILL.md` — XSS, sanitização de input, CSP e segurança em JavaScript

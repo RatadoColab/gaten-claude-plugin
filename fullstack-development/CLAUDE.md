@@ -28,7 +28,7 @@ agents/                        ← 5 agentes: spec-dev, backend-dev, frontend-de
 skills/
   base/                        ← 1 skill base por agente (inclui mobile-base)
   domains/                     ← 21 skills de domínio (glpi-10 e glpi-11 têm 4 sub-skills cada; mobile tem 3)
-  languages/                   ← 9 skills de linguagem
+  languages/                   ← 11 skills de linguagem
 commands/                      ← 3 slash commands
 ```
 
@@ -54,7 +54,7 @@ commands/                      ← 3 slash commands
 - **Base** (`skills/base/`): carregadas automaticamente por cada agente ao iniciar (inclui `devops-base` e `mobile-base`)
 - **Domínio** (`skills/domains/`): `spec-review`, `api-rest`, `database`, `security`, `forms`, `glpi-10`, `glpi-11`, `ui-components`, `user-experience`, `ci-cd`, `containers`, `podman`, `kubernetes`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`, `android-architecture`, `jetpack-compose`, `flutter`
   - `glpi-10` e `glpi-11` têm sub-skills aninhadas em `skills/domains/glpi-10/` e `skills/domains/glpi-11/`, respectivamente: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue` em cada uma — árvores paralelas completas, carregadas de forma mutuamente exclusiva conforme a versão-alvo detectada
-- **Linguagem** (`skills/languages/`): `python`, `php`, `javascript`, `vue`, `twig`, `html`, `kotlin`, `gradle`, `dart`
+- **Linguagem** (`skills/languages/`): `python`, `php`, `javascript`, `nodejs`, `golang`, `vue`, `twig`, `html`, `kotlin`, `gradle`, `dart`
 
 ## Padrão de Carregamento de Skills pelos Agentes
 
@@ -99,6 +99,12 @@ As skills de plataforma do domínio devops (`openshift`, `azure-devops`) **compl
 - **`flutter` cobre widgets + estado + navegação**, enquanto `dart` (linguagem) cobre null safety, async, Streams e idioms. Compose e Flutter são **mutuamente exclusivos por contexto** — nunca carregar ambos ao mesmo tempo.
 - **Room fica inline em `android-architecture`** com reference próprio (`references/room.md`) — não há domínio `database` mobile separado para evitar fragmentação prematura.
 
+### Assimetrias intencionais do conjunto JavaScript/Node
+
+- **`javascript` cobre a sintaxe da linguagem** (ES6+, async/await, classes, DOM) para backend e frontend no mesmo arquivo; **`nodejs` cobre exclusivamente o runtime** (ESM/resolução de módulos, APIs `node:`, type stripping de TypeScript, test runner nativo, permission model, npm/supply chain, deploy). Divisão análoga a `containers`/`podman`/`kubernetes` no conjunto devops: cada skill soma a camada anterior, não a substitui.
+- **Carregar as duas juntas em projeto Node** — `nodejs` pressupõe a sintaxe de `javascript` já carregada e não a repete; código Node gerado só com `javascript` carregada fica sem orientação de runtime (ESM, graceful shutdown, `node:test`).
+- **Vue/frontend continuam carregando só `javascript`** — `nodejs` não se aplica a código que roda no browser.
+
 ### Gatilhos de split futuro (evitar fragmentação prematura)
 
 Manter unido até o conteúdo amadurecer; extrair quando:
@@ -108,13 +114,14 @@ Manter unido até o conteúdo amadurecer; extrair quando:
 - **`github-actions`** ← extrair de `ci-cd` se ganhar profundidade equivalente à de `azure-devops` (reusable workflows, OIDC, matrix, environments).
 - **`room`** ← separar de `android-architecture` se migrações, FTS, relações e TypeConverters crescerem para além das ~80 linhas atuais de referência.
 - **`flutter-state`** ← separar de `flutter` se a seção de gerenciamento de estado (Provider/Riverpod/BLoC) crescer e precisar de skill própria como `azure-devops`.
+- **`typescript`** ← separar de `nodejs` se a seção de type stripping/`tsconfig.json` crescer além do essencial (hoje cabe em §TypeScript Nativo + `references/typescript-runtime.md`); relevante também se TypeScript passar a ser usado fora do runtime Node (ex.: build para frontend).
 
 ## Decisões de Design
 
 - Skills organizadas em subdirs (`base/`, `domains/`, `languages/`) para separação clara por responsabilidade
 - Commands em `commands/` (formato legado, mas intencional para slash commands diretos)
 - Skills com conteúdo mínimo — intencionalmente para expansão posterior
-- JavaScript cobre backend (Node.js) e frontend no mesmo arquivo de skill
+- `javascript` cobre a sintaxe da linguagem (backend e frontend); `nodejs` cobre exclusivamente o runtime — ver assimetria dedicada abaixo
 
 ### Política de progressive disclosure nos SKILL.md
 

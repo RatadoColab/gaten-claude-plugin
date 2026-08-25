@@ -5,6 +5,37 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.6.0] - 2026-08-24
+
+Adição de duas skills de linguagem — `nodejs` e `golang` — cobrindo backend Node.js e Go, ausentes até então (Node.js estava diluído em `languages/javascript`, sem orientação de runtime; Go não tinha skill alguma). Conteúdo pesquisado contra as versões estáveis mais atuais de cada ecossistema (ago/2026): Node.js 26.x (TypeScript nativo estável via type stripping, test runner nativo, permission model) e Go 1.27.x (métodos genéricos, `encoding/json/v2` GA, `goroutineleak` estável). `nodejs` foi desenhada como skill de runtime — plataforma, módulos, toolchain, deploy —, deliberadamente separada de `languages/javascript`, que permanece responsável apenas pela sintaxe da linguagem; as duas se carregam juntas em projeto Node, evitando tanto a duplicação quanto a lacuna anterior.
+
+### Adicionado
+
+#### Skills de linguagem
+- `languages/nodejs` — runtime Node.js 26.x/24.x LTS: ESM e resolução de módulos, TypeScript nativo (type stripping), `package.json`/npm/pnpm, test runner nativo (`node:test`), streams/`worker_threads`/`AsyncLocalStorage`, erros e graceful shutdown, comparativo de frameworks HTTP (Fastify/Hono/NestJS/Express), permission model e supply chain (`npm ci`, provenance, trusted publishing); refs: `modules-esm.md`, `typescript-runtime.md`, `testing.md`, `streams-workers.md`, `packaging-deploy.md`, `security-supply-chain.md`
+- `languages/golang` — Go 1.27.x: toolchain e `go.mod`, nomenclatura e layout `cmd`/`internal`/`pkg`, erros (`errors.Is/As/Join`), concorrência (`context`, `errgroup`, `synctest`, detecção de vazamento de goroutine), `net/http` idiomático, `log/slog`, testes table-driven, novidades 1.25→1.27, `golangci-lint`/`govulncheck`; refs: `errors.md`, `concurrency.md`, `project-layout.md`, `testing.md`, `stdlib-http-slog.md`, `go127-features.md`, `tooling-build.md`
+
+### Alterado
+
+#### Agentes
+- `backend-dev` — carrega `languages/nodejs` junto de `languages/javascript` em projeto Node, e `languages/golang` para Go
+- `devops-cicd` — bullet de "scripts Node.js" passa a apontar `languages/nodejs`; adicionado `languages/golang` para CLIs/build em Go
+
+#### Projeto
+- `plugin.json` — versão `0.6.0`; corrigida a chave malformada `"author,"` (vírgula dentro do nome da chave) para `"author"`; valor convertido de array (fora do schema documentado, que só aceita objeto único ou string) para string única com os dois coautores
+- `CLAUDE.md` — inventário de skills de linguagem (9→11); nova subseção "Assimetrias intencionais do conjunto JavaScript/Node" documentando a fronteira runtime × linguagem; Decisão de Design sobre JavaScript cobrindo Node.js revista; novo gatilho de split futuro (`typescript`, se crescer além de `nodejs`)
+- `README.md` (raiz e do plugin) — catálogo de linguagens atualizado com `nodejs` e `golang`; versão do plugin atualizada para `0.6.0`; instrução de manifesto corrigida de `authors` (campo inexistente no schema) para `author`
+- `commands/code-review.md`, `commands/new-feature.md` — detecção de stack e exemplos de skill de linguagem passam a citar Node.js/Go; `code-review.md` ganha bullet explícito para o par `javascript`+`nodejs`, em paridade com os bullets de Mobile/DevOps
+
+#### Skills existentes
+- `languages/javascript` — `description` delimita explicitamente sintaxe (esta skill) × runtime Node (`nodejs`); "Também consultar" passa a apontar `languages/nodejs/SKILL.md`
+- `domains/containers/references/examples.md` — exemplo Dockerfile Node.js atualizado de `node:20-slim` para `node:24-alpine`, alinhado ao `engines.node >=24` recomendado por `languages/nodejs`
+- `languages/nodejs/references/packaging-deploy.md` — Dockerfile multi-stage completo removido por duplicar `domains/containers/references/examples.md`; mantido apenas o delta específico de Node (pnpm, `--permission` no `CMD`, distroless); seção `--permission em Produção` removida por duplicar `references/security-supply-chain.md`
+- `languages/golang` — corrigida frase truncada e descrição incorreta do modernizer `slicesbackward` em `references/go127-features.md`; corrigido exemplo de método genérico em `SKILL.md` (constraint `intType` inexistente); adicionado ponteiro para `domains/security/SKILL.md`
+
+### Removido
+- Árvore legada `skills/domains/glpi/` (duplicava `glpi-10/`, renomeada na 0.5.0 mas deixada no disco por engano)
+
 ## [0.5.0] - 2026-08-05
 
 Divisão da skill `glpi` (GLPI 10.0.x) em duas árvores independentes e mutuamente exclusivas — `glpi-10` e `glpi-11` — para cobrir tecnicamente o GLPI 11 (estável desde out/2025) sem risco de o agente aplicar padrão de uma versão em plugin da outra. As 4 sub-skills (`plugin-creation`, `ajax-handlers`, `form-templates`, `vue`) foram duplicadas por versão em vez de compartilhadas, dado o número de rupturas reais entre 10 e 11 (fim de `include inc/includes.php`, `csrf_compliant` depreciado, `$DB->query()`/`queryOrDie()` proibidos, auto-sanitização removida, Controllers Symfony, assets em `public/`, Vue fornecido pelo core via `window._vue`). Conteúdo do `glpi-11` verificado contra o `CHANGELOG.md` e `src/Glpi/Plugin/Hooks.php` do core GLPI (branch `11.0/bugfixes`) onde a doc oficial de plugins está desatualizada. Revisado pelo agente `plugin-dev:skill-reviewer`, com correções de nomenclatura (`plugin_init_<nome>()`), do modelo `window._vue`/`window.Vue` na sub-skill `vue`, de exemplos que contradiziam regras do próprio texto (prefixo `/ajax`, exceção de `exit()` em handler legado), e de duas divergências deixadas fora da árvore GLPI pela duplicação (`ui-components`, `forms`).
@@ -238,6 +269,7 @@ Segunda rodada de otimização de tokens: aplicação integral da regra de códi
 - Documentação do projeto (`CLAUDE.md`) com estrutura, agentes e decisões de design
 - Precedência de carregamento de skills: GLPI > Languages > Domains
 
+[0.6.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.6.0
 [0.5.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.5.0
 [0.4.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.4.0
 [0.3.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.3.0
