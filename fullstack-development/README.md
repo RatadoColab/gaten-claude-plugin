@@ -1,6 +1,6 @@
 # fullstack-development
 
-> Versão 0.6.1
+> Versão 0.7.0
 
 Plugin Claude Code modular para desenvolvimento fullstack e mobile. Fornece agentes especializados em especificação, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter), com skills organizadas por domínio e linguagem de programação.
 
@@ -53,11 +53,11 @@ Carregadas conforme o contexto da tarefa:
 ### Linguagens
 Carregadas conforme a stack identificada:
 - `languages/python` — Python 3.14: tipos (PEP 695, PEP 649), t-strings, asyncio, free-threading, uv/ruff
-- `languages/php` — PHP (backend)
+- `languages/php` — PHP 8.3–8.5 (backend); detecta a versão-alvo do projeto antes de gerar código
 - `languages/javascript` — JavaScript (backend + frontend)
 - `languages/nodejs` — runtime Node.js: ESM, TypeScript nativo, test runner, permission model
 - `languages/golang` — Go: erros, concorrência, `net/http`, `log/slog`
-- `languages/vue` — Vue.js (frontend)
+- `languages/vue` — Vue 3.5 (frontend): `defineModel`, reactive props destructure, utilitários de composição, lazy hydration
 - `languages/twig` — Twig (frontend)
 - `languages/html` — HTML (frontend)
 - `languages/kotlin` — null safety, coroutines, data/sealed classes, scope functions

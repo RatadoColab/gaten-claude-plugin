@@ -18,9 +18,9 @@ description: >
 
 > **Versão-alvo:** GLPI 12 — Vue é fornecido pelo core via `window._vue` / `window.Vue`, sem mudança em relação ao GLPI 11; o plugin nunca carrega seu próprio build do Vue. Para GLPI 11, usar `domains/glpi-11/vue/SKILL.md`; para GLPI 10.0.x, `domains/glpi-10/vue/SKILL.md`.
 >
-> **Único delta 11 → 12 nesta skill:** chamadas `fetch` a partir do Vue não incluem mais `_glpi_csrf_token` no corpo nem `X-Glpi-Csrf-Token` no header — a proteção CSRF é validação de header no kernel. Todo o resto (build webpack, `externals`, montagem via `window.Vue`, ponte hidden input) é idêntico ao GLPI 11.
+> **Único delta 11 → 12 nesta skill:** chamadas `fetch` a partir do Vue não incluem mais o campo `_glpi_csrf_token` no corpo (nem o header `X-Glpi-Csrf-Token`, quando usado) — a proteção CSRF passou a ser validação de header no kernel. Todo o resto (build webpack, `externals`, `output.publicPath`, montagem via `window.Vue`, ponte hidden input) é idêntico ao GLPI 11.
 >
-> **Vue do core:** 3.5.x — verificado em GLPI 12.0.0-rc1 (**3.5.42**), exposto com namespace completo em `window._vue`; todas as APIs de Vue 3.5 de `languages/vue` estão disponíveis. Conferir numa instalação: `grep -oE 'vue v3\.[0-9]+\.[0-9]+' public/build/vue/app.js`. Reconferir a versão contra o GLPI 12.0.0 GA (ver `PENDENCIAS.md` na raiz).
+> **Vue do core:** 3.5.x — verificado em GLPI 12.0.0-rc1 (**3.5.42**), exposto com namespace completo em `window._vue`; as APIs de reatividade, componentes e composição de Vue 3.5 de `languages/vue` estão disponíveis. Pinia e Vue Router **não** vêm do core — usar o padrão multi-`reactive()` da seção 5. Conferir a versão numa instalação: `grep -oE 'vue v3\.[0-9]+\.[0-9]+' <glpi>/public/build/vue/app.js` (ou `window._vue.version` no console). Reconferir contra o GLPI 12.0.0 GA (ver `PENDENCIAS.md` na raiz).
 
 O GLPI 11 adicionou suporte nativo a Vue no core: a aplicação principal já carrega Vue 3 e o expõe globalmente em dois pontos distintos, que não devem ser confundidos:
 
@@ -29,7 +29,7 @@ O GLPI 11 adicionou suporte nativo a Vue no core: a aplicação principal já ca
 
 Plugins **nunca** devem carregar um segundo build do Vue — isso duplicaria a biblioteca e pode causar conflitos de instância. Em vez disso, o plugin declara Vue como dependência externa no seu próprio bundler (webpack).
 
-Os primitivos de reatividade (`reactive`, `ref`, `computed`, `watch`) e os hooks de ciclo de vida (`onBeforeMount`, `onMounted`) são idênticos aos do build modular padrão — comportamento inalterado em relação ao GLPI 10. Para padrões de reatividade avançados, watchers e performance, consultar `languages/vue/SKILL.md` — aplica-se integralmente, incluindo `<script setup>` e as macros de compilação (`defineProps`, `defineEmits`, `defineModel`), porque o componente é um SFC compilado pelo webpack do plugin (seção 3). A única condição: o `vue` de `devDependencies` do plugin não pode ser mais novo que o Vue do core — as macros vêm do `@vue/compiler-sfc` do próprio plugin, e um `vue` de dev mais novo geraria bundle usando API inexistente no runtime do core (ver `references/vue-build.md`).
+Os primitivos de reatividade (`reactive`, `ref`, `computed`, `watch`) e os hooks de ciclo de vida (`onBeforeMount`, `onMounted`) são idênticos aos do build modular padrão — comportamento inalterado em relação ao GLPI 10 e ao GLPI 11. Para padrões de reatividade avançados, watchers e performance, consultar `languages/vue/SKILL.md` — o núcleo de reatividade, componentes e composição aplica-se integralmente, incluindo `<script setup>` e as macros de compilação (`defineProps`, `defineEmits`, `defineModel`), porque o componente é um SFC compilado pelo webpack do plugin (seção 3); Pinia e Vue Router ficam de fora (não vêm do core — ver blockquote). A única condição: o `vue` de `devDependencies` do plugin não pode ser mais novo que o Vue do core — o `@vue/compiler-sfc` do próprio plugin emite os helpers de runtime dessas macros (`defineModel` → `useModel`, `mergeDefaults`, helpers de hidratação), e um `vue` de dev mais novo geraria bundle chamando helper inexistente no runtime do core (ver `references/vue-build.md`).
 
 ---
 
@@ -194,5 +194,5 @@ Padrões detalhados em `references/runtime-patterns.md` — mecânica idêntica 
 | **`references/runtime-patterns.md`** | Modals Bootstrap 5 com Vue e hooks de ciclo de vida (`onBeforeMount`/`onMounted`) com exemplos |
 | **`references/integration-patterns.md`** | Exemplos completos anotados: estrutura mínima, multi-reactive, hidden input bridge, AJAX save, carga de dropdowns via AJAX |
 | **`references/twig-integration.md`** | Estrutura de templates Twig ao redor do componente, `{% verbatim %}`, passagem de props, ciclo de vida de renderização |
-| **`languages/vue/SKILL.md`** | Reatividade avançada, watch patterns, composables, performance — todos aplicáveis (SFC compilado; Vue do core 3.5.x) |
+| **`languages/vue/SKILL.md`** | Reatividade avançada, watch patterns, composables, performance — aplicáveis (SFC compilado; Vue do core 3.5.x). Pinia/Vue Router não vêm do core |
 | **`domains/glpi-12/ajax-handlers/SKILL.md`** | Controllers/handlers PHP que respondem às chamadas `fetch()` deste skill |

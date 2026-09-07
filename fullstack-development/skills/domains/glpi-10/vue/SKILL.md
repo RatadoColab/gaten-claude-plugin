@@ -8,15 +8,16 @@ description: >
   "add Vue 3 to a plugin page" — in a GLPI 10.0.x plugin context (explicit
   "GLPI 10" mention, or confirmed 10.x when asked). Also load when the user
   mentions vue-loader.js, a global Vue build loaded by the plugin itself, or
-  createApp() inside a Twig {% block javascripts %}. For GLPI 11, where Vue
-  is exposed by the core via `window._vue` and plugins bring their own
-  webpack build, use `domains/glpi-11/vue/SKILL.md` instead. If the GLPI
-  version cannot be determined, ask before generating code.
+  createApp() inside a Twig {% block javascripts %}. For GLPI 11 or 12,
+  where Vue is exposed by the core via `window._vue` and plugins bring their
+  own webpack build, use `domains/glpi-11/vue/SKILL.md` or
+  `domains/glpi-12/vue/SKILL.md` instead. If the GLPI version cannot be
+  determined, ask before generating code.
 ---
 
 # GLPI 10.x — Interfaces Vue (Global Build)
 
-> **Versão-alvo:** GLPI 10.0.x — plugin carrega seu próprio build global do Vue. Para GLPI 11 (Vue exposto pelo core via `window._vue`), usar `domains/glpi-11/vue/SKILL.md`.
+> **Versão-alvo:** GLPI 10.0.x — plugin carrega seu próprio build global do Vue. Para GLPI 11 ou 12 (Vue exposto pelo core via `window._vue`, build webpack do plugin), usar `domains/glpi-11/vue/SKILL.md` ou `domains/glpi-12/vue/SKILL.md`.
 >
 > **Vue:** não vem do core — o plugin embarca o próprio `vue.global.prod.js`. Embarcar **≥ 3.5.0** (alinhado ao que os cores GLPI 11/12 expõem); builds anteriores não têm `useTemplateRef`, `useId` nem `onWatcherCleanup`. Conferir com `grep -oE 'vue v3\.[0-9]+\.[0-9]+' lib/vue/vue.global.prod.js`.
 
@@ -27,7 +28,7 @@ Os primitivos de reatividade (`reactive`, `ref`, `computed`, `watch`) e os hooks
 | De `languages/vue` | Global build (GLPI 10) |
 |---|---|
 | `<script setup>` | indisponível — usar `createApp({ setup() { … return {…} } })` (seção 3) |
-| `defineProps` / `defineEmits` / `defineModel` / `defineSlots` / `defineOptions` / `defineExpose` | indisponíveis (macros de compilação) — usar as opções `props:` / `emits:` e o par manual `modelValue` + `update:modelValue` (documentado como "compatibilidade ≤ 3.3" em `languages/vue/references/components.md`) |
+| `defineProps` / `defineEmits` / `defineModel` / `defineSlots` / `defineOptions` / `defineExpose` | indisponíveis (macros de compilação) — usar as opções `props:` / `emits:` e o par manual `modelValue` + `this.$emit('update:modelValue', …)` (a seção "compatibilidade ≤ 3.3" de `languages/vue/references/components.md` descreve o padrão, mas com `<script setup>`; no global build, transpor para as opções) |
 | Reactive props destructure | indisponível — ler via `props.x` no `setup(props)` |
 | `lang="ts"` no componente | indisponível |
 | Lazy hydration (`hydrateOnVisible` etc.) | não se aplica — GLPI não faz SSR |

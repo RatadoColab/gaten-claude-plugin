@@ -86,6 +86,8 @@ As skills de plataforma do domínio devops (`openshift`, `azure-devops`) **compl
 - **Contrato de detecção de versão:** cada `description` de `glpi-10`/`glpi-11`/`glpi-12` (pai e sub-skills) lista indícios de projeto (`setup.php`, `requirements.glpi.min`, `public/`, `#[Route]`, `$DB->doQuery`/`queryOrDie`, `csrf_compliant`, presença/ausência de `csrf_token()`/`_glpi_csrf_token`, `Glpi\Toolbox\HttpClient`) e menção explícita do usuário. Sem indício em nenhuma direção, o agente **pergunta** qual versão antes de gerar código — nenhuma das três assume um default.
 - **Migrações vivem como reference dentro da árvore de destino:** `glpi-11/references/migration-10-to-11.md` e `glpi-12/references/migration-11-to-12.md`, não como skills separadas — migrar *para* uma versão já implica que aquela árvore é a autoritativa a carregar. Não há migração 10→12.
 - **`glpi-12` deriva de um RC:** o conteúdo foi extraído do código-fonte do GLPI 12.0.0 RC. Revalidar contra o GA (previsto para 2026-10-06) — ver `PENDENCIAS.md` na raiz do repositório.
+- **`name` das sub-skills GLPI é prefixado com a versão** (`glpi-12-vue` no diretório `vue`, etc.), quebrando de propósito a convenção "name = diretório": as três árvores têm sub-skills homônimas e precisam de `name` único, e os agentes carregam essas skills por caminho explícito (`${CLAUDE_PLUGIN_ROOT}/...`), não por auto-discovery. Não reabrir esse ponto em auditorias.
+- **Vue por core GLPI** (apurado no código-fonte em 2026-09-07): GLPI 11.0.8 empacota Vue **3.5.35** e GLPI 12.0.0-rc1 **3.5.42**, ambos expostos com namespace completo em `window._vue` — todas as APIs de reatividade/componentes/composição do Vue 3.5 se aplicam, mas **Pinia e Vue Router não vêm do core**. O GLPI 10 **não traz Vue no core**: o plugin embarca o próprio `vue.global.prod.js`, com piso **≥ 3.5.0** recomendado; o global build não tem compilação SFC, logo `<script setup>` e as macros `define*` não valem lá. Reconferir os números do GLPI 12 contra o GA.
 
 ### Assimetrias intencionais do conjunto devops
 
@@ -128,6 +130,18 @@ Manter unido até o conteúdo amadurecer; extrair quando:
 - **`php-migration`** ← extrair de `languages/php` se `references/migration-83-to-84.md` e `references/migration-84-to-85.md` crescerem a ponto de justificar skill própria (com gatilhos de detecção e checklist executável, à moda de `glpi-11/references/migration-10-to-11.md`). Hoje cabem como dois references sob demanda, apontados pela §Recursos por Versão do `SKILL.md`.
 - **`python-concurrency`** ← extrair de `languages/python` se as seções de free-threading (PEP 779) e subinterpretadores (PEP 734) de `references/concurrency.md` crescerem além do essencial — thread-safety de estruturas compartilhadas, canais entre interpretadores, benchmarking do build `python3.14t`, estado de cobertura de wheels. Hoje cabem como duas seções no fim de `concurrency.md`, ao lado do conteúdo de asyncio.
 - **`testing`** ← separar de `domains/debugging` se a estratégia de testes (pirâmide, cobertura, test doubles, dados de teste, testes de contrato) crescer além do recorte "teste de regressão de bug" hoje em `debugging/references/regression-tests.md`. Gatilho natural: a criação de um command `/write-tests` com profundidade própria. Hoje o método transversal de testes vive só como Fase 6 de `debugging` + os `references/testing.md` por linguagem.
+
+## Baselines das skills (situação de set/2026)
+
+Versão-alvo de cada skill que acompanha um ecossistema externo. Atualizadas na 0.7.0.
+
+| Skill | Baseline | Detecção de versão-alvo |
+|---|---|---|
+| `languages/python` | **3.14** (era 3.11) | §"Runtime e Versões"; `from __future__ import annotations` agora é anti-pattern (PEP 649); genéricos na sintaxe PEP 695. References `patterns.md` (ex-`modern-features.md`) e `concurrency.md` (ex-`async-patterns.md`) |
+| `languages/php` | **8.3–8.5** (era 8.3 fixo) | §"Detecção de Versão-Alvo" (`composer.json` → ambiente → sintaxe → pergunta, sem default); recursos por versão em `references/php8{4,5}-features.md` + guias de migração |
+| `languages/vue` | **3.5.x** (era ~3.3) | linha "Versões de referência" no `SKILL.md`; Vue 3.6 / Vapor Mode só como nota de horizonte (RC, não usar em produção) — ver `PENDENCIAS.md` |
+| `domains/security` (+ `devsecops`, `api-rest`) | **OWASP Top 10:2025** | SSRF absorvido em A01, supply chain promovida a A03, A10 nova; senhas no NIST SP 800-63B-4; rate limit em `RateLimit`/`RateLimit-Policy` |
+| `languages/nodejs` / `languages/golang` | Node **26.x** / Go **1.27.x** | inalteradas desde a 0.6.0 |
 
 ## Decisões de Design
 

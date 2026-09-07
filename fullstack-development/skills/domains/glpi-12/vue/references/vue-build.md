@@ -2,7 +2,7 @@
 
 ## Propósito
 
-No GLPI 11, o core carrega Vue 3 uma única vez e o expõe via `window._vue`. Cada plugin que traz componentes Vue precisa do próprio bundler para compilar SFCs (`.vue`) em JS consumível pelo browser, **sem** empacotar uma segunda cópia do Vue. Este arquivo documenta o `webpack.config.js` completo e o entrypoint de registro.
+Desde o GLPI 11 (inalterado no GLPI 12), o core carrega Vue 3 uma única vez e o expõe via `window._vue`. Cada plugin que traz componentes Vue precisa do próprio bundler para compilar SFCs (`.vue`) em JS consumível pelo browser, **sem** empacotar uma segunda cópia do Vue. Este arquivo documenta o `webpack.config.js` completo e o entrypoint de registro.
 
 ## `webpack.config.js` — Completo
 
@@ -60,7 +60,7 @@ Notas:
 - `externals: { vue: 'window _vue' }` é o item obrigatório — sem ele, o webpack tentaria resolver `import ... from 'vue'` via `node_modules`, empacotando uma segunda instância. **Com** o `externals` configurado, o código-fonte dos componentes (`.vue`, `entry.js`) importa Vue normalmente (`import { reactive } from 'vue'`) — o webpack substitui essa importação por `window._vue.reactive` na compilação; nunca é necessário (nem correto) referenciar `window._vue` diretamente no código-fonte.
 - `output.path` (caminho em disco) aponta para `public/build/vue/` — todo asset web-acessível vive em `public/`. `output.publicPath` (caminho servido, usado pelos chunks assíncronos) é diferente: como `public/` não aparece na URL final, o valor correto é `/plugins/meuplugin/build/vue/`.
 - `chunkFormat: 'module'` é necessário para que `defineAsyncComponent(() => import('./MeuComponente.vue'))` funcione como chunk separado carregado sob demanda.
-- `vue-loader` e `vue` (como `devDependency`, apenas para tipos/compilação, não para runtime) vão em `package.json`; **não** em `composer.json`. Fixar o `vue` de `devDependencies` na mesma minor do Vue do core (**≥ 3.5**, ver `SKILL.md` para a versão exata verificada) — é dele que sai o `@vue/compiler-sfc` que compila `<script setup>` e as macros `define*`; um `vue` de dev mais novo que o runtime do core gera bundle que chama API inexistente em runtime.
+- `vue-loader` e `vue` (como `devDependency`, apenas para tipos/compilação, não para runtime) vão em `package.json`; **não** em `composer.json`. Fixar o `vue` de `devDependencies` na **mesma versão do Vue do core, ou anterior** — nunca uma minor ou patch mais recente (piso **≥ 3.5**; ver `SKILL.md` para a versão exata verificada). É dele que sai o `@vue/compiler-sfc` que compila `<script setup>` e as macros `define*`; um `vue` de dev mais novo faz o compilador emitir helper de runtime (`useModel`, `mergeDefaults`, hidratação) que o Vue do core ainda não tem.
 
 ## Entrypoint — Registro de Componentes
 
