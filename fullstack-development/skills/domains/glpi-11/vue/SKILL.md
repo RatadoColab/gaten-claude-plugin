@@ -16,6 +16,8 @@ description: >
 # GLPI 11 — Interfaces Vue (Core Build + Webpack do Plugin)
 
 > **Versão-alvo:** GLPI 11 — Vue é fornecido pelo core via `window._vue`; o plugin nunca carrega seu próprio build do Vue. Para GLPI 10.0.x (build global próprio via `vue-loader.js`), usar `domains/glpi-10/vue/SKILL.md`.
+>
+> **Vue do core:** 3.5.x — verificado em GLPI 11.0.8 (**3.5.35**). O core expõe o namespace completo do Vue em `window._vue`, portanto todas as APIs de Vue 3.5 cobertas por `languages/vue` estão disponíveis. Para conferir numa instalação específica: `grep -oE 'vue v3\.[0-9]+\.[0-9]+' public/build/vue/app.js`.
 
 O GLPI 11 adicionou suporte nativo a Vue no core: a aplicação principal já carrega Vue 3 e o expõe globalmente em dois pontos distintos, que não devem ser confundidos:
 
@@ -24,7 +26,7 @@ O GLPI 11 adicionou suporte nativo a Vue no core: a aplicação principal já ca
 
 Plugins **nunca** devem carregar um segundo build do Vue — isso duplicaria a biblioteca e pode causar conflitos de instância. Em vez disso, o plugin declara Vue como dependência externa no seu próprio bundler (webpack).
 
-Os primitivos de reatividade (`reactive`, `ref`, `computed`, `watch`) e os hooks de ciclo de vida (`onBeforeMount`, `onMounted`) são idênticos aos do build modular padrão — comportamento inalterado em relação ao GLPI 10. Para padrões de reatividade avançados, watchers e performance, consultar `languages/vue/SKILL.md` — tudo se aplica sem modificação.
+Os primitivos de reatividade (`reactive`, `ref`, `computed`, `watch`) e os hooks de ciclo de vida (`onBeforeMount`, `onMounted`) são idênticos aos do build modular padrão — comportamento inalterado em relação ao GLPI 10. Para padrões de reatividade avançados, watchers e performance, consultar `languages/vue/SKILL.md` — aplica-se integralmente, incluindo `<script setup>` e as macros de compilação (`defineProps`, `defineEmits`, `defineModel`), porque o componente é um SFC compilado pelo webpack do plugin (seção 3). A única condição: o `vue` de `devDependencies` do plugin não pode ser mais novo que o Vue do core — as macros vêm do `@vue/compiler-sfc` do próprio plugin, e um `vue` de dev mais novo geraria bundle usando API inexistente no runtime do core (ver `references/vue-build.md`).
 
 ---
 
@@ -187,5 +189,5 @@ Padrões detalhados em `references/runtime-patterns.md` — mecânica idêntica 
 | **`references/runtime-patterns.md`** | Modals Bootstrap 5 com Vue e hooks de ciclo de vida (`onBeforeMount`/`onMounted`) com exemplos |
 | **`references/integration-patterns.md`** | Exemplos completos anotados: estrutura mínima, multi-reactive, hidden input bridge, AJAX save, carga de dropdowns via AJAX |
 | **`references/twig-integration.md`** | Estrutura de templates Twig ao redor do componente, `{% verbatim %}`, passagem de props, ciclo de vida de renderização |
-| **`languages/vue/SKILL.md`** | Reatividade avançada, watch patterns, composables, performance — todos aplicáveis |
+| **`languages/vue/SKILL.md`** | Reatividade avançada, watch patterns, composables, performance — todos aplicáveis (SFC compilado; Vue do core 3.5.x) |
 | **`domains/glpi-11/ajax-handlers/SKILL.md`** | Controllers/handlers PHP que respondem às chamadas `fetch()` deste skill |

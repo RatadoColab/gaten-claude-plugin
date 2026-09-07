@@ -29,10 +29,25 @@ Loaders experimentais. `references/performance.md`: lazy hydration de `defineAsy
 "Horizonte: Vue 3.6" cobrindo Vapor Mode e a reescrita de reatividade sobre alien-signals — marcada
 como **RC, não usar em produção**, com a lista do que o Vapor não suporta (Options API, `v-memo`,
 template refs de componente, `getCurrentInstance`, `app.config.globalProperties`, eventos
-`@vue:*`). Nenhum conteúdo removido — os padrões pré-3.5 permanecem rotulados como legado. Duas
-pendências registradas em `PENDENCIAS.md` (promover a nota de 3.6 no GA; verificar a versão de Vue
-empacotada pelos cores GLPI 10/11/12, que hoje apontam para `languages/vue` sem ressalva de
-versão). Sem bump de versão em `plugin.json`.
+`@vue:*`). Nenhum conteúdo removido — os padrões pré-3.5 permanecem rotulados como legado. Uma
+pendência registrada em `PENDENCIAS.md` (promover a nota de 3.6 no GA). Sem bump de versão em
+`plugin.json`.
+
+Versão de Vue de cada core GLPI apurada e registrada nas sub-skills `domains/glpi-{10,11,12}/vue`
+(resolve a pendência "Determinar a versão do Vue empacotada pelos cores GLPI 10/11/12"). Apurado
+no código-fonte: GLPI 11.0.8 empacota Vue **3.5.35** e GLPI 12.0.0-rc1 **3.5.42** (banner e
+`version` de `public/build/vue/app.js`, expostos com namespace completo em `window._vue`) — todas
+as APIs 3.5 de `languages/vue` disponíveis; o GLPI 10 **não traz Vue no core**, o plugin embarca o
+próprio `vue.global.prod.js` (piso **≥ 3.5.0** agora recomendado na skill). Cada
+`glpi-*/vue/SKILL.md` ganhou linha de versão do core + comando de conferência
+(`grep -oE 'vue v3\.[0-9]+\.[0-9]+' …`). O ponteiro para `languages/vue` deixou de dizer "tudo se
+aplica sem modificação": em `glpi-11`/`glpi-12` ficou explícito que `<script setup>` e as macros
+`define*` só valem porque o componente é SFC compilado pelo webpack do plugin, com a ressalva de
+não usar um `vue` de `devDependencies` mais novo que o runtime do core (também em
+`references/vue-build.md`); em `glpi-10` entrou tabela do que o **global build sem compilação SFC**
+não suporta (`<script setup>`, `defineProps`/`defineEmits`/`defineModel`/etc., reactive props
+destructure, `lang="ts"`, lazy hydration) versus o que se aplica (`useTemplateRef`, `useId`,
+`onWatcherCleanup`, composables, `v-memo`, `shallowRef`).
 
 Nova árvore de skills `domains/glpi-12` para desenvolvimento e migração de plugins **GLPI 12**,
 espelhando a estrutura de `glpi-10`/`glpi-11` (`SKILL.md` + sub-skills `ajax-handlers`,
