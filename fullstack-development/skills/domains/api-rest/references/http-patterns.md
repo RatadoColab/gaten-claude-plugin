@@ -40,10 +40,19 @@ Link: <https://api.exemplo.com/v2/users>; rel="successor-version"
 ```http
 HTTP/1.1 429 Too Many Requests
 Retry-After: 60
-RateLimit-Limit: 1000
-RateLimit-Remaining: 0
-RateLimit-Reset: 1716912000
+RateLimit: "default";r=0;t=60
+RateLimit-Policy: "default";q=1000;w=3600
 ```
+
+> `RateLimit` e `RateLimit-Policy` são os campos do draft IETF corrente
+> (`draft-ietf-httpapi-ratelimit-headers`, ainda I-D). O formato antigo abaixo continua comum em
+> APIs existentes:
+>
+> ```http
+> RateLimit-Limit: 1000
+> RateLimit-Remaining: 0
+> RateLimit-Reset: 1716912000
+> ```
 
 ```json
 {
@@ -62,7 +71,7 @@ RateLimit-Reset: 1716912000
 **Quando usar:** forçar HTTPS em todos os clientes.
 
 ```http
-Strict-Transport-Security: max-age=31536000; includeSubDomains
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 ```
 
 ---
@@ -91,8 +100,8 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains
 | `Cache-Control`     | Diretivas de cache                               |
 | `X-Request-ID`      | Espelhamento do ID de rastreamento               |
 | `Retry-After`       | Segundos antes de nova tentativa (429, 503)      |
-| `RateLimit-Limit`   | Limite de requisições por janela                 |
-| `RateLimit-Remaining` | Requisições restantes na janela atual          |
-| `RateLimit-Reset`   | Timestamp Unix quando a janela reseta            |
+| `RateLimit`         | Quota restante e reset na janela atual (structured fields) |
+| `RateLimit-Policy`  | Política de limite anunciada pelo servidor       |
+| `RateLimit-Limit` / `-Remaining` / `-Reset` | Formato legado, ainda comum      |
 | `Deprecation`       | Indica que o endpoint está deprecado             |
 | `Sunset`            | Data prevista de remoção do endpoint             |

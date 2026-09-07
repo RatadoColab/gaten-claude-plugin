@@ -1,11 +1,24 @@
 ---
 name: php
-description: This skill should be used when writing, reviewing, or refactoring PHP code. Covers PHP 8.3 features (readonly classes, typed constants, json_validate, #[\Override]), PSR-12 standards, modern type system (enums, union types, intersection types, never return type, constructor promotion), design patterns (DTOs, Value Objects, Repository), dependency injection, error handling with typed exceptions, PHPUnit testing, Composer best practices, security (PDO, XSS, CSRF, password hashing), and performance optimization (OPcache, generators, N+1 prevention). Use when the user asks to "write PHP code", "review PHP", "create a PHP class", "implement a repository", "add a PHP enum", "configure OPcache", "write PHPUnit tests", or "upgrade to PHP 8.3".
+description: This skill should be used when writing, reviewing, refactoring, or migrating PHP code across PHP 8.3, 8.4 and 8.5. The SKILL.md body covers only what is common to all three versions; version-specific features and migration checklists live in references/. Determine the target version before generating code: check composer.json (`require.php`, `config.platform.php`), then the environment (`.php-version`, `php -v`, Dockerfile), then syntax already in the codebase (property hooks or `public private(set)` imply >= 8.4; `|>` or `#[\NoDiscard]` imply >= 8.5); if unresolved, ask the user and assume no default. Use when the user asks to "write PHP code", "review PHP", "create a PHP class", "implement a repository", "add a PHP enum", "configure OPcache", "write PHPUnit tests", "migrate to PHP 8.4", "migrate to PHP 8.5", "upgrade PHP 8.4 to 8.5", "what breaks in PHP 8.5", "use property hooks", or "use the pipe operator".
 ---
 
-# PHP — Convenções e Boas Práticas (8.3.x)
+# PHP — Convenções e Boas Práticas (8.3+)
 
-Diretrizes para escrita de código PHP moderno com base no PHP 8.3.x e padrões PSR.
+Diretrizes para escrita de código PHP moderno (8.3, 8.4 e 8.5) e padrões PSR. O corpo desta skill cobre apenas o que é comum às três versões; recursos e quebras específicos de cada versão estão em `references/`.
+
+---
+
+## Detecção de Versão-Alvo
+
+Antes de gerar ou revisar código, determinar a versão-alvo nesta ordem:
+
+1. **`composer.json`** — chave `require.php` (ex.: `"php": "^8.4"`) e `config.platform.php`.
+2. **Ambiente** — `.php-version`, saída de `php -v`, imagem base no `Dockerfile`/`Containerfile`.
+3. **Sintaxe já presente no código** — property hooks ou `public private(set)` ⇒ ≥ 8.4; operador `|>` ou `#[\NoDiscard]` ⇒ ≥ 8.5.
+4. **Sem indício em nenhuma direção** — perguntar ao usuário ("PHP 8.3, 8.4 ou 8.5?") antes de gerar código. Não assumir default.
+
+Com a versão-alvo confirmada, usar livremente os recursos até aquela versão (ver §Recursos por Versão). Sem confirmação, restringir-se ao subconjunto comum a 8.3–8.5.
 
 ---
 
@@ -48,19 +61,26 @@ Para referência completa de tipos, intersection types, `readonly`, constructor 
 
 ---
 
-## PHP 8.3 — Principais Recursos
+## Recursos por Versão
 
-| Recurso | Uso recomendado |
-|---|---|
-| Constantes tipadas | `const string VERSION = '1.0'` em todas as constantes de classe |
-| `json_validate()` | Validar JSON antes de armazenar; não duplicar com `json_decode()` |
-| `#[\Override]` | Todo método que sobrescreve pai ou implementa interface |
-| Clonagem de `readonly` | Padrão wither em objetos imutáveis |
-| Acesso dinâmico a constantes | `Status::{$key}` em vez de `constant('Status::' . $key)` |
-| Exceções granulares de DateTime | Capturar `DateMalformedStringException` em vez do genérico `\Exception` |
-| `Randomizer::getBytesFromString()` | Tokens de verificação com charset controlado |
+Aplicar apenas recursos disponíveis na versão-alvo confirmada (§Detecção de Versão-Alvo). Abaixo dela, usar o subconjunto comum a 8.3–8.5.
 
-Exemplos completos de cada recurso em **`references/php83-features.md`**.
+| Recurso | Mín. | Uso recomendado |
+|---|---|---|
+| Constantes de classe tipadas | 8.3 | `const string VERSION = '1.0'` em toda constante de classe |
+| `#[\Override]` | 8.3 | Todo método que sobrescreve pai ou implementa interface |
+| `json_validate()` | 8.3 | Validar JSON antes de decodificar; não duplicar com `json_decode()` |
+| Property hooks | 8.4 | Getter/setter derivado sem método explícito nem propriedade de apoio |
+| Visibilidade assimétrica (`private(set)`) | 8.4 | Propriedade pública para leitura, mutável só internamente |
+| `array_find` / `array_any` / `array_all` | 8.4 | Substituem `array_filter()` + `reset()` / laços de verificação |
+| `#[\Deprecated]` | 8.4 | Marcar função/método/constante obsoleto (substitui `@deprecated` de docblock) |
+| `new X()->metodo()` | 8.4 | Encadear sem parênteses ao redor do `new` |
+| Operador pipe `\|>` | 8.5 | Encadear transformações unárias em vez de aninhar chamadas |
+| `#[\NoDiscard]` | 8.5 | Função cujo retorno não pode ser ignorado; silenciar com `(void)` |
+| `clone(...)` com `$withProperties` | 8.5 | Wither de objeto imutável sem `__clone()` manual |
+| `array_first()` / `array_last()` | 8.5 | Primeiro/último elemento sem `reset()` / `end()` |
+
+Sintaxe e semântica de cada recurso (com exemplos) em **`references/php83-features.md`**, **`references/php84-features.md`** e **`references/php85-features.md`**. Para subir de versão, ver os guias de migração (§Recursos de Referência).
 
 ---
 
@@ -83,7 +103,7 @@ Hierarquia: `Throwable` > `Error` | `Exception`. Capturar do mais específico ao
 ```php
 try {
     $date = new \DateTimeImmutable($input);
-} catch (\DateMalformedStringException $e) {
+} catch (\DateMalformedStringException $e) { // exceção granular disponível desde 8.3
     throw new \InvalidArgumentException("Data inválida: {$input}", previous: $e);
 }
 ```
@@ -126,7 +146,11 @@ Consultar conforme necessário — carregados sob demanda:
 
 | Arquivo | Conteúdo |
 |---|---|
-| **`references/php83-features.md`** | Exemplos completos de todos os recursos do PHP 8.3 |
+| **`references/php83-features.md`** | Recursos introduzidos no PHP 8.3 (constantes tipadas, `json_validate()`, `#[\Override]`) |
+| **`references/php84-features.md`** | Recursos do PHP 8.4 (property hooks, visibilidade assimétrica, lazy objects, `array_find`) |
+| **`references/php85-features.md`** | Recursos do PHP 8.5 (operador `\|>`, `#[\NoDiscard]`, `clone` com propriedades) |
+| **`references/migration-83-to-84.md`** | Checklist de migração 8.3 → 8.4: quebras, depreciações, JIT, execução |
+| **`references/migration-84-to-85.md`** | Checklist de migração 8.4 → 8.5: quebras, depreciações, OPcache, execução |
 | **`references/type-system.md`** | Sistema de tipos: enums, readonly, intersection types, DTOs |
 | **`references/patterns.md`** | Value Objects, DTOs, Repository, DI, Command/Handler |
 | **`references/security.md`** | PDO, XSS, CSRF, uploads, sessões, cabeçalhos HTTP |

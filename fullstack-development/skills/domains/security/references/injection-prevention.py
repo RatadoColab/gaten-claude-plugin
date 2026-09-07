@@ -1,4 +1,4 @@
-# Referência: domains/security/SKILL.md — Seção A03 (Injection)
+# Referência: domains/security/SKILL.md — Seção A05 (Injection)
 # Quando usar: prevenção de SQL injection e command injection em Python
 
 # SQL Injection — ERRADO

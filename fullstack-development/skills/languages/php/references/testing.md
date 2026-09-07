@@ -1,6 +1,6 @@
 # PHP — Testes com PHPUnit
 
-Boas práticas para testes automatizados em PHP 8.3.x com PHPUnit 11.x.
+Boas práticas para testes automatizados em PHP 8.3+ (8.3, 8.4 e 8.5) com PHPUnit 11.x.
 
 ---
 

@@ -123,6 +123,34 @@ const HeavyDashboard = defineAsyncComponent({
 })
 ```
 
+### Lazy Hydration (Vue 3.5+, apenas SSR)
+
+Em apps com SSR, atrasa a hidratação de um componente assíncrono até um gatilho — o HTML do
+servidor já está visível; só o custo de JS é adiado. Cada estratégia é importada individualmente
+(tree-shaking).
+
+```ts
+import {
+  defineAsyncComponent,
+  hydrateOnVisible, hydrateOnIdle, hydrateOnMediaQuery, hydrateOnInteraction,
+} from 'vue'
+
+// Hidrata quando entra no viewport (IntersectionObserver)
+const Comments = defineAsyncComponent({
+  loader: () => import('./Comments.vue'),
+  hydrate: hydrateOnVisible({ rootMargin: '100px' }),
+})
+
+// Outras estratégias
+hydrateOnIdle(2000)                    // requestIdleCallback, timeout opcional em ms
+hydrateOnMediaQuery('(min-width: 768px)')
+hydrateOnInteraction(['click', 'focus'])
+```
+
+> Para conteúdo que nunca precisa de JS no cliente, importar `hydrateNever` de `vue` e passar em `hydrate`. Estratégias customizadas: `HydrationStrategy` (`(hydrate, forEachElement) => teardown`).
+
+> Sem SSR não há o que adiar — em SPA puro use `defineAsyncComponent` sem `hydrate`.
+
 ```vue
 <!-- In router config: lazy load entire route views -->
 {
@@ -297,10 +325,58 @@ if (import.meta.env.DEV) {
 - [ ] Todas as rotas usam lazy loading (`() => import(...)`)
 - [ ] Componentes pesados usam `defineAsyncComponent`
 - [ ] Tabs e wizards usam `<keep-alive>`
-- [ ] Listas com mais de 200 itens usam virtual scrolling
+- [ ] Listas com mais de 500 itens usam virtual scrolling
 - [ ] Instâncias de bibliotecas externas envolvidas em `markRaw`
 - [ ] Objetos grandes sem necessidade de reatividade profunda usam `shallowRef`
 - [ ] Nenhum `v-if` combinado com `v-for` no mesmo elemento
 - [ ] Valores derivados no template são `computed`, não `methods`
 - [ ] `v-memo` aplicado em listas de renderização complexa
 - [ ] Bundle analisado e sem dependências grandes no chunk principal
+- [ ] Em app SSR: componentes abaixo da dobra usam lazy hydration (`hydrateOnVisible` / `hydrateOnIdle`)
+
+---
+
+## Horizonte: Vue 3.6 (RC — não usar em produção)
+
+Vue **3.6** está em release candidate (`3.6.0-rc.x`; o estável é a linha 3.5). Traz duas mudanças
+grandes. Nenhum código Vapor deve ser gerado por padrão — só mediante pedido explícito e ciente do RC.
+
+### Vapor Mode
+
+Modo de compilação alternativo que **dispensa o Virtual DOM**: o compilador emite atualizações
+diretas de DOM por nó reativo. Benchmarks de terceiros equiparam a Solid e Svelte 5; bundle base < 10 KB.
+
+Opt-in por componente ou por app:
+
+```vue
+<script setup vapor>
+// componente compilado em modo Vapor
+</script>
+```
+
+```ts
+import { createVaporApp } from 'vue'
+createVaporApp(App).mount('#app')
+
+// App misto (Vapor + VDOM): plugin de interoperabilidade
+import { createApp, vaporInteropPlugin } from 'vue'
+createApp(App).use(vaporInteropPlugin).mount('#app')
+```
+
+**Vapor Mode NÃO suporta:**
+
+- Options API
+- `v-memo`
+- template refs de componente (`$el`, `$props`, `$attrs`, `$slots`, `$refs` não são expostos)
+- `getCurrentInstance()` (retorna `null`)
+- `app.config.globalProperties`
+- eventos de lifecycle por elemento (`@vue:mounted` etc.)
+
+**Diferença de comportamento:** eventos são delegados ao `document` — `stopPropagation()` num
+ancestral impede handlers delegados; diretivas customizadas recebem *getters* reativos em vez de valores.
+
+### Reatividade sobre alien-signals
+
+`@vue/reactivity` foi reescrito sobre o algoritmo push-pull do alien-signals — menos alocação de
+memória e menos overhead de cálculo. As APIs públicas (`ref`, `computed`, `watch`, `reactive`)
+permanecem inalteradas; a adoção é transparente para código existente.

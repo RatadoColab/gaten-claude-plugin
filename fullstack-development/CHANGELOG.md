@@ -5,6 +5,242 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [Não publicado]
+
+Atualização da skill `languages/vue` para o baseline **Vue 3.5.x** (estável em ago/2026), fechando
+um gap desde ~3.3. O `SKILL.md` ganhou a linha de versões de referência (Vue 3.5.x / Pinia 4.x /
+Vue Router 5.x), a tabela "Macros de `<script setup>`" (`defineProps`, `defineEmits`, `defineModel`,
+`defineSlots`, `defineOptions`, `defineExpose` com a versão de cada uma) e a mini-tabela
+"Utilitários de composição (3.5+)" (`useTemplateRef`, `useId`, `onWatcherCleanup`, `WatchHandle`).
+`references/components.md`: reactive props destructure com defaults nativos passa a padrão
+recomendado (o `withDefaults` permanece documentado como alternativa suportada — não é deprecado);
+`v-model` reescrito em torno de `defineModel`
+(model nomeado, `[model, modifiers]` com `set()`), com o par manual `modelValue` +
+`update:modelValue` mantido como "compatibilidade ≤ 3.3"; novas seções `useTemplateRef`, `useId`
+(apontando acessibilidade para `domains/ui-components` e `domains/forms`), `defineSlots` e a prop
+`Teleport defer`. `references/composition-api.md`: `onWatcherCleanup` e `WatchHandle`
+(`pause`/`resume`/`stop`) documentados; corrigido o snippet do `useFetch` (faltavam os imports de
+`toValue` e `type Ref`; cleanup migrado para `onWatcherCleanup` com a nota de registro síncrono).
+`references/state-management.md` e `references/routing.md` ganharam nota de versão (Pinia 4 é
+ESM-only e exige `@vue/devtools-api` instalado ao lado; Vue Router 5 não tem breaking changes vindo
+do 4) e o `routing.md` seções curtas sobre roteamento por arquivos (`vue-router/unplugin`) e Data
+Loaders experimentais. `references/performance.md`: lazy hydration de `defineAsyncComponent`
+(`hydrateOnVisible`/`hydrateOnIdle`/`hydrateOnMediaQuery`/`hydrateOnInteraction`, só SSR) e seção
+"Horizonte: Vue 3.6" cobrindo Vapor Mode e a reescrita de reatividade sobre alien-signals — marcada
+como **RC, não usar em produção**, com a lista do que o Vapor não suporta (Options API, `v-memo`,
+template refs de componente, `getCurrentInstance`, `app.config.globalProperties`, eventos
+`@vue:*`). Nenhum conteúdo removido — os padrões pré-3.5 permanecem rotulados como legado. Duas
+pendências registradas em `PENDENCIAS.md` (promover a nota de 3.6 no GA; verificar a versão de Vue
+empacotada pelos cores GLPI 10/11/12, que hoje apontam para `languages/vue` sem ressalva de
+versão). Sem bump de versão em `plugin.json`.
+
+Nova árvore de skills `domains/glpi-12` para desenvolvimento e migração de plugins **GLPI 12**,
+espelhando a estrutura de `glpi-10`/`glpi-11` (`SKILL.md` + sub-skills `ajax-handlers`,
+`form-templates`, `plugin-creation`, `vue` + `references/architecture.md` e
+`references/migration-11-to-12.md`). O conteúdo foi extraído da comparação direta do código-fonte
+do GLPI 12.0.0 RC com o 11.0.8 — não há documentação oficial de plugins para o 12. A arquitetura
+de plugins **não mudou** entre 11 e 12 (Firewall, Controllers, `public/`, PSR-4, query builder,
+`plugin_<nome>_boot()` idênticos); o `glpi-12/SKILL.md` cobre apenas os deltas: PHP mínimo 8.3,
+**CSRF por validação de header** no kernel (fim do token por requisição — remover `_glpi_csrf_token`,
+`csrf_token()`, `X-Glpi-Csrf-Token`, `fields.csrfField()`), re-autenticação "sudo mode"
+(`Glpi\Security\ReAuth\*`, `CommonGLPI::isUserReauthenticationNeeded()`), remoção dos aliases de
+raiz `Query*` (só `Glpi\DBAL\*`), remoção de `Plugin::getWebDir()`, `Html::displayNotFoundError()`/
+`displayRightError()`, `Toolbox::callCurl()` (→ `Glpi\Toolbox\HttpClient`), `KnowbaseItemCategory`,
+`Timer`, `ComputerAntivirus`/`ComputerVirtualMachine`, e das constantes de hook `CSRF_COMPLIANT`
+e `SHOW_IN_TIMELINE`; novos hooks `POST_PREPAREUPDATE`, `GET_CONTENT_TEMPLATE_PARAMETER`/`_VALUE`,
+`INVENTORY_GET_CONFIGURATION`; Twig Components (`Alert`, `Mfa`). O salto pelo GLPI 11 é obrigatório
+na migração — não há caminho 10→12 direto. Ferramental: `glpi-project/rector-glpi` (set `Glpi120x`)
+traz só 2 regras de modernização, nenhuma cobre CSRF/`Html::`/`Query*` — o grosso é manual.
+`agents/backend-dev.md` passou a detectar as três versões; regra "carregar apenas uma árvore"
+estendida a três. **Derivado de um RC** — revalidar contra o 12.0.0 GA (previsto 2026-10-06),
+pendência registrada em `PENDENCIAS.md` na raiz. Sem bump de versão em `plugin.json`.
+
+Atualização da skill `domains/security` para o **OWASP Top 10:2025** (RC nov/2025, final jan/2026),
+que reordena as categorias, absorve SSRF no A01, promove a cadeia de suprimentos a A03 (*Software
+Supply Chain Failures*) e cria a categoria nova A10 (*Mishandling of Exceptional Conditions*).
+Nenhum conteúdo foi removido — o material existente foi remapeado para a nova taxonomia. Requisitos
+correlatos revisados contra as fontes correntes (set/2026): NIST SP 800-63B-4, OWASP Password
+Storage / HTTP Headers / CSP Cheat Sheets, PCI-DSS v4.0.1, draft IETF de headers de rate limit,
+ASVS 5.0, SLSA v1.1+. Sem bump de versão em `plugin.json`.
+
+Atualização da skill `languages/python` para o baseline **Python 3.14** (lançado out/2025), fechando
+um gap de três versões — o corpo estava preso ao 3.11. Adotado o modelo de alvo único das skills
+`golang`/`nodejs` (§"Runtime e Versões" com matriz de suporte, §"Novidades 3.11 → 3.14" apontando
+para um catálogo único). Além das features novas, corrigida orientação que se tornou incorreta: o
+conselho de usar `from __future__ import annotations` "em todo arquivo" contradiz a PEP 649 (3.14),
+que torna as anotações lazy por padrão sem convertê-las em string; a sintaxe de genéricos foi migrada
+para a PEP 695 (`def f[T]`, `class C[T]`, `type X = ...`); a tabela de concorrência deixou de tratar
+o GIL como absoluto (PEP 779 — free-threading suportado). Dois references renomeados
+(`modern-features.md` → `patterns.md`, `async-patterns.md` → `concurrency.md`) e dois novos
+(`python314-features.md`, `tooling.md`). Sem bump de versão em `plugin.json`.
+
+Generalização da skill `languages/php` para a faixa **8.3–8.5**. O corpo do `SKILL.md` deixou de
+ser preso ao PHP 8.3: passa a cobrir apenas o que é comum às três versões, com uma §"Detecção de
+Versão-Alvo" que segue o mesmo contrato das skills `glpi-10`/`glpi-11` (lê `composer.json` →
+ambiente → sintaxe no código → pergunta, sem default). Recursos e quebras específicos de versão
+foram movidos para `references/` — dois catálogos de features novos (8.4 e 8.5) e dois guias de
+migração baseados no manual oficial (`migration84.php`, `migration85.php`). Sem bump de versão em
+`plugin.json`.
+
+Novo command `new-bugfix` e skill `domains/debugging` para cobrir a **correção de bugs**, que até
+agora entrava pelo `new-feature` — um fluxo *spec-first* inadequado para um comportamento que já
+existe e está errado. O `new-bugfix` tem fluxo **diagnóstico-first** simétrico ao `new-feature` (6
+fases, revisão paralela de domínio, portão de aprovação), mas com o eixo invertido: o artefato
+central é o laudo de causa raiz em `.claude/specs/bugfix-<id>.md`, não a spec. O `spec-dev`
+estrutura o laudo (Fase 3) e consolida o Plano de Correção (Fase 5); `backend-dev`/`frontend-dev`/
+`mobile-dev`/`devops-cicd` revisam em paralelo (Fase 4), cada um confirmando ou refutando a causa
+raiz na sua camada; o `devops-cicd` só entra sob a regra "se, e apenas se" — a falha ter de ser de
+pipeline/build/deploy/infra, não uma aplicação que apenas roda em container. A Fase 6 exige teste
+de regressão **fail-before/pass-after**. A skill `domains/debugging` torna o método reaproveitável
+pelos quatro agentes de implementação (linha condicional em `## Skills a carregar`). Fronteiras
+declaradas para não duplicar: instrumentação fica em `domains/observability`, sintaxe de teste nos
+`languages/*/references/testing.md`, vulnerabilidade em `domains/security`. Sem `domains/testing`
+por ora — registrado como gatilho de split futuro. Sem bump de versão em `plugin.json`.
+
+### Adicionado
+
+#### Commands
+- `commands/new-bugfix.md` — correção de bug com fluxo diagnóstico-first: detecção de escopo
+  (backend/frontend/mobile/devops com a regra "se, e apenas se" para DevOps), Fase 1 reprodução e
+  delimitação com portão duro (não avançar sem reprodução ou evidência), Fase 2 diagnóstico de
+  causa raiz por hipótese/refutação, Fase 3 laudo estruturado pelo `spec-dev` em
+  `.claude/specs/bugfix-<id>.md`, Fase 4 revisão paralela de domínio, Fase 5 Plano de Correção
+  consolidado pelo `spec-dev` (correção mínima × estrutural, fora de escopo → `PENDENCIAS.md`),
+  Fase 6 correção pelo agente da camada com teste de regressão fail-before/pass-after
+
+#### Skills novas
+- `domains/debugging/SKILL.md` — método de diagnóstico transversal: reprodução determinística,
+  hipótese e refutação, isolamento (`git bisect`, delta debugging), leitura de evidência (stack
+  trace de fora para dentro, erro de origem × propagado), 10 classes recorrentes de defeito,
+  correção mínima × estrutural, teste de regressão por nível da pirâmide; §"Fronteiras com Outras
+  Skills" contra `observability`, `languages/*/testing.md` e `security`
+- `domains/debugging/references/root-cause.md` — protocolo passo a passo, checklist de bug que não
+  reproduz (dados, timing, estado acumulado, ambiente, concorrência, permissão, rede), roteiro de
+  `git bisect` (manual e `bisect run`), erros de diagnóstico a evitar
+- `domains/debugging/references/regression-tests.md` — método fail-before/pass-after, escolha do
+  nível na pirâmide, nomear o teste pelo defeito, casos de borda a cobrir junto, ponte para os
+  `references/testing.md` de `python`/`php`/`golang`/`nodejs` via `../../../languages/`
+
+#### Agentes
+- `agents/backend-dev.md`, `frontend-dev.md`, `mobile-dev.md`, `devops-cicd.md` — linha condicional
+  em `## Skills a carregar` para `domains/debugging`, carregada só quando a tarefa for diagnóstico
+  de falha existente e não implementação nova
+
+#### Skills existentes
+- `languages/php/references/php84-features.md` — catálogo dos recursos do PHP 8.4 (property hooks,
+  visibilidade assimétrica, `new X()->m()`, `#[\Deprecated]`, `array_find`/`array_any`/`array_all`,
+  objetos lazy via Reflection, `mb_trim`/`RoundingMode`/`fpow`, `DateTime::createFromTimestamp()`,
+  subclasses de PDO por driver)
+- `languages/php/references/php85-features.md` — catálogo dos recursos do PHP 8.5 (operador pipe
+  `|>`, `#[\NoDiscard]`, `clone($o, [...])`, closures em expressões constantes, atributos em
+  constantes, `array_first()`/`array_last()`, `FILTER_THROW_ON_FAILURE`, extensão `URI`)
+- `languages/php/references/migration-83-to-84.md` — checklist de migração 8.3 → 8.4 por severidade
+  (quebras em runtime, depreciações — com destaque para parâmetros implicitamente nullable —,
+  mudança do default do JIT, roteiro de execução)
+- `languages/php/references/migration-84-to-85.md` — checklist de migração 8.4 → 8.5 (mudanças de
+  `PDO::FETCH_*`, magic methods legados, casts não canônicos, OPcache sempre embutido/carregado,
+  roteiro de execução)
+- `languages/python/references/python314-features.md` — catálogo das novidades 3.12 → 3.14 (PEP 695,
+  `@override`, PEP 701, `TypeIs`, defaults de TypeVar, `ReadOnly`, `warnings.deprecated`, PEP 649/749
+  anotações lazy + `annotationlib`, PEP 750 t-strings com exemplos de SQL/HTML, PEP 758, PEP 765,
+  PEP 734 subinterpretadores, PEP 779 free-threading, PEP 784 zstd, PEP 768, introspecção asyncio,
+  `pathlib.Path.copy/move`) + seção "O que muda ao subir de 3.11" (anotações, `forkserver`,
+  `ByteString` removido, extensões C)
+- `languages/python/references/tooling.md` — toolchain 3.14: `uv` (pacotes, venv, versão do Python,
+  `uv.lock`), `ruff` (lint + format), `mypy --strict`/`pyright`/`ty`, `pyproject.toml` de referência,
+  pre-commit, Docker (`python:3.14-slim` e build free-threaded), ponteiro de supply chain para
+  `domains/security` e `domains/devsecops`
+- `domains/security/references/llm-security.md` — segurança de aplicações que consomem LLM, ancorado
+  no OWASP Top 10 for LLM Applications (prompt injection, excessive agency, saída do modelo como
+  input não confiável, isolamento multi-tenant em RAG, quotas de custo/token); nova §"Segurança de
+  Aplicações com LLM" no `SKILL.md` aponta para o reference
+- `domains/security/references/web-defenses.md` — nova §"Cookies e Sessão" (prefixo `__Host-`,
+  `SameSite`, `Partitioned`/CHIPS, `Clear-Site-Data` no logout)
+- `domains/security/SKILL.md` — categoria A10 e subcategoria SSRF (dentro de A01) na tabela-resumo;
+  itens de fail-closed, SBOM/proveniência e headers cross-origin no checklist de revisão
+
+### Alterado
+
+#### Skills existentes
+- `domains/security/SKILL.md` — `description` e §Visão Geral ancoradas em OWASP Top 10:2025; tabela
+  reescrita nas 10 categorias 2025 com mitigação-chave por linha; §Senhas alinhada ao NIST SP
+  800-63B-4 (mínimo 15 chars como autenticador único / 8 com MFA, suportar ≥64, sem regras de
+  composição nem KBA, passkeys/WebAuthn); §Rate Limiting passa a `RateLimit`/`RateLimit-Policy`;
+  §Referências com Top 10:2025, ASVS 5.0 e LLM Top 10
+- `domains/security/references/owasp-top10.md` — reescrito na ordem 2025: A01 incorpora SSRF; A03
+  expandido (pipeline/registry/IDE, casos SolarWinds e worm Shai-Hulud, rollout escalonado); A04
+  com a tabela de perfis Argon2id do OWASP e o limite de 72 bytes do bcrypt; A07/A09 renomeados;
+  A10 nova; estatística de A01 atualizada para o ciclo 2025
+- `domains/security/references/web-defenses.md` — CSP estrita com `'strict-dynamic'`, `report-to` +
+  `Reporting-Endpoints`, nota de Trusted Types e de `frame-ancestors` tornando `X-Frame-Options`
+  obsoleto; §Supply Chain ampliada (proveniência, `npm audit signatures`, OSV-Scanner, OpenSSF
+  Scorecard, SBOM CycloneDX/SPDX, pin por digest, CVSS v4.0)
+- `domains/security/references/*.py` — cabeçalhos renumerados para a taxonomia 2025
+  (`authentication.py` A02→A04 com perfis Argon2id alternativos e checagem do limite de 72 bytes do
+  bcrypt; `ssrf-validation.py` A10→A01/SSRF; `injection-prevention.py` A03→A05)
+- `domains/devsecops/SKILL.md` — referências cruzadas para "OWASP Top 10:2025"; supply chain
+  identificada como A03:2025; proveniência de pacotes e SLSA v1.1+ na §Supply Chain
+- `domains/api-rest/SKILL.md` e `references/http-patterns.md` — headers `RateLimit`/`RateLimit-Policy`
+  como forma corrente (formato `RateLimit-Limit/-Remaining/-Reset` marcado como legado); TLS passa a
+  "1.3 preferencial, 1.2 mínimo"; HSTS com `max-age=63072000; preload`
+- `skills/base/devops-base/SKILL.md`, `README.md` (plugin) — menção a "OWASP Top 10:2025"
+- `languages/php/SKILL.md` — `description` e corpo generalizados para 8.3–8.5; nova §"Detecção de
+  Versão-Alvo"; §"PHP 8.3 — Principais Recursos" substituída por §"Recursos por Versão" (tabela com
+  a coluna `Mín.` cobrindo 8.3/8.4/8.5); tabela de referências ampliada com os quatro arquivos novos
+- `languages/php/references/*.md` — cabeçalhos "PHP 8.3.x" neutralizados para "PHP 8.3+ (8.3, 8.4 e
+  8.5)" em `type-system.md`, `patterns.md`, `testing.md`, `security.md`, `performance.md`;
+  `composer.md` com `"php": "^8.4"` nos exemplos e nota para espelhar a versão-alvo; `performance.md`
+  com bloco de mudanças de OPcache/JIT por versão; `security.md` anotando `PASSWORD_ARGON2` (8.4) e
+  `FILTER_THROW_ON_FAILURE` (8.5); `php83-features.md` com ponteiro para `clone` do 8.5
+- `languages/python/SKILL.md` — `description` e corpo movidos de "3.11+" para o baseline 3.14; H1
+  "(3.14.x)"; nova §"Runtime e Versões" (matriz 3.14–3.11); §"Python 3.10–3.11 — Principais Recursos"
+  substituída por §"Novidades 3.11 → 3.14" (tabela `Recurso | Desde | Resumo`); §Sistema de Tipos com
+  exemplo PEP 695 e linhas para `type X`, `TypeIs`, `@override`; §Tratamento de Erros com PEP 758 e
+  PEP 765; nova §Ferramentas (uv/ruff/mypy); §Anti-Patterns com f-string→t-string para SQL/HTML,
+  `from __future__ import annotations` obsoleto, `TypeVar`+`Generic` → PEP 695; `requires-python`
+  passa a `>=3.14`
+- `languages/python/references/type-hints.md` — reescrito no baseline 3.14: §`from __future__ import
+  annotations` substituída por §"Anotações em 3.14 (PEP 649)"; genéricos migrados para a sintaxe
+  PEP 695 (bounds, constraints, defaults de TypeVar, `**P`), com a forma legada só como nota de
+  leitura; novas seções `@override`, `TypeIs` × `TypeGuard`, `ReadOnly`; Pydantic fixado em ≥ 2.12;
+  `from __future__ import annotations` removido de todos os blocos
+- `languages/python/references/modern-features.md` → **`patterns.md`** (renomeado): deixa de ser
+  changelog "3.10–3.11" e vira catálogo de idiomas no baseline 3.14 (match/case, `ExceptionGroup`/
+  `except*`, `tomllib`, `Self`, walrus, comprehensions, context managers); removidas "Fine-grained
+  Error Locations (3.11)" e "Performance — Python 3.11"; `TypeVarTuple` movido para `type-hints.md`
+- `languages/python/references/async-patterns.md` → **`concurrency.md`** (renomeado + ampliado):
+  tabela do modelo de concorrência com free-threading e `concurrent.interpreters`, sem tratar o GIL
+  como absoluto; `asyncio.TaskGroup` promovido a primitiva preferida sobre `gather`; `Queue.shutdown()`
+  (3.13), `eager_task_factory` (3.12), `python -m asyncio ps|pstree` (3.14); novas §"Free-threading
+  (PEP 779)" e §"Subinterpretadores (PEP 734)" com ressalvas de maturidade
+- `languages/python/references/testing.md` — cabeçalho para o baseline 3.14; `from __future__ import
+  annotations` removido dos exemplos; nova §"Execução sob o build free-threaded" (`pytest-run-parallel`)
+- `domains/security/SKILL.md` — item na §Defesas Web sobre t-strings (PEP 750) como defesa de injeção
+  em Python 3.14+, apontando para `languages/python/references/python314-features.md`
+
+#### Projeto
+- `CLAUDE.md` — assimetria "security × devsecops" atualizada para :2025 e para os dois ângulos da
+  cadeia de suprimentos; novo gatilho de split futuro `ai-security` ← `references/llm-security.md`;
+  novo gatilho de split futuro `php-migration` ← guias de migração de `languages/php`; novo gatilho de
+  split futuro `python-concurrency` ← `languages/python/references/concurrency.md`
+- `CLAUDE.md` — contagem de commands (3 → 4) e de skills de domínio (22 → 23); `debugging` na lista
+  de domínios; nova §"Assimetrias intencionais de `domains/debugging`" (fronteiras com
+  `observability`, `testing.md` por linguagem e `security`); novo gatilho de split futuro `testing`
+  ← `debugging/references/regression-tests.md`
+- `README.md` (plugin) — entrada de `languages/python` expandida com o escopo 3.14 (tipos PEP 695,
+  t-strings, asyncio, free-threading)
+- `README.md` (plugin e raiz do repositório) — `/fullstack-development:new-bugfix` na tabela de
+  commands; `domains/debugging` no catálogo de skills de domínio
+
+### Corrigido
+
+- `domains/security/references/owasp-top10.md` — **erro factual de conformidade**: a retenção de logs
+  de segurança citava "no mínimo 1 ano conforme o Art. 15 do Marco Civil". O Art. 15 (provedores de
+  aplicação) exige **6 meses**; o prazo de 1 ano é do Art. 13 (provedores de conexão). Texto
+  corrigido e a distinção entre os dois artigos explicitada
+- `domains/security/references/owasp-top10.md` — requisito de retenção do PCI-DSS citado como "Req.
+  10.7"; na v4.0.1 é o **Req. 10.5.1** (12 meses, 3 meses imediatamente disponíveis)
+
 ## [0.6.1] - 2026-08-24
 
 ### Fix

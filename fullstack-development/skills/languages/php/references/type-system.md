@@ -1,6 +1,6 @@
 # PHP — Sistema de Tipos Moderno
 
-Guia completo do sistema de tipos do PHP 8.x com exemplos práticos.
+Guia completo do sistema de tipos do PHP 8.3+ (8.3, 8.4 e 8.5) com exemplos práticos. Cada recurso traz a versão mínima; itens marcados 8.4/8.5 exigem confirmação da versão-alvo.
 
 ---
 
@@ -284,3 +284,6 @@ Fibers são a base de frameworks assíncronos como Revolt/ReactPHP. Em código s
 | `readonly` classes | 8.2 | `readonly class DTO` |
 | Constantes tipadas | 8.3 | `const string NAME = 'x'` |
 | `#[\Override]` | 8.3 | `#[\Override] public function foo()` |
+| Visibilidade assimétrica | 8.4 | `public private(set) int $id` — ver `php84-features.md` |
+| Property hooks | 8.4 | `public string $slug { get => ...; }` — ver `php84-features.md` |
+| `clone($o, [...])` | 8.5 | Wither sem `__clone()` — ver `php85-features.md` |

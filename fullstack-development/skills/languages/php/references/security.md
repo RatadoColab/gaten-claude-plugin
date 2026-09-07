@@ -1,12 +1,14 @@
 # PHP — Segurança
 
-Boas práticas de segurança para aplicações PHP 8.3.x.
+Boas práticas de segurança para aplicações PHP 8.3+ (8.3, 8.4 e 8.5).
 
 ---
 
 ## Validação de Input
 
 Validar toda entrada no limite do sistema (request HTTP, linha de comando, APIs externas). Nunca confiar em dados do usuário.
+
+> No PHP 8.5, a flag `FILTER_THROW_ON_FAILURE` faz `filter_var()`/`filter_input()` lançarem `FilterException` em vez de retornar `false`, dispensando a checagem `=== false` abaixo. Usar apenas com versão-alvo 8.5 confirmada — ver `php85-features.md`.
 
 ### `filter_var()` para tipos e formatos
 
@@ -120,7 +122,7 @@ echo '<p>' . e($userInput) . '</p>';
 
 ## Hashing de Senhas
 
-Usar `password_hash()` com `PASSWORD_ARGON2ID` (recomendado em 2024+). Nunca usar MD5, SHA1 ou SHA256 para senhas.
+Usar `password_hash()` com `PASSWORD_ARGON2ID`. Nunca usar MD5, SHA1 ou SHA256 para senhas. A partir do PHP 8.4, `PASSWORD_ARGON2` fica disponível também via OpenSSL 3.2 (sem a extensão Sodium); a escolha recomendada continua sendo `PASSWORD_ARGON2ID` com perfil de custo explícito.
 
 ```php
 <?php

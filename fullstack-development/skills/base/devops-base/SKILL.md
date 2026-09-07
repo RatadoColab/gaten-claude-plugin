@@ -43,7 +43,7 @@ código e sua entrega em produção com segurança e confiabilidade.
 
 ## DevSecOps — Segurança Integrada
 
-Segurança é responsabilidade de todos e deve estar embutida no pipeline, não ser uma etapa final — práticas completas (scans SAST/SCA/DAST/IaC, secrets, SBOM, supply chain) em `domains/devsecops/SKILL.md`. Para segurança de aplicação web/API (OWASP Top 10), ver `domains/security/SKILL.md`.
+Segurança é responsabilidade de todos e deve estar embutida no pipeline, não ser uma etapa final — práticas completas (scans SAST/SCA/DAST/IaC, secrets, SBOM, supply chain) em `domains/devsecops/SKILL.md`. Para segurança de aplicação web/API (OWASP Top 10:2025), ver `domains/security/SKILL.md`.
 
 ## Métricas DORA
 

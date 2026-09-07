@@ -47,6 +47,7 @@ Identifique o domínio da tarefa e carregue conforme necessário:
 - `${CLAUDE_PLUGIN_ROOT}/skills/domains/forms/SKILL.md` (para formulários)
 - `${CLAUDE_PLUGIN_ROOT}/skills/domains/ui-components/SKILL.md` (para componentes)
 - `${CLAUDE_PLUGIN_ROOT}/skills/domains/user-experience/SKILL.md` (para UX e fluxos)
+- `${CLAUDE_PLUGIN_ROOT}/skills/domains/debugging/SKILL.md` (diagnóstico de falha existente — reprodução, isolamento da causa raiz, teste de regressão —, não implementação de funcionalidade nova)
 
 Identifique a linguagem/framework em uso e carregue:
 - `${CLAUDE_PLUGIN_ROOT}/skills/languages/javascript/SKILL.md` (para JavaScript)
