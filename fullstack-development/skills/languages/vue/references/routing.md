@@ -1,5 +1,11 @@
 # Vue 3 — Vue Router: Referência Completa
 
+> **Versão de referência: Vue Router 5.x.** O upgrade a partir do 4.x não tem breaking changes de
+> API (única exceção: o build IIFE não embute mais `@vue/devtools-api`). A novidade é a absorção do
+> `unplugin-vue-router` no core (roteamento por arquivos) e os Data Loaders experimentais — ambos
+> abaixo. O Vue Router 6 será ESM-only e removerá APIs já deprecadas; escrever código novo sem
+> depender de APIs marcadas como legadas na doc.
+
 ---
 
 ## Configuração Inicial
@@ -253,6 +259,60 @@ const applyFilters  = (f: Record<string, string>)        => router.push({ name: 
 const updatePage    = (p: number)                        => router.replace({ query: { ...route.query, page: p } })
 </script>
 ```
+
+---
+
+## Roteamento por Arquivos (Vue Router 5)
+
+O `unplugin-vue-router` foi incorporado ao pacote `vue-router`. As rotas são geradas a partir da
+árvore de arquivos em `src/pages/`, com tipagem automática de nomes e params.
+
+```ts
+// vite.config.ts
+import VueRouter from 'vue-router/vite'   // outros bundlers: 'vue-router/unplugin'
+
+export default defineConfig({
+  plugins: [
+    VueRouter({ routesFolder: 'src/pages' }),
+    vue(),
+  ],
+})
+```
+
+```ts
+// router/index.ts
+import { createRouter, createWebHistory } from 'vue-router'
+import { routes } from 'vue-router/auto-routes'   // rotas geradas do filesystem
+
+export const router = createRouter({ history: createWebHistory(), routes })
+```
+
+> Quem já usava `unplugin-vue-router` migra só trocando os paths de import: `unplugin-vue-router/vite` → `vue-router/vite`, `unplugin-vue-router` (outros bundlers e utilitários) → `vue-router/unplugin`, `vue-router/auto-routes` mantém o nome.
+
+---
+
+## Data Loaders (experimental)
+
+API experimental que acopla o fetch à definição da rota: o componente só renderiza quando os dados
+estão prontos, dispensando estados de loading manuais espalhados. Importada de `vue-router/experimental`.
+
+```ts
+// pages/users/[id].vue
+import { defineBasicLoader } from 'vue-router/experimental'
+
+export const useUserData = defineBasicLoader('/users/[id]', async (route) => {
+  return fetchUser(Number(route.params.id))
+})
+```
+
+```vue
+<script setup lang="ts">
+// A navegação aguarda o loader; aqui os dados já existem
+const { data: user, isLoading, error, reload } = useUserData()
+</script>
+```
+
+> Ainda **experimental** — a assinatura pode mudar. Conferir a doc oficial (`Data Loaders`) antes de adotar em produção.
 
 ---
 

@@ -1,4 +1,4 @@
-# Referência: domains/security/SKILL.md — Seção A10 (SSRF)
+# Referência: domains/security/SKILL.md — Seção A01 (Broken Access Control), subseção SSRF
 # Quando usar: validação de URLs fornecidas pelo usuário antes de realizar fetch
 # Nota: valida o IP após resolução DNS para prevenir DNS rebinding
 

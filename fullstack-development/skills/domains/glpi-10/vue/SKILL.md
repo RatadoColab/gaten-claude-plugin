@@ -8,19 +8,31 @@ description: >
   "add Vue 3 to a plugin page" — in a GLPI 10.0.x plugin context (explicit
   "GLPI 10" mention, or confirmed 10.x when asked). Also load when the user
   mentions vue-loader.js, a global Vue build loaded by the plugin itself, or
-  createApp() inside a Twig {% block javascripts %}. For GLPI 11, where Vue
-  is exposed by the core via `window._vue` and plugins bring their own
-  webpack build, use `domains/glpi-11/vue/SKILL.md` instead. If the GLPI
-  version cannot be determined, ask before generating code.
+  createApp() inside a Twig {% block javascripts %}. For GLPI 11 or 12,
+  where Vue is exposed by the core via `window._vue` and plugins bring their
+  own webpack build, use `domains/glpi-11/vue/SKILL.md` or
+  `domains/glpi-12/vue/SKILL.md` instead. If the GLPI version cannot be
+  determined, ask before generating code.
 ---
 
 # GLPI 10.x — Interfaces Vue (Global Build)
 
-> **Versão-alvo:** GLPI 10.0.x — plugin carrega seu próprio build global do Vue. Para GLPI 11 (Vue exposto pelo core via `window._vue`), usar `domains/glpi-11/vue/SKILL.md`.
+> **Versão-alvo:** GLPI 10.0.x — plugin carrega seu próprio build global do Vue. Para GLPI 11 ou 12 (Vue exposto pelo core via `window._vue`, build webpack do plugin), usar `domains/glpi-11/vue/SKILL.md` ou `domains/glpi-12/vue/SKILL.md`.
+>
+> **Vue:** não vem do core — o plugin embarca o próprio `vue.global.prod.js`. Embarcar **≥ 3.5.0** (alinhado ao que os cores GLPI 11/12 expõem); builds anteriores não têm `useTemplateRef`, `useId` nem `onWatcherCleanup`. Conferir com `grep -oE 'vue v3\.[0-9]+\.[0-9]+' lib/vue/vue.global.prod.js`.
 
 Plugins GLPI não usam ferramentas de build. Vue é entregue como um **global browser build** (`Vue.createApp`, não `import from 'vue'`) e o código da aplicação fica inline em templates Twig, no bloco `{% block javascripts %}`.
 
-Os primitivos de reatividade (`reactive`, `ref`, `computed`, `watch`) e os hooks de ciclo de vida são idênticos ao build modular. Para padrões de reatividade avançados, watchers e performance, consultar `languages/vue/SKILL.md` — tudo se aplica aqui sem modificação.
+Os primitivos de reatividade (`reactive`, `ref`, `computed`, `watch`) e os hooks de ciclo de vida são idênticos ao build modular. Para padrões de reatividade avançados, watchers e performance, consultar `languages/vue/SKILL.md` — mas o global build **não tem etapa de compilação SFC**, então parte do que a skill ensina não se aplica aqui:
+
+| De `languages/vue` | Global build (GLPI 10) |
+|---|---|
+| `<script setup>` | indisponível — usar `createApp({ setup() { … return {…} } })` (seção 3) |
+| `defineProps` / `defineEmits` / `defineModel` / `defineSlots` / `defineOptions` / `defineExpose` | indisponíveis (macros de compilação) — usar as opções `props:` / `emits:` e o par manual `modelValue` + `this.$emit('update:modelValue', …)` (a seção "compatibilidade ≤ 3.3" de `languages/vue/references/components.md` descreve o padrão, mas com `<script setup>`; no global build, transpor para as opções) |
+| Reactive props destructure | indisponível — ler via `props.x` no `setup(props)` |
+| `lang="ts"` no componente | indisponível |
+| Lazy hydration (`hydrateOnVisible` etc.) | não se aplica — GLPI não faz SSR |
+| `ref`/`reactive`/`computed`/`watch`, `useTemplateRef`, `useId`, `onWatcherCleanup`, `WatchHandle`, composables, `v-memo`, `shallowRef` | **aplicam-se** (exigem o build ≥ 3.5 acima) |
 
 ---
 
@@ -244,7 +256,7 @@ Padrões detalhados com exemplos em [`references/runtime-patterns.md`](reference
 
 ## 8. Checklist — Antes de Usar Vue em um Template
 
-- [ ] `lib/vue/vue.global.prod.js` presente no plugin
+- [ ] `lib/vue/vue.global.prod.js` presente no plugin, versão **≥ 3.5.0**
 - [ ] `js/vue-loader.js` criado com as funções helper (ver `references/vue-loader.md`)
 - [ ] `vue-loader.js` registrado no `setup.php` com guarda de URL
 - [ ] `{% block javascripts %}` com `type="module" defer="defer"`
@@ -263,5 +275,5 @@ Padrões detalhados com exemplos em [`references/runtime-patterns.md`](reference
 | **`references/runtime-patterns.md`** | Modals Bootstrap 5 com Vue e hooks de ciclo de vida (`onBeforeMount`/`onMounted`) com exemplos |
 | **`references/integration-patterns.md`** | Exemplos completos anotados: estrutura mínima, multi-reactive, hidden input bridge, AJAX save, carga de dropdowns via AJAX |
 | **`references/twig-integration.md`** | Estrutura de templates Twig, blocos `{% verbatim %}`, injeção de dados PHP, decomposição via `include`, ciclo de vida de renderização |
-| **`languages/vue/SKILL.md`** | Reatividade avançada, watch patterns, composables, performance — todos aplicáveis ao global build |
+| **`languages/vue/SKILL.md`** | Reatividade avançada, watch patterns, composables, performance — aplicáveis exceto o que depende de compilação SFC (`<script setup>`, macros `define*`); ver ressalva no topo |
 | **`domains/glpi-10/ajax-handlers/SKILL.md`** | Handlers PHP que respondem às chamadas `fetch()` deste skill |

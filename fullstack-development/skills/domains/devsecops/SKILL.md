@@ -1,6 +1,6 @@
 ---
 name: devsecops
-description: This skill should be used when integrating security into CI/CD pipelines and infrastructure (shift-left security). Covers pipeline scans (SAST, SCA, DAST, secret scanning, IaC scanning, image scanning), security gates that fail the build, supply chain security (dependency/action pinning, SBOM, cosign/Sigstore signing, SLSA), secrets management in pipelines (vault injection, OIDC and short-lived credentials), and runner isolation. For application/API web security (OWASP Top 10, XSS, CSRF, JWT), use the security skill instead.
+description: This skill should be used when integrating security into CI/CD pipelines and infrastructure (shift-left security). Covers pipeline scans (SAST, SCA, DAST, secret scanning, IaC scanning, image scanning), security gates that fail the build, supply chain security (dependency/action pinning, provenance, SBOM, cosign/Sigstore signing, SLSA), secrets management in pipelines (vault injection, OIDC and short-lived credentials), and runner isolation. For application/API web security (OWASP Top 10:2025, XSS, CSRF, JWT), use the security skill instead.
 ---
 
 # DevSecOps — Segurança no Pipeline e na Infraestrutura
@@ -12,8 +12,11 @@ infraestrutura (*shift-left*): a segurança roda como etapa automatizada em cada
 auditoria final. Esta skill cobre a segurança do **caminho de entrega** (scans, supply chain,
 secrets, credenciais do pipeline).
 
-> Para segurança de **aplicação web/API** (OWASP Top 10, XSS, CSRF, JWT, validação de entrada,
-> upload), carregar `domains/security/SKILL.md` — escopo distinto e complementar.
+> Para segurança de **aplicação web/API** (OWASP Top 10:2025, XSS, CSRF, JWT, validação de entrada,
+> upload), carregar `domains/security/SKILL.md` — escopo distinto e complementar. A cadeia de
+> suprimentos de software foi elevada a **A03:2025 — Software Supply Chain Failures** no OWASP Top
+> 10: esta skill cobre a proteção dessa cadeia no pipeline; `domains/security` cobre as
+> dependências da aplicação.
 
 ---
 
@@ -63,10 +66,12 @@ Bloquear a publicação/promoção quando houver achados de severidade alta/crí
 
 - **Pinning por hash:** fixar actions/imagens por digest (não por tag móvel) para evitar
   comprometimento da cadeia de suprimentos
-- **SBOM:** gerar o Software Bill of Materials de cada artefato/imagem para rastreabilidade
+- **Proveniência:** publicar e verificar proveniência dos pacotes (npm provenance / trusted
+  publishing, `npm audit signatures`, PyPI trusted publishing)
+- **SBOM:** gerar o Software Bill of Materials (CycloneDX/SPDX) de cada artefato/imagem para rastreabilidade
 - **Assinatura:** assinar imagens e artefatos com cosign/Sigstore e **verificar a assinatura no
   deploy** — só roda o que foi assinado pelo pipeline confiável
-- **SLSA:** mirar níveis crescentes do framework SLSA para garantir a integridade da build
+- **SLSA:** mirar níveis crescentes do framework SLSA (v1.1+) para garantir a integridade da build
 
 ---
 
@@ -103,6 +108,6 @@ security_scan:
   `securityContext`, RBAC, NetworkPolicy) que os scanners de manifests acima validam
 - Ver `domains/iac/SKILL.md` para IaC scanning (Checkov/tfsec) e gestão de secrets na infra
 - Ver `domains/openshift/SKILL.md` para SCC e hardening específicos da plataforma
-- Ver `domains/security/SKILL.md` para segurança de aplicação web/API (OWASP Top 10)
+- Ver `domains/security/SKILL.md` para segurança de aplicação web/API (OWASP Top 10:2025)
 - [OWASP CI/CD Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/CI_CD_Security_Cheat_Sheet.html)
 - [SLSA — Supply-chain Levels for Software Artifacts](https://slsa.dev/)

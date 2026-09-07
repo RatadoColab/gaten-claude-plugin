@@ -164,7 +164,7 @@ Garanta que operações possam ser repetidas com segurança em caso de falha de 
 
 Mais usados:
 - **Requisição:** `Authorization` (Bearer), `Content-Type`, `Accept`, `Idempotency-Key`, `If-None-Match`/`If-Match` (condicionais), `X-Request-ID`
-- **Resposta:** `Location` (201), `ETag`, `Cache-Control`, `Retry-After` (429/503), `RateLimit-*`, `Deprecation`/`Sunset`
+- **Resposta:** `Location` (201), `ETag`, `Cache-Control`, `Retry-After` (429/503), `RateLimit`/`RateLimit-Policy`, `Deprecation`/`Sunset`
 
 > Catálogo completo de headers (requisição e resposta) em [`references/http-patterns.md`](references/http-patterns.md).
 
@@ -172,7 +172,7 @@ Mais usados:
 
 ## Rate Limiting
 
-Contrato HTTP: retorne `429 Too Many Requests` com headers `RateLimit-*`/`Retry-After` e body RFC 9457; documente os limites por endpoint ou tier no OpenAPI. Políticas de limite (critérios por usuário/IP/device, backoff): ver `domains/security/SKILL.md` (§Rate Limiting) — fonte autoritativa.
+Contrato HTTP: retorne `429 Too Many Requests` com `RateLimit`/`RateLimit-Policy` (structured fields do draft IETF `draft-ietf-httpapi-ratelimit-headers`) + `Retry-After` e body RFC 9457; documente os limites por endpoint ou tier no OpenAPI. O formato antigo `RateLimit-Limit`/`RateLimit-Remaining`/`RateLimit-Reset` permanece comum em APIs existentes. Políticas de limite (critérios por usuário/IP/device, backoff): ver `domains/security/SKILL.md` (§Rate Limiting) — fonte autoritativa.
 
 > Ver exemplo completo em [`references/http-patterns.md`](references/http-patterns.md).
 
@@ -183,7 +183,7 @@ Contrato HTTP: retorne `429 Too Many Requests` com headers `RateLimit-*`/`Retry-
 Específico de API (autenticação/autorização completas em `domains/security/SKILL.md` — fonte autoritativa):
 
 - **Autenticação:** OAuth 2.0 + OIDC; JWT Bearer (access token de 15 min + refresh token — parâmetros em `domains/security/SKILL.md`); API Keys só server-to-server; não pôr dados sensíveis no payload do JWT
-- **Transporte:** TLS 1.2+ e HSTS em todos os endpoints
+- **Transporte:** TLS 1.3 preferencial (1.2 como piso mínimo) e HSTS em todos os endpoints
 - **Input:** validar/sanitizar contra schema (JSON Schema / OpenAPI); nunca expor stack traces em produção
 - **CORS:** allowlist explícita de origens — nunca `*` em APIs autenticadas
 

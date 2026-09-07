@@ -1,6 +1,6 @@
 # PHP 8.3 — Novos Recursos
 
-Referência dos recursos introduzidos no PHP 8.3.x com exemplos de uso.
+Referência dos recursos introduzidos no PHP 8.3 com exemplos de uso. Disponíveis também no 8.4 e no 8.5. Para recursos posteriores, ver `php84-features.md` e `php85-features.md`.
 
 ---
 
@@ -59,7 +59,7 @@ function processPayload(string $raw): array
 
 ## Readonly Classes e Clonagem
 
-PHP 8.2 introduziu `readonly class`; PHP 8.3 adiciona suporte a `__clone()` para permitir clonagem com valores modificados (padrão *wither*).
+PHP 8.2 introduziu `readonly class`; PHP 8.3 adiciona suporte a `__clone()` para permitir clonagem com valores modificados (padrão *wither*). No PHP 8.5, `clone($obj, [...])` com o argumento `$withProperties` dispensa o `__clone()` manual — ver `php85-features.md`.
 
 ```php
 <?php
@@ -218,7 +218,7 @@ array_is_list($map);  // false
 
 ## Resumo Rápido
 
-| Recurso | Versão | Benefício principal |
+| Recurso | Mín. | Benefício principal |
 |---|---|---|
 | Constantes tipadas | 8.3 | Previne sobrescrita com tipo errado |
 | `json_validate()` | 8.3 | Validação eficiente sem alocação de memória |

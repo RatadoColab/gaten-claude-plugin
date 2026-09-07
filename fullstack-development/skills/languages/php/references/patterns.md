@@ -1,6 +1,6 @@
 # PHP — Padrões de Design Modernos
 
-Padrões recomendados para código PHP 8.3.x limpo e manutenível.
+Padrões recomendados para código PHP 8.3+ (8.3, 8.4 e 8.5) limpo e manutenível. Os exemplos usam o subconjunto comum às três versões; property hooks e visibilidade assimétrica (8.4) enxugam alguns deles — ver `php84-features.md`.
 
 ---
 

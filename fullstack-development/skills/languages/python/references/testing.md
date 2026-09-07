@@ -1,6 +1,6 @@
 # Python — Testes com pytest
 
-Boas práticas para testes automatizados em Python 3.11+ com pytest.
+Boas práticas para testes automatizados no baseline Python 3.14 com pytest.
 
 ---
 
@@ -309,12 +309,24 @@ filterwarnings = [
 
 ---
 
+## Execução sob o build free-threaded
+
+Para validar que o código é thread-safe no build sem GIL (`python3.14t`), rodar a suíte com o plugin
+`pytest-run-parallel`, que executa cada teste concorrentemente em várias threads:
+
+```bash
+uv run --python 3.14t pytest --parallel-threads=4
+```
+
+Testes que compartilham estado mutável de módulo entre casos tendem a falhar aqui — é o sinal
+esperado. Ver **`concurrency.md`** para o contexto de free-threading.
+
+---
+
 ## Exemplo Completo — Test Suite de um Serviço
 
 ```python
 # tests/unit/test_user_service.py
-from __future__ import annotations
-
 import pytest
 from unittest.mock import MagicMock, call
 from meu_pacote.services import UserService

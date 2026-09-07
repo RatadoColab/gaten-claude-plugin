@@ -1,0 +1,198 @@
+---
+name: glpi-12-vue
+description: >
+  This skill should be used when the user asks to "add a Vue interface to a
+  GLPI plugin", "create a Vue tab in GLPI", "use Vue in a Twig template",
+  "integrate Vue with GLPI dropdowns", "create a reactive form in GLPI",
+  "add Vue 3 to a plugin page", "build the plugin's Vue components", or
+  mentions webpack, window._vue, SFC, or defineAsyncComponent in a GLPI
+  plugin context — with the target being GLPI 12 (explicit "GLPI 12"
+  mention, `requirements.glpi.min` starting with "12.", or confirmed 12.x
+  when asked). For GLPI 11 (`csrf_token()` in Twig, `_glpi_csrf_token`
+  fields), use `domains/glpi-11/vue/SKILL.md`; for GLPI 10.0.x (plugin loads
+  its own global Vue build via vue-loader.js), use `domains/glpi-10/vue/SKILL.md`.
+  If the GLPI version cannot be determined, ask before generating code.
+---
+
+# GLPI 12 — Interfaces Vue (Core Build + Webpack do Plugin)
+
+> **Versão-alvo:** GLPI 12 — Vue é fornecido pelo core via `window._vue` / `window.Vue`, sem mudança em relação ao GLPI 11; o plugin nunca carrega seu próprio build do Vue. Para GLPI 11, usar `domains/glpi-11/vue/SKILL.md`; para GLPI 10.0.x, `domains/glpi-10/vue/SKILL.md`.
+>
+> **Único delta 11 → 12 nesta skill:** chamadas `fetch` a partir do Vue não incluem mais o campo `_glpi_csrf_token` no corpo (nem o header `X-Glpi-Csrf-Token`, quando usado) — a proteção CSRF passou a ser validação de header no kernel. Todo o resto (build webpack, `externals`, `output.publicPath`, montagem via `window.Vue`, ponte hidden input) é idêntico ao GLPI 11.
+>
+> **Vue do core:** 3.5.x — verificado em GLPI 12.0.0-rc1 (**3.5.42**), exposto com namespace completo em `window._vue`; as APIs de reatividade, componentes e composição de Vue 3.5 de `languages/vue` estão disponíveis. Pinia e Vue Router **não** vêm do core — usar o padrão multi-`reactive()` da seção 5. Conferir a versão numa instalação: `grep -oE 'vue v3\.[0-9]+\.[0-9]+' <glpi>/public/build/vue/app.js` (ou `window._vue.version` no console). Reconferir contra o GLPI 12.0.0 GA (ver `PENDENCIAS.md` na raiz).
+
+O GLPI 11 adicionou suporte nativo a Vue no core: a aplicação principal já carrega Vue 3 e o expõe globalmente em dois pontos distintos, que não devem ser confundidos:
+
+- **`window._vue`** — a biblioteca Vue crua. Não é referenciada diretamente no código do plugin; é apenas o alvo que o `externals` do webpack usa para resolver `import ... from 'vue'` em tempo de execução, sem empacotar uma segunda cópia.
+- **`window.Vue`** — fachada do core para orquestração entre plugins (`createApp`, `.components`, `defineAsyncComponent`). Usada apenas no script de montagem inline no Twig (que não passa pelo webpack e por isso não pode usar `import`), nunca dentro do código-fonte compilado do componente.
+
+Plugins **nunca** devem carregar um segundo build do Vue — isso duplicaria a biblioteca e pode causar conflitos de instância. Em vez disso, o plugin declara Vue como dependência externa no seu próprio bundler (webpack).
+
+Os primitivos de reatividade (`reactive`, `ref`, `computed`, `watch`) e os hooks de ciclo de vida (`onBeforeMount`, `onMounted`) são idênticos aos do build modular padrão — comportamento inalterado em relação ao GLPI 10 e ao GLPI 11. Para padrões de reatividade avançados, watchers e performance, consultar `languages/vue/SKILL.md` — o núcleo de reatividade, componentes e composição aplica-se integralmente, incluindo `<script setup>` e as macros de compilação (`defineProps`, `defineEmits`, `defineModel`), porque o componente é um SFC compilado pelo webpack do plugin (seção 3); Pinia e Vue Router ficam de fora (não vêm do core — ver blockquote). A única condição: o `vue` de `devDependencies` do plugin não pode ser mais novo que o Vue do core — o `@vue/compiler-sfc` do próprio plugin emite os helpers de runtime dessas macros (`defineModel` → `useModel`, `mergeDefaults`, helpers de hidratação), e um `vue` de dev mais novo geraria bundle chamando helper inexistente no runtime do core (ver `references/vue-build.md`).
+
+---
+
+## 1. Quando Usar Vue em Plugins GLPI
+
+| Cenário | Abordagem |
+|---|---|
+| Aba com lista + formulário de edição inline | Vue |
+| Formulário com estado dependente (múltiplas seleções relacionadas) | Vue |
+| Wizard multi-etapa sem reload de página | Vue |
+| Formulário simples com show/hide por um campo | `on_change` JS inline |
+| Dropdown que filtra outro dropdown via AJAX | jQuery + `on_change` |
+| Listagem somente leitura | Twig puro |
+
+Usar Vue quando o estado da página envolve múltiplos objetos reativos com interdependências, ou quando a UX exige atualizações otimistas sem reload.
+
+---
+
+## 2. Componentes Vue no GLPI 12 — Regras Obrigatórias
+
+- **Apenas Single File Components (SFC) com Composition API.** Options API está proibida — segue a convenção do próprio core GLPI 11.
+- **Dentro do código-fonte do componente (`.vue`, `entry.js`), importar Vue normalmente** — `import { reactive, onBeforeMount } from 'vue';` é o padrão correto. O `externals: { vue: 'window _vue' }` do webpack (seção 3) resolve esse `import` para `window._vue` em runtime, sem empacotar uma segunda cópia da biblioteca. `window.Vue.*` só aparece no script de montagem inline no Twig (seção 4), que não é processado pelo webpack.
+- Componentes ficam em `js/src/Plugin/Meuplugin/` no código-fonte do plugin, compilando para o namespace `Plugin/Meuplugin/NomeDoComponente` — evita colisão com componentes do core ou de outros plugins.
+- Nunca montar um app Vue global único no `<body>` — cada feature monta seu próprio app num container específico da página, como no GLPI 10.
+
+---
+
+## 3. Build — Webpack do Plugin
+
+Cada plugin que traz componentes Vue mantém seu **próprio** `webpack.config.js` (não Vite — é o que o core usa para seus próprios componentes, e plugins seguem a mesma ferramenta por consistência com o ecossistema).
+
+```javascript
+// webpack.config.js (trecho relevante)
+module.exports = {
+    externals: {
+        vue: 'window _vue',   // consome o Vue já carregado pelo core, não empacota outro
+    },
+    output: {
+        path: path.resolve(__dirname, 'public/build/vue'),
+        publicPath: '/plugins/meuplugin/build/vue/',   // caminho servido: public/ não aparece na URL
+        chunkFormat: 'module',
+    },
+    // ...
+};
+```
+
+Pontos-chave:
+- `output.path` (caminho em disco) fica em `public/build/vue` — assets web-acessíveis sempre vivem em `public/` (ver `domains/glpi-12/SKILL.md`); `output.publicPath` (caminho servido, usado pelos chunks assíncronos) é `/plugins/meuplugin/build/vue/`, pois `public/` não aparece na URL final
+- `externals: { vue: 'window _vue' }` é o que impede o plugin de empacotar uma segunda cópia do Vue
+- `chunkFormat: 'module'` é necessário para o carregamento assíncrono via `defineAsyncComponent`
+
+Configuração completa (entry points, loaders SFC, resolve) em **`references/vue-build.md`**.
+
+---
+
+## 4. Registro e Montagem do Componente
+
+No entrypoint compilado, registrar o componente em `window.Vue.components` e montá-lo via `defineAsyncComponent`:
+
+```javascript
+// js/src/Plugin/Meuplugin/entry.js — compilado para public/build/vue/
+window.Vue.components = window.Vue.components || {};
+window.Vue.components['Plugin/Meuplugin/MeuTab'] = {
+    component: window.Vue.defineAsyncComponent(() => import('./MeuTab.vue')),
+};
+```
+
+No Twig, montar o app referenciando o componente registrado:
+
+```twig
+{% block javascripts %}
+<script type="module" defer="defer">
+const app = window.Vue.createApp(window.Vue.components['Plugin/Meuplugin/MeuTab'].component);
+app.mount('#meuplugin-app');
+</script>
+{% endblock %}
+
+<div id="meuplugin-app"></div>
+```
+
+Regras:
+- `window.Vue.*` é usado **apenas** no script de montagem inline do Twig, mostrado acima — dentro dos arquivos `.vue`/`entry.js` compilados pelo webpack, usar `import ... from 'vue'` normalmente (ver seção 2)
+- Um único `createApp()` por aba ou seção de página; sub-formulários em modais são parte do mesmo componente ou de componentes filhos
+- Passar dados iniciais do PHP para o componente via `props` no `createApp(component, { props })`, não via variáveis globais soltas
+- **Garantia de ordem:** o hook `Hooks::ADD_JAVASCRIPT_MODULE` (que carrega o bundle do componente, ver `references/vue-build.md`) é injetado pelo GLPI antes do conteúdo de `{% block javascripts %}` — `window.Vue.components['Plugin/Meuplugin/...']` já existe quando o script de montagem acima executa, sem necessidade de guarda ou `await`
+
+---
+
+## 5. Estado Reativo — Padrão Multi-Objeto
+
+**Inalterado** em relação ao GLPI 10 — usar múltiplos objetos `reactive()` focados por domínio funcional dentro do `setup()` do componente, em vez de uma store centralizada:
+
+```javascript
+const errorsApp = reactive({ /* mensagens de validação + clearErrors() */ });
+const listApp   = reactive({ /* coleção + add(), remove(), find() */ });
+const formApp   = reactive({ /* formulário de edição + validate(), save(), clear() */ });
+```
+
+A convenção `_` para propriedades privadas (não serializadas para AJAX) e o uso de IDs negativos para itens ainda não salvos continuam válidos — ver `references/integration-patterns.md`.
+
+---
+
+## 6. Integração com Dropdowns GLPI
+
+O problema é idêntico ao GLPI 10: `Dropdown::show()` renderiza um `<select>` gerenciado por Select2/jQuery, e o Vue não rastreia mudanças feitas fora de seu sistema reativo. A ponte via **hidden input + `v-model`** continua sendo o padrão — só as funções helper (`updateRelatedVueField`, `glpiClearDropdownValue`, `glpiSetDropdownValue`) deixam de vir de um `vue-loader.js` próprio e passam a ser funções locais do componente ou de um módulo utilitário compartilhado do plugin. Implementação completa em `references/integration-patterns.md`.
+
+---
+
+## 7. AJAX a partir do Vue
+
+Usar `fetch()` apontando para a rota do **Controller** do plugin (ver `domains/glpi-12/ajax-handlers/SKILL.md`), não mais para `ajax/handler.php` como caminho padrão — embora handlers legados continuem acessíveis se ainda não migrados:
+
+```javascript
+const payload = new URLSearchParams({
+    'items_id': String(itemsId),   // passado via prop, não Twig embutido
+    'data':     JSON.stringify(formApp, excludePrivateValuesFromObject),
+});
+
+// Sem _glpi_csrf_token / X-Glpi-Csrf-Token no GLPI 12 — Sec-Fetch-Site/Origin
+// são enviados pelo navegador e validados pelo kernel antes da rota.
+fetch('/plugins/meuplugin/MeuItem', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: payload,
+})
+.then((response) => {
+    if (!response.ok) throw new Error(response.statusText);
+    return response.json();
+});
+```
+
+Como o componente é um SFC compilado (não inline em `{% block javascripts %}`), valores como `items_id` chegam como **props** passadas no `createApp(component, { props })` do Twig. Exemplo completo em `references/integration-patterns.md`.
+
+---
+
+## 8. Modals Bootstrap e Ciclo de Vida
+
+Padrões detalhados em `references/runtime-patterns.md` — mecânica idêntica ao GLPI 10 (`data-bs-toggle`/`data-bs-target`, `closeModal(id)`, `onBeforeMount()`/`onMounted()`).
+
+---
+
+## 9. Checklist — Antes de Usar Vue em um Template GLPI 12
+
+- [ ] Nenhum build próprio do Vue é carregado — apenas `externals: { vue: 'window _vue' }` no webpack do plugin
+- [ ] Componente é SFC com Composition API — nunca Options API
+- [ ] Componente fica em `js/src/Plugin/Meuplugin/`, compilado para `public/build/vue/`
+- [ ] Registrado em `window.Vue.components['Plugin/Meuplugin/...']` via `defineAsyncComponent`
+- [ ] Montagem via `window.Vue.createApp(window.Vue.components[...].component).mount(...)`
+- [ ] Dados do servidor (IDs, itemtype) passados como `props`, não embutidos via interpolação Twig dentro do bundle
+- [ ] **Nenhum** `_glpi_csrf_token` / `X-Glpi-Csrf-Token` / `csrf_token()` nas chamadas `fetch` — CSRF é validação de header no kernel
+- [ ] `{% verbatim %}` envolve apenas interpolações Vue quando ainda houver HTML inline em Twig (containers, não o componente em si)
+- [ ] Propriedades internas prefixadas com `_`
+- [ ] Chamadas AJAX apontam para rota de Controller (`domains/glpi-12/ajax-handlers/SKILL.md`)
+
+---
+
+## Recursos Adicionais
+
+| Arquivo | Conteúdo |
+|---|---|
+| **`references/vue-build.md`** | `webpack.config.js` completo, entrypoint anotado, registro do componente |
+| **`references/runtime-patterns.md`** | Modals Bootstrap 5 com Vue e hooks de ciclo de vida (`onBeforeMount`/`onMounted`) com exemplos |
+| **`references/integration-patterns.md`** | Exemplos completos anotados: estrutura mínima, multi-reactive, hidden input bridge, AJAX save, carga de dropdowns via AJAX |
+| **`references/twig-integration.md`** | Estrutura de templates Twig ao redor do componente, `{% verbatim %}`, passagem de props, ciclo de vida de renderização |
+| **`languages/vue/SKILL.md`** | Reatividade avançada, watch patterns, composables, performance — aplicáveis (SFC compilado; Vue do core 3.5.x). Pinia/Vue Router não vêm do core |
+| **`domains/glpi-12/ajax-handlers/SKILL.md`** | Controllers/handlers PHP que respondem às chamadas `fetch()` deste skill |

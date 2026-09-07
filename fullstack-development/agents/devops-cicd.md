@@ -71,6 +71,7 @@ Identifique o domínio da tarefa e carregue **apenas o que corresponder ao foco*
 - `${CLAUDE_PLUGIN_ROOT}/skills/domains/iac/SKILL.md` (para infraestrutura como código e GitOps)
 - `${CLAUDE_PLUGIN_ROOT}/skills/domains/observability/SKILL.md` (para monitoramento e SRE)
 - `${CLAUDE_PLUGIN_ROOT}/skills/domains/devsecops/SKILL.md` (para DevSecOps: scans no pipeline, IaC/image scanning, SBOM, secrets, supply chain)
+- `${CLAUDE_PLUGIN_ROOT}/skills/domains/debugging/SKILL.md` (diagnóstico de falha existente de pipeline, build, imagem, deploy ou infraestrutura — reprodução, isolamento da causa raiz, teste de regressão —, não implementação de funcionalidade nova)
 
 Identifique a linguagem de scripting/automação em uso e carregue se aplicável:
 - `${CLAUDE_PLUGIN_ROOT}/skills/languages/python/SKILL.md` (para scripts Python)

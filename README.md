@@ -10,7 +10,7 @@ Este repositório centraliza plugins reutilizáveis para o [Claude Code](https:/
 
 | Plugin | Versão | Descrição |
 |--------|--------|-----------|
-| [`fullstack-development`](./fullstack-development/) | 0.6.1 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
+| [`fullstack-development`](./fullstack-development/) | 0.7.0 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
 
 ## Como usar
 
@@ -48,6 +48,7 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 ```
 /fullstack-development:review-spec    — revisão completa de especificação de feature
 /fullstack-development:new-feature    — iniciar desenvolvimento de nova feature
+/fullstack-development:new-bugfix     — corrigir um bug: reprodução → causa raiz → revisão de domínio → correção com teste de regressão
 /fullstack-development:code-review    — revisão de código fullstack
 ```
 
@@ -57,17 +58,18 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 - `spec-base`, `backend-base`, `frontend-base`, `devops-base`, `mobile-base`
 
 **Domínios:**
-- `spec-review`, `api-rest`, `database`, `security`, `forms`, `ui-components`, `user-experience`
+- `spec-review`, `api-rest`, `database`, `security`, `debugging`, `forms`, `ui-components`, `user-experience`
 - DevOps/CI-CD: `ci-cd`, `containers`, `podman`, `kubernetes`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`
 - `glpi-10` — plugins GLPI 10.0.x, com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`
-- `glpi-11` — plugins GLPI 11, com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`; ambas carregadas de forma mutuamente exclusiva conforme a versão-alvo detectada
+- `glpi-11` — plugins GLPI 11, com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`
+- `glpi-12` — plugins GLPI 12, com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`; derivado do 12.0.0 RC — revalidar contra o GA. As três árvores GLPI são carregadas de forma mutuamente exclusiva conforme a versão-alvo detectada
 - Mobile: `android-architecture`, `jetpack-compose`, `flutter`
 
 **Linguagens:**
 - `python`, `php`, `javascript`, `nodejs`, `golang`, `vue`, `twig`, `html`
 - Mobile: `kotlin`, `gradle`, `dart`
 
-**Precedência de carregamento:** GLPI > Languages > Domains — "GLPI" refere-se à árvore da versão detectada (`glpi-10` ou `glpi-11`, nunca as duas ao mesmo tempo, exceto em tarefa de migração)
+**Precedência de carregamento:** GLPI > Languages > Domains — "GLPI" refere-se à árvore da versão detectada (`glpi-10`, `glpi-11` ou `glpi-12`, nunca mais de uma ao mesmo tempo, exceto em tarefa de migração)
 
 **Progressive disclosure:** cada `SKILL.md` mantém o corpo enxuto (~1.500–2.000 palavras) com o detalhamento (catálogos, exemplos longos) extraído para `references/` por tópico, carregados apenas quando necessários — foco em economia de tokens, evitando carregar conteúdo fora do contexto da tarefa.
 
@@ -81,10 +83,10 @@ gaten-claude-plugin/
 │   ├── .claude-plugin/
 │   │   └── plugin.json           ← manifesto do plugin
 │   ├── agents/                   ← spec-dev, backend-dev, frontend-dev, devops-cicd, mobile-dev
-│   ├── commands/                 ← review-spec, new-feature, code-review
+│   ├── commands/                 ← review-spec, new-feature, new-bugfix, code-review
 │   ├── skills/                  ← cada skill: SKILL.md + references/ (detalhes sob demanda)
 │   │   ├── base/                 ← skills base por agente
-│   │   ├── domains/              ← skills de domínio (inclui glpi-10/ e glpi-11/)
+│   │   ├── domains/              ← skills de domínio (inclui glpi-10/, glpi-11/ e glpi-12/)
 │   │   └── languages/            ← skills por linguagem
 │   ├── CLAUDE.md
 │   └── CHANGELOG.md

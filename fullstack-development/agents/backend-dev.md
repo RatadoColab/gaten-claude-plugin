@@ -47,6 +47,7 @@ Identifique o domínio da tarefa e carregue conforme necessário:
 - `${CLAUDE_PLUGIN_ROOT}/skills/domains/api-rest/SKILL.md` (para APIs REST)
 - `${CLAUDE_PLUGIN_ROOT}/skills/domains/database/SKILL.md` (para banco de dados)
 - `${CLAUDE_PLUGIN_ROOT}/skills/domains/security/SKILL.md` (para segurança)
+- `${CLAUDE_PLUGIN_ROOT}/skills/domains/debugging/SKILL.md` (diagnóstico de falha existente — reprodução, isolamento da causa raiz, teste de regressão —, não implementação de funcionalidade nova)
 
 Identifique a linguagem em uso e carregue:
 - `${CLAUDE_PLUGIN_ROOT}/skills/languages/python/SKILL.md` (para Python)
@@ -56,11 +57,12 @@ Identifique a linguagem em uso e carregue:
 
 Identifique o framework em uso e, se for um plugin GLPI, determine a versão-alvo antes de carregar a skill:
 - Indícios de GLPI 10: `include('../../../inc/includes.php')`, `$PLUGIN_HOOKS['csrf_compliant']`, `$DB->queryOrDie(`, `requirements.glpi.min` iniciando em "10.", ou menção explícita a "GLPI 10"
-- Indícios de GLPI 11: diretório `public/` na raiz, `src/Controller/` com `#[Route]`, `$DB->doQuery(`, `plugin_<nome>_boot()`, `requirements.glpi.min` iniciando em "11.", ou menção explícita a "GLPI 11"
+- Indícios de GLPI 11: diretório `public/` na raiz, `src/Controller/` com `#[Route]`, `$DB->doQuery(`, `csrf_token()` no Twig, `_glpi_csrf_token`, `Plugin::getWebDir(`, `requirements.glpi.min` iniciando em "11.", ou menção explícita a "GLPI 11"
+- Indícios de GLPI 12: `requirements.glpi.min` iniciando em "12.", formulários/AJAX **sem** `csrf_token()`/`_glpi_csrf_token`, `Glpi\Toolbox\HttpClient`, `CommonGLPI::isUserReauthenticationNeeded()`, ou menção explícita a "GLPI 12"
 - Sem indício em nenhuma direção: perguntar ao usuário qual versão antes de gerar código — nunca assumir um default
-- Carregar **apenas uma** das duas árvores por vez (`domains/glpi-10/SKILL.md` **ou** `domains/glpi-11/SKILL.md`), exceto em tarefa explícita de migração, onde `glpi-11` é autoritativa e `glpi-10` serve de referência do código de origem
-- `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi-10/SKILL.md` ou `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi-11/SKILL.md` (framework GLPI, versão detectada)
-- `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi-10/plugin-creation/SKILL.md` ou `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi-11/plugin-creation/SKILL.md` (adicionar quando a tarefa for criar um plugin do zero ou gerar sua estrutura inicial)
+- Carregar **apenas uma** das três árvores por vez (`domains/glpi-10/SKILL.md`, `domains/glpi-11/SKILL.md` **ou** `domains/glpi-12/SKILL.md`), exceto em tarefa explícita de migração, onde a árvore de **destino** é autoritativa e a de origem serve de referência do código-fonte (10→11 ou 11→12; o salto 10→12 direto não é suportado)
+- `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi-10/SKILL.md`, `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi-11/SKILL.md` ou `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi-12/SKILL.md` (framework GLPI, versão detectada)
+- `${CLAUDE_PLUGIN_ROOT}/skills/domains/glpi-1X/plugin-creation/SKILL.md` (X = versão detectada; adicionar quando a tarefa for criar um plugin do zero ou gerar sua estrutura inicial)
 
 ## Responsabilidades
 
@@ -96,4 +98,4 @@ Identifique o framework em uso e, se for um plugin GLPI, determine a versão-alv
 - Não remover código existente sem confirmação
 - Não alterar arquivos fora do escopo do diretório do projeto
 - Não usar bibliotecas externas sem verificar se já existem equivalentes no projeto principal
-- Em plugins GLPI: seguir as **Restrições Absolutas** da skill da versão detectada (`domains/glpi-10/SKILL.md` ou `domains/glpi-11/SKILL.md`) — autenticação, acesso a banco, estrutura, CSRF/segurança, i18n
+- Em plugins GLPI: seguir as **Restrições Absolutas** da skill da versão detectada (`domains/glpi-10/SKILL.md`, `domains/glpi-11/SKILL.md` ou `domains/glpi-12/SKILL.md`) — autenticação, acesso a banco, estrutura, CSRF/segurança, i18n

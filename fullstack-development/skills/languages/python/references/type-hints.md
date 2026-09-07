@@ -1,61 +1,64 @@
 # Python — Sistema de Tipos e Type Hints
 
-Guia completo de anotações de tipo em Python 3.11+ com exemplos práticos.
+Guia de anotações de tipo no baseline **Python 3.14**, com exemplos práticos. Para a linha do tempo
+das mudanças (PEP 695, PEP 649, `TypeIs`), ver **`python314-features.md`**.
 
 ---
 
-## `from __future__ import annotations`
+## Anotações em 3.14 (PEP 649 / 749)
 
-Ativar em todo arquivo que usa anotações de tipo. Transforma todas as anotações em strings avaliadas tardiamente (*lazy evaluation*), eliminando forward references e reduzindo overhead de importação.
+Desde o 3.14 as anotações são avaliadas **tardiamente** por padrão: só são resolvidas quando algo as
+lê. Continuam sendo objetos reais — não viram strings.
 
 ```python
-from __future__ import annotations
-
-# Without the import, forward references require quotes:
-# def clone(self) -> "MyClass": ...
-
-# With the import, no quotes needed even before the class is defined
+# Forward reference funciona sem aspas e sem import de __future__
 class Node:
     def __init__(self, value: int, next: Node | None = None) -> None:
         self.value = value
         self.next = next
 ```
 
-> Sem esse import, anotar o tipo da própria classe dentro dela mesma causaria `NameError` em tempo de definição.
+**`from __future__ import annotations`** (PEP 563) deixou de ser recomendado:
+
+- Só usar se o alvo mínimo do projeto ainda for **< 3.14**.
+- Ele **força** o modo antigo — todas as anotações viram string — o que quebra bibliotecas que
+  introspeccionam tipos em runtime (Pydantic, dataclasses, FastAPI antigos).
+- Em projeto 3.14-only, remover o import.
+
+Para ler anotações em runtime, nunca acessar `__annotations__` cru:
+
+```python
+from annotationlib import get_annotations, Format
+from typing import get_type_hints
+
+get_type_hints(Item)                              # resolve os tipos (uso mais comum)
+get_annotations(func, format=Format.FORWARDREF)   # nomes indefinidos viram marcador, não NameError
+```
 
 ---
 
-## Built-in Types — Sintaxe 3.9+
+## Built-in Types como Genéricos
 
-A partir do Python 3.9, usar os tipos built-in diretamente como genéricos. Não importar `List`, `Dict`, `Tuple`, `Set` do módulo `typing`.
+Usar os tipos built-in diretamente. Não importar `List`, `Dict`, `Tuple`, `Set` de `typing`.
 
 ```python
-from __future__ import annotations
-
-# Correct (3.9+): built-in generics
 def process(items: list[str]) -> dict[str, int]:
     return {item: len(item) for item in items}
 
 def coordinates() -> tuple[float, float]:
     return (1.0, 2.0)
 
-def unique_tags(posts: list[dict[str, str]]) -> set[str]:
-    return {tag for post in posts for tag in post.get("tags", "").split()}
-
-# Homogeneous tuple of arbitrary length
-def parse_scores(raw: str) -> tuple[int, ...]:
+def parse_scores(raw: str) -> tuple[int, ...]:     # tupla homogênea de tamanho variável
     return tuple(int(x) for x in raw.split(","))
 
-# Nested generics
-def group_by_key(items: list[dict[str, str]]) -> dict[str, list[str]]:
+def group(items: list[dict[str, str]]) -> dict[str, list[str]]:   # genéricos aninhados
     result: dict[str, list[str]] = {}
     for item in items:
-        key = item["key"]
-        result.setdefault(key, []).append(item["value"])
+        result.setdefault(item["key"], []).append(item["value"])
     return result
 ```
 
-| Tipo | Sintaxe 3.9+ | Antiga (typing) |
+| Tipo | Forma atual | Forma legada (`typing`) |
 |---|---|---|
 | Lista | `list[str]` | `List[str]` |
 | Dicionário | `dict[str, int]` | `Dict[str, int]` |
@@ -68,44 +71,25 @@ def group_by_key(items: list[dict[str, str]]) -> dict[str, list[str]]:
 ## Union e Optional
 
 ```python
-from __future__ import annotations
-from typing import Optional  # only for pre-3.10 compatibility
-
-# New syntax (3.10+): prefer | over Union and Optional
-def find_user(user_id: int) -> User | None: ...
-
-def parse(value: str | int | bytes) -> str: ...
-
-# Optional[X] is exactly equivalent to X | None — avoid in new code
-# def find_user(user_id: int) -> Optional[User]: ...  # old style
+def find_user(user_id: int) -> User | None: ...    # preferir sobre Optional[User]
+def parse(value: str | int | bytes) -> str: ...    # preferir sobre Union[str, int, bytes]
 ```
 
-> Regra: usar `X | None` em vez de `Optional[X]` e `A | B` em vez de `Union[A, B]` em todo código Python 3.10+.
+`Optional[X]` é exatamente `X | None`; `Union[A, B]` é `A | B`. Usar sempre a forma com `|` em código
+novo. `Optional`/`Union` só permanecem para ler código antigo.
 
 ---
 
-## TypeVar e Generics
+## Genéricos — Sintaxe PEP 695 (3.12+)
+
+Declarar o parâmetro de tipo entre colchetes na própria função, classe ou alias. Sem `TypeVar` solto,
+sem herdar `Generic[T]`.
 
 ```python
-from __future__ import annotations
-from typing import TypeVar, Generic
-
-T = TypeVar("T")
-K = TypeVar("K")
-V = TypeVar("V")
-
-# Generic function: works for any type T
-def first(items: list[T]) -> T | None:
+def first[T](items: list[T]) -> T | None:
     return items[0] if items else None
 
-# Bounded TypeVar: T must be a subclass of Comparable
-Comparable = TypeVar("Comparable", int, float, str)
-
-def maximum(a: Comparable, b: Comparable) -> Comparable:
-    return a if a > b else b
-
-# Generic class
-class Stack(Generic[T]):
+class Stack[T]:
     def __init__(self) -> None:
         self._items: list[T] = []
 
@@ -113,104 +97,152 @@ class Stack(Generic[T]):
         self._items.append(item)
 
     def pop(self) -> T:
-        if not self._items:
-            raise IndexError("stack is empty")
         return self._items.pop()
 
     def peek(self) -> T | None:
         return self._items[-1] if self._items else None
 
-# Usage — mypy infers the type parameter
 stack: Stack[int] = Stack()
 stack.push(42)
 value: int = stack.pop()
+
+type Pair[T] = tuple[T, T]                          # alias genérico
+type Json = None | bool | int | float | str | list["Json"] | dict[str, "Json"]  # recursivo
+```
+
+### Bounds e constraints
+
+```python
+def clamp[T: Number](value: T, lo: T, hi: T) -> T:      # bound: T é subtipo de Number
+    return max(lo, min(value, hi))
+
+def coerce[T: (int, float, str)](raw: str, kind: type[T]) -> T:   # constraints: um dos três
+    return kind(raw)
+```
+
+### Defaults de parâmetro de tipo (PEP 696, 3.13+)
+
+```python
+class Response[T = dict[str, object]]:              # Response sem argumento == Response[dict[str, object]]
+    def __init__(self, body: T) -> None:
+        self.body = body
+```
+
+### Variância e `ParamSpec`
+
+Variância é **inferida** automaticamente na sintaxe PEP 695 — não declarar `covariant`/`contravariant`
+à mão. Para assinatura de callables preservada, usar `**P`:
+
+```python
+def with_logging[**P, R](fn: Callable[P, R]) -> Callable[P, R]:
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        logger.info("calling %s", fn.__name__)
+        return fn(*args, **kwargs)
+    return wrapper
+```
+
+### Sintaxe legada (só para ler código anterior a 3.12)
+
+```python
+from typing import TypeVar, Generic
+
+T = TypeVar("T")
+class Box(Generic[T]): ...          # equivalente a `class Box[T]`
+```
+
+### Variadic generics — `TypeVarTuple`
+
+Para preservar os tipos de uma coleção de tamanho variável (frameworks de pipeline, `zip` tipado).
+Avançado — usar só em código de biblioteca de baixo nível; em código de aplicação, preferir `Protocol`
+ou um genérico simples.
+
+```python
+def pipeline[*Ts](*steps: *Ts) -> tuple[*Ts]:      # sintaxe PEP 695 para *Ts
+    return steps
+```
+
+---
+
+## `@override` (3.12+)
+
+```python
+from typing import override
+
+class SqlRepository(Repository):
+    @override
+    def save(self, entity: object) -> None:        # erro estático se `save` sumir do pai
+        ...
+```
+
+---
+
+## `TypeIs` × `TypeGuard`
+
+`TypeIs` refina o tipo **nos dois ramos**; `TypeGuard` só no ramo verdadeiro. Usar `TypeIs` por padrão.
+
+```python
+from typing import TypeIs
+
+def is_str_list(val: list[object]) -> TypeIs[list[str]]:
+    return all(isinstance(x, str) for x in val)
+
+if is_str_list(items):
+    " ".join(items)          # items: list[str]
+else:
+    items.append(42)         # items: list[object]
 ```
 
 ---
 
 ## Protocol — Duck Typing Estático
 
-`Protocol` permite verificação estática baseada em estrutura, sem herança explícita.
+Verificação estrutural, sem herança nem import da interface pela classe concreta.
 
 ```python
-from __future__ import annotations
 from typing import Protocol, runtime_checkable
 
-# Define the expected interface
 @runtime_checkable
 class Drawable(Protocol):
     def draw(self, x: int, y: int) -> None: ...
-    def get_bounds(self) -> tuple[int, int, int, int]: ...
+    def bounds(self) -> tuple[int, int, int, int]: ...
 
-# These classes don't inherit from Drawable — they just implement the methods
-class Circle:
+class Circle:                                        # não herda de Drawable
     def __init__(self, radius: int) -> None:
         self.radius = radius
-
-    def draw(self, x: int, y: int) -> None:
-        print(f"circle at ({x}, {y}) r={self.radius}")
-
-    def get_bounds(self) -> tuple[int, int, int, int]:
+    def draw(self, x: int, y: int) -> None: ...
+    def bounds(self) -> tuple[int, int, int, int]:
         return (0, 0, self.radius * 2, self.radius * 2)
 
-class Rectangle:
-    def __init__(self, width: int, height: int) -> None:
-        self.width = width
-        self.height = height
-
-    def draw(self, x: int, y: int) -> None:
-        print(f"rect at ({x}, {y}) {self.width}x{self.height}")
-
-    def get_bounds(self) -> tuple[int, int, int, int]:
-        return (0, 0, self.width, self.height)
-
-# Function accepts any object that satisfies the Drawable protocol
-def render_all(shapes: list[Drawable], canvas_x: int, canvas_y: int) -> None:
+def render_all(shapes: list[Drawable]) -> None:
     for shape in shapes:
-        shape.draw(canvas_x, canvas_y)
+        shape.draw(0, 0)
 
-# isinstance check works with @runtime_checkable
-assert isinstance(Circle(5), Drawable)
-
-shapes: list[Drawable] = [Circle(10), Rectangle(20, 30)]
-render_all(shapes, 0, 0)
+assert isinstance(Circle(5), Drawable)              # só funciona com @runtime_checkable
 ```
 
-> Diferença de ABC: com `Protocol`, as classes **não precisam importar nem herdar** da interface — basta implementar os métodos com as assinaturas corretas.
+Protocol genérico usa a mesma sintaxe PEP 695: `class Container[T](Protocol): ...`.
 
 ---
 
-## TypedDict — Dicionários com Estrutura
+## TypedDict
 
 ```python
-from __future__ import annotations
-from typing import TypedDict, Required, NotRequired
+from typing import TypedDict, Required, NotRequired, ReadOnly
 
-# All fields required by default
-class UserDict(TypedDict):
+class UserDict(TypedDict):                          # todas as chaves obrigatórias
     id: int
     name: str
     email: str
 
-# total=False: all fields optional
-class UpdatePayload(TypedDict, total=False):
+class UpdatePayload(TypedDict, total=False):        # todas opcionais
     name: str
     email: str
-    active: bool
 
-# Mixing required and optional (3.11+)
-class EventDict(TypedDict):
-    id: Required[int]
+class EventDict(TypedDict):                         # misto
+    id: ReadOnly[int]                               # imutável para o type checker (3.13+)
     title: Required[str]
-    description: NotRequired[str]   # optional field
+    description: NotRequired[str]
     tags: NotRequired[list[str]]
-
-def create_user(data: UserDict) -> None:
-    print(f"creating user {data['name']} <{data['email']}>")
-
-# Valid — all fields provided
-user: UserDict = {"id": 1, "name": "Ana", "email": "ana@example.com"}
-create_user(user)
 ```
 
 ---
@@ -218,7 +250,6 @@ create_user(user)
 ## Dataclasses
 
 ```python
-from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -226,30 +257,20 @@ from datetime import datetime
 class Product:
     name: str
     price: float
-    tags: list[str] = field(default_factory=list)   # mutable default
+    tags: list[str] = field(default_factory=list)   # default mutável
     created_at: datetime = field(default_factory=datetime.now)
 
     def __post_init__(self) -> None:
-        # Validation after auto-generated __init__
         if self.price < 0:
             raise ValueError(f"price must be non-negative, got {self.price}")
 
-# frozen=True: immutable — generates __hash__, enables use as dict key
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)                  # imutável, hashable, sem __dict__
 class Point:
     x: float
     y: float
 
     def distance_to(self, other: Point) -> float:
         return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2) ** 0.5
-
-# Comparison with NamedTuple
-from typing import NamedTuple
-
-class Coordinate(NamedTuple):
-    lat: float
-    lon: float
-    # NamedTuple: immutable, tuple-compatible, but no __post_init__ or field()
 ```
 
 | Característica | `@dataclass` | `NamedTuple` |
@@ -258,60 +279,49 @@ class Coordinate(NamedTuple):
 | `__post_init__` | Sim | Não |
 | `field(default_factory=)` | Sim | Não |
 | Compatível com tuple | Não | Sim |
-| `frozen=True` | Sim | N/A (sempre) |
-| Herança | Flexível | Limitada |
+| `frozen=True` / `slots=True` | Sim | N/A (sempre imutável) |
 
 ---
 
 ## Pydantic v2
 
+Usar **Pydantic ≥ 2.12** no Python 3.14 (versões anteriores não lidam com anotações lazy da PEP 649).
+
 ```python
-from __future__ import annotations
 from pydantic import BaseModel, field_validator, model_validator, Field
 from datetime import datetime
 
 class Address(BaseModel):
     street: str
     city: str
-    zip_code: str = Field(pattern=r"^\d{5}-\d{3}$")   # regex validation
+    zip_code: str = Field(pattern=r"^\d{5}-\d{3}$")
 
 class User(BaseModel):
     id: int
     name: str = Field(min_length=2, max_length=100)
     email: str
-    age: int = Field(ge=0, le=150)                      # ge=greater_equal, le=less_equal
+    age: int = Field(ge=0, le=150)
     address: Address | None = None
     created_at: datetime = Field(default_factory=datetime.now)
 
-    # Field-level validator
     @field_validator("email")
     @classmethod
-    def validate_email(cls, value: str) -> str:
+    def normalize_email(cls, value: str) -> str:
         if "@" not in value:
             raise ValueError("invalid email format")
         return value.lower()
 
-    # Cross-field validator
     @model_validator(mode="after")
-    def validate_model(self) -> User:
+    def check_minor(self) -> User:
         if self.age < 18 and self.address is None:
             raise ValueError("minors must have an address")
         return self
 
-# Automatic validation on instantiation
 user = User(id=1, name="Carlos", email="CARLOS@Example.com", age=25)
-print(user.email)        # carlos@example.com (normalized)
-
-# Serialize to dict / JSON
-data = user.model_dump()
-json_str = user.model_dump_json()
-
-# Generate JSON Schema
-schema = User.model_json_schema()
-
-# Parse from dict (replaces .parse_obj() from v1)
-raw = {"id": 2, "name": "Ana", "email": "ana@example.com", "age": 30}
-ana = User.model_validate(raw)
+user.email                       # "carlos@example.com"
+user.model_dump()                # dict
+user.model_dump_json()           # str
+User.model_validate(raw_dict)    # parse (substitui .parse_obj() da v1)
 ```
 
 ---
@@ -319,36 +329,20 @@ ana = User.model_validate(raw)
 ## Typing Extras
 
 ```python
-from __future__ import annotations
-from typing import Literal, Final, ClassVar, Annotated, get_type_hints
+from typing import Literal, Final, ClassVar, Annotated
 
-# Literal: restrict to specific values
 Mode = Literal["read", "write", "append"]
-
 def open_file(path: str, mode: Mode = "read") -> None: ...
 
-# Final: constant — cannot be reassigned
-MAX_SIZE: Final = 1000
-# MAX_SIZE = 2000  # mypy error: cannot assign to final
+MAX_SIZE: Final = 1000                              # não pode ser reatribuída
 
-# ClassVar: class-level attribute, not instance
 class Config:
-    DEBUG: ClassVar[bool] = False
-    instance_value: int     # this is an instance attribute
+    DEBUG: ClassVar[bool] = False                   # atributo de classe, não de instância
+    instance_value: int                             # atributo de instância
 
-# Annotated: attach metadata to types (used by Pydantic, FastAPI, etc.)
-from pydantic import Field
-
+# Annotated: metadados no tipo (Pydantic, FastAPI)
 PositiveInt = Annotated[int, Field(gt=0)]
 NonEmptyStr = Annotated[str, Field(min_length=1)]
-
-class Item(BaseModel):
-    quantity: PositiveInt
-    label: NonEmptyStr
-
-# get_type_hints: resolve annotations at runtime
-hints = get_type_hints(Item)
-# {'quantity': int, 'label': str} — resolved types
 ```
 
 ---
@@ -359,14 +353,16 @@ hints = get_type_hints(Item)
 |---|---|---|
 | Coleção homogênea | `list[str]`, `set[int]` | Tipo único de elemento |
 | Mapeamento | `dict[str, Any]` | Chave-valor |
-| Valor opcional | `X \| None` | Campo ou retorno pode ser None |
-| Múltiplos tipos | `str \| int \| bytes` | Union de tipos distintos |
-| Qualquer tipo | `Any` | Interop com código não tipado |
-| Tipo genérico | `TypeVar` + `Generic` | Funções/classes reutilizáveis |
+| Valor opcional | `X \| None` | Campo ou retorno pode ser `None` |
+| Múltiplos tipos | `str \| int \| bytes` | União de tipos distintos |
+| Função/classe genérica | `def f[T]`, `class C[T]` | Reutilização preservando o tipo |
+| Alias de tipo | `type Nome = ...` | Nomear união ou estrutura recorrente |
+| Estreitar tipo | `-> TypeIs[T]` | Predicado que refina nos dois ramos |
+| Sobrescrita explícita | `@override` | Método que sobrescreve o da superclasse |
 | Interface estrutural | `Protocol` | Duck typing com checagem estática |
 | Dict com schema fixo | `TypedDict` | Resposta de API, configuração |
 | Data model simples | `@dataclass` | Agrupamento de campos relacionados |
-| Data model imutável | `@dataclass(frozen=True)` | Value objects |
+| Data model imutável | `@dataclass(frozen=True, slots=True)` | Value objects |
 | Data model + validação | `pydantic.BaseModel` | Input externo, APIs |
-| Valor constante | `Literal["a", "b"]` | Parâmetros com opções fixas |
+| Conjunto fixo de valores | `Literal["a", "b"]` | Parâmetros com opções fixas |
 | Constante ireatribuível | `Final` | Configurações, limites |

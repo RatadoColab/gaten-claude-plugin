@@ -1,11 +1,13 @@
 ---
 name: vue
-description: This skill should be used when writing, reviewing, or refactoring Vue.js components or applications. Covers Vue 3 Composition API with <script setup>, reactivity system (ref, reactive, computed, watch), component design (props, emits, slots, expose), Pinia state management, Vue Router, performance optimization (v-memo, shallowRef, keep-alive, defineAsyncComponent), and Vue-specific best practices. Use when the user asks to "write a Vue component", "review Vue code", "create a composable", "set up Pinia", "configure Vue Router", "optimize Vue performance", or "migrate from Options API".
+description: This skill should be used when writing, reviewing, or refactoring Vue.js components or applications. Covers Vue 3 Composition API with <script setup>, reactivity system (ref, reactive, computed, watch), component design (props, emits, slots, expose), the <script setup> macros (defineModel, defineSlots, defineOptions), reactive props destructure, composition utilities (useTemplateRef, useId, onWatcherCleanup), Pinia state management, Vue Router, performance optimization (v-memo, shallowRef, keep-alive, defineAsyncComponent, lazy hydration), and Vue-specific best practices. Use when the user asks to "write a Vue component", "review Vue code", "create a composable", "usar defineModel", "criar v-model customizado", "useTemplateRef", "gerar id acessível no Vue", "desestruturar props", "hidratação lazy", "set up Pinia", "configure Vue Router", "optimize Vue performance", or "migrate from Options API".
 ---
 
 # Vue.js 3 — Convenções e Boas Práticas
 
 Diretrizes para desenvolvimento com Vue 3, priorizando `<script setup>` com TypeScript e Composition API.
+
+**Versões de referência:** Vue **3.5.x** (estável), Pinia **4.x**, Vue Router **5.x**. Os padrões abaixo assumem 3.5 — recursos por versão estão marcados no texto. Vapor Mode / alien-signals (Vue 3.6, ainda em RC) tratados como horizonte em [`references/performance.md`](references/performance.md); não gerar código Vapor por padrão.
 
 ---
 
@@ -17,14 +19,34 @@ Diretrizes para desenvolvimento com Vue 3, priorizando `<script setup>` com Type
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-const props = defineProps<{ title: string; count?: number }>()
+// Reactive props destructure (3.5+): defaults nativos do JS
+const { title, count = 0 } = defineProps<{ title: string; count?: number }>()
 const emit = defineEmits<{ change: [value: number] }>()
-const localCount = ref(props.count ?? 0)
+const localCount = ref(count)   // local seed; does not re-sync if the prop changes
 const doubled = computed(() => localCount.value * 2)
 </script>
 ```
 
 > Nunca misturar `<script setup>` com Options API (`data()`, `methods`, `computed` como objeto). São mutuamente exclusivos. Exemplo completo de componente (props, emits, lifecycle, template) em `references/components.md`.
+>
+> Ao passar uma prop desestruturada para uma função que espera reatividade (composable, `watch`), envolver em getter: `useFoo(() => count)`. `withDefaults` segue suportado e não-deprecado — a destructure é o padrão recomendado para defaults; ver `references/components.md`.
+
+---
+
+## Macros de `<script setup>`
+
+Macros são compiladas — não precisam de `import`. Disponíveis apenas dentro de `<script setup>`.
+
+| Macro | Papel | Desde |
+|---|---|---|
+| `defineProps` | Declara props (com destructure reativa e defaults nativos em 3.5+) | 3.0 / destructure 3.5 |
+| `defineEmits` | Declara eventos emitidos, tipados com payload | 3.0 |
+| `defineModel` | Declara prop + evento `update:*` de um `v-model` numa única ref gravável | 3.4 |
+| `defineSlots` | Tipagem dos slots (nomes e props de scoped slots) | 3.3 |
+| `defineOptions` | Define `name`, `inheritAttrs` etc. sem sair do `<script setup>` | 3.3 |
+| `defineExpose` | Expõe seletivamente métodos/estado ao parent via template ref | 3.0 |
+
+> Assinaturas, `defineModel` com model nomeado e modificadores, e `defineSlots` tipado em **`references/components.md`**.
 
 ---
 
@@ -38,6 +60,17 @@ const doubled = computed(() => localCount.value * 2)
 | `shallowRef(value)` | Objetos grandes onde só a referência muda | `.value = novo` | Direto: `{{ data }}` |
 
 > **Nunca desestruturar `reactive()` diretamente** — perde a reatividade; usar `toRefs()` ou `ref()`. Exemplos comparativos e `watch` vs `watchEffect` em `references/composition-api.md`.
+
+### Utilitários de composição (3.5+)
+
+| API | Uso |
+|---|---|
+| `useTemplateRef('nome')` | Template ref por string — casa com `ref="nome"`, funciona em composables e com refs dinâmicas |
+| `useId()` | ID único e estável entre SSR e cliente — para `label[for]`, `aria-describedby`, `aria-controls` |
+| `onWatcherCleanup(fn)` | Registra cleanup dentro de um `watch`/`watchEffect` — chamada **síncrona**, antes de qualquer `await` |
+| `watch(...)` → `WatchHandle` | Retorno é a função de parada, com `.pause()` / `.resume()` / `.stop()` — pausa e retoma um watcher sem recriá-lo |
+
+> Exemplos em `references/composition-api.md` (watchers) e `references/components.md` (`useTemplateRef`, `useId`).
 
 ---
 
@@ -118,7 +151,7 @@ Implementações completas (setup/option stores, persistência, testing) em **`r
 | `defineAsyncComponent` | Componentes pesados carregados sob demanda (lazy loading) |
 | `<keep-alive>` | Componentes com custo alto de inicialização trocados frequentemente |
 | `v-show` em vez de `v-if` | Elementos que alternam com frequência alta |
-| Virtual scrolling | Listas com 1000+ itens renderizados simultaneamente |
+| Virtual scrolling | Listas com 500+ itens renderizados simultaneamente |
 
 Exemplos de cada técnica, profiling e checklist pré-deploy em **`references/performance.md`**.
 
@@ -130,11 +163,15 @@ Exemplos de cada técnica, profiling e checklist pré-deploy em **`references/pe
 |---|---|
 | Options API em projetos novos | `<script setup>` com Composition API |
 | `v-if` + `v-for` no mesmo elemento | `v-if` em `<template>` pai ou propriedade computada filtrada |
-| Mutação direta de props | `emit('update:modelValue', valor)` ou estado local inicializado da prop |
+| Mutação direta de props | `defineModel()` para `v-model`; senão estado local inicializado da prop |
+| `modelValue` + `emit('update:modelValue')` escritos à mão | `const model = defineModel()` (3.4+) |
+| Misturar `withDefaults` e destructure de props no mesmo projeto | Padronizar num só — a destructure com defaults nativos é a recomendada em 3.5+ (`withDefaults` não é erro) |
 | Desestruturar `reactive()` | `toRefs(obj)` ou usar `ref()` direto |
 | `reactive()` para primitivos | `ref()` para strings, numbers, booleans |
-| `watch` sem cleanup | Usar `watchEffect` com return de cleanup ou `onWatcherCleanup` |
-| Acesso direto ao DOM sem `ref` | Template ref com `const el = ref<HTMLElement>()` |
+| `watch` sem cleanup | `onWatcherCleanup(fn)` no callback (síncrono, antes do `await`) ou o argumento `onCleanup` do `watchEffect` |
+| Acesso direto ao DOM sem `ref` | `const el = useTemplateRef('el')` casado com `ref="el"` (3.5+) |
+| `ref()` casada por nome (`ref="inputRef"` + `const inputRef = ref()`) | `useTemplateRef('inputRef')` |
+| `id` fixo ou `Math.random()` em `label[for]` / `aria-describedby` | `useId()` |
 | Store monolítica única | Múltiplas stores por domínio (auth, cart, ui) |
 | `router.push` com string concatenada | `router.push({ name: 'route-name', params: { id } })` |
 
@@ -146,11 +183,11 @@ Consultar conforme necessário — carregados sob demanda:
 
 | Arquivo | Conteúdo |
 |---|---|
-| **`references/composition-api.md`** | ref vs reactive, computed gravável, watch vs watchEffect, lifecycle, provide/inject, composables reutilizáveis |
-| **`references/components.md`** | defineProps/defineEmits tipados, v-model customizado, slots, expose, defineAsyncComponent, Teleport |
-| **`references/state-management.md`** | Pinia setup/option stores, getters, actions assíncronas, storeToRefs, persistência, testing |
-| **`references/routing.md`** | createRouter, rotas dinâmicas, nested routes, guards, lazy loading, route meta tipado |
-| **`references/performance.md`** | v-memo, shallowRef, markRaw, keep-alive, virtual scrolling, profiling, checklist |
+| **`references/composition-api.md`** | ref vs reactive, computed gravável, watch vs watchEffect, `onWatcherCleanup`, `WatchHandle`, lifecycle, provide/inject, composables reutilizáveis |
+| **`references/components.md`** | props destructure vs `withDefaults`, `defineModel` (model nomeado, modificadores), `defineSlots`, `useTemplateRef`, `useId`, slots, expose, Teleport (`defer`) |
+| **`references/state-management.md`** | Pinia 4 (ESM-only), setup/option stores, getters, actions assíncronas, storeToRefs, persistência, testing |
+| **`references/routing.md`** | Vue Router 5, createRouter, rotas dinâmicas, nested routes, guards, lazy loading, roteamento por arquivos, Data Loaders, route meta tipado |
+| **`references/performance.md`** | v-memo, shallowRef, markRaw, keep-alive, virtual scrolling, lazy hydration (SSR), profiling, checklist, horizonte Vue 3.6 (Vapor Mode) |
 
 ---
 

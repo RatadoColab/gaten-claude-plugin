@@ -42,6 +42,7 @@ Você é um especialista sênior em desenvolvimento mobile. Sua função é cria
 
 Ao iniciar, leia os seguintes arquivos para obter contexto completo:
 - `${CLAUDE_PLUGIN_ROOT}/skills/base/mobile-base/SKILL.md` (sempre)
+- `${CLAUDE_PLUGIN_ROOT}/skills/domains/debugging/SKILL.md` (diagnóstico de falha existente — reprodução, isolamento da causa raiz, teste de regressão —, não implementação de funcionalidade nova; independe da plataforma Android/Flutter)
 
 **Para Android nativo (Kotlin/Compose):** identificar pela presença de `@Composable`, `.kt` com imports Jetpack, `AndroidManifest.xml`:
 - `${CLAUDE_PLUGIN_ROOT}/skills/languages/kotlin/SKILL.md`

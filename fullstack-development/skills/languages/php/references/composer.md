@@ -13,7 +13,7 @@ Boas práticas para gerenciamento de dependências com Composer.
     "type": "project",
     "license": "proprietary",
     "require": {
-        "php": "^8.3",
+        "php": "^8.4",
         "ext-mbstring": "*",
         "ext-pdo": "*"
     },
@@ -35,7 +35,7 @@ Boas práticas para gerenciamento de dependências com Composer.
     "config": {
         "sort-packages": true,
         "platform": {
-            "php": "8.3.0"
+            "php": "8.4.0"
         }
     }
 }
@@ -61,7 +61,7 @@ Boas práticas para gerenciamento de dependências com Composer.
 ```json
 {
     "require": {
-        "php": "^8.3",
+        "php": "^8.4",
         "monolog/monolog": "^3.5",
         "guzzlehttp/guzzle": "^7.8"
     }
@@ -72,12 +72,12 @@ Boas práticas para gerenciamento de dependências com Composer.
 
 ## Restrição de Versão do PHP
 
-Sempre declarar a versão mínima do PHP no `require`. Isso rejeita instalação em ambientes incompatíveis.
+Sempre declarar a versão mínima do PHP no `require`. Isso rejeita instalação em ambientes incompatíveis. O valor deve espelhar a versão-alvo do projeto (§Detecção de Versão-Alvo do `SKILL.md`) — os exemplos usam `^8.4`, mas ajustar para `^8.3` ou `^8.5` conforme o ambiente de produção.
 
 ```json
 {
     "require": {
-        "php": "^8.3"
+        "php": "^8.4"
     }
 }
 ```
@@ -88,7 +88,7 @@ Combinado com `config.platform.php`, garante que o Composer resolva dependência
 {
     "config": {
         "platform": {
-            "php": "8.3.12"
+            "php": "8.4.12"
         }
     }
 }
@@ -275,7 +275,7 @@ Integrar `composer audit` no pipeline de CI/CD para bloquear deploys com vulnera
 
 | Item | Verificação |
 |---|---|
-| `"php": "^8.3"` | Declarado no require |
+| `"php": "^8.4"` | Declarado no require |
 | `config.platform.php` | Versão exata do servidor |
 | `composer.lock` | No repositório git |
 | `vendor/` | No `.gitignore` |

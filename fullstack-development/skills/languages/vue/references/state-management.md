@@ -1,5 +1,10 @@
 # Vue 3 — State Management com Pinia
 
+> **Versão de referência: Pinia 4.x.** As mudanças 2.x → 4.x são técnicas, não de API: o pacote
+> passou a ser **ESM-only** e `@vue/devtools-api` agora é uma dependência que precisa ser instalada
+> ao lado do `pinia`. `defineStore`, setup stores, getters, actions, `storeToRefs` e o plugin de
+> persistência funcionam sem alteração — todo o código abaixo vale igual.
+
 ---
 
 ## Quando usar Pinia vs Composables

@@ -1,6 +1,6 @@
 # PHP — Performance
 
-Técnicas de otimização de performance para aplicações PHP 8.3.x.
+Técnicas de otimização de performance para aplicações PHP 8.3+ (8.3, 8.4 e 8.5).
 
 ---
 
@@ -29,6 +29,10 @@ opcache.jit_buffer_size=64M
 ```
 
 **Desenvolvimento:** Manter `validate_timestamps=1` e `revalidate_freq=2` para refletir alterações automaticamente.
+
+> **Mudanças por versão:**
+> - **8.4** — o default do JIT mudou para `opcache.jit=disable` (antes era `tracing` com buffer 0). Declarar `opcache.jit=tracing` explicitamente para mantê-lo ativo; falha de init do JIT passou a ser fatal no startup. `opcache.interned_strings_buffer` aceita até 32767 em 64 bits.
+> - **8.5** — o OPcache é sempre embutido e carregado; `zend_extension=opcache.so` no `php.ini` emite warning e deve ser removido. Detalhes em `migration-83-to-84.md` e `migration-84-to-85.md`.
 
 ### Monitoramento
 

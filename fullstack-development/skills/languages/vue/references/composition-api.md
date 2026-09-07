@@ -99,6 +99,35 @@ watchEffect(async (onCleanup) => {
 })
 ```
 
+### onWatcherCleanup (Vue 3.5+)
+
+Alternativa ao argumento `onCleanup`: importável de `vue`, funciona tanto em `watch` quanto em
+`watchEffect`. **Só pode ser chamada de forma síncrona** dentro do efeito — nunca depois de um `await`.
+
+```ts
+import { watch, onWatcherCleanup } from 'vue'
+
+watch(userId, (newId) => {
+  const controller = new AbortController()
+  // registrado ANTES de qualquer await — roda antes da próxima execução ou no unmount
+  onWatcherCleanup(() => controller.abort())
+
+  fetchUser(newId, { signal: controller.signal }).then((u) => { userData.value = u })
+})
+```
+
+### WatchHandle — pause / resume / stop (Vue 3.5+)
+
+`watch` e `watchEffect` retornam um `WatchHandle`: função de parada, com `pause()` e `resume()`.
+
+```ts
+const handle = watch(source, onChange)
+
+handle.pause()    // watcher para de reagir (mudanças são ignoradas)
+handle.resume()   // volta a reagir
+handle.stop()     // encerra de vez — equivale a chamar handle()
+```
+
 ---
 
 ## Lifecycle Hooks
@@ -221,17 +250,20 @@ useDouble(ref(5))      // funciona com ref
 
 ```ts
 // composables/useFetch.ts
-import { ref, watchEffect } from 'vue'
+import { ref, watchEffect, toValue, onWatcherCleanup } from 'vue'
+import type { Ref } from 'vue'
 
 // Generic composable for data fetching with loading and error state
-export function useFetch<T>(url: string | Ref<string>) {
+// url aceita string, ref ou getter — toValue normaliza os três
+export function useFetch<T>(url: string | Ref<string> | (() => string)) {
   const data    = ref<T | null>(null)
   const loading = ref(false)
   const error   = ref<Error | null>(null)
 
-  watchEffect(async (onCleanup) => {
+  watchEffect(async () => {
     const controller = new AbortController()
-    onCleanup(() => controller.abort())
+    // registrado antes do await: onWatcherCleanup só funciona na fase síncrona do efeito
+    onWatcherCleanup(() => controller.abort())
 
     loading.value = true
     error.value   = null

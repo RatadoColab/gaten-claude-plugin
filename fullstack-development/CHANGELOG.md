@@ -5,6 +5,70 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.7.0] - 2026-09-07
+
+Release focada em duas frentes: atualizar as skills às versões atuais dos ecossistemas
+(situação de set/2026) e cobrir a correção de bugs, que até agora não tinha fluxo próprio.
+Nenhum conteúdo foi removido das skills — material antigo permanece rotulado como legado.
+Contexto técnico detalhado das mudanças em `CLAUDE.md`.
+
+### Adicionado
+
+- **Comando `/fullstack-development:new-bugfix`** — corrige um bug em fluxo guiado: reproduz a
+  falha, encontra a causa raiz com evidência antes de qualquer código, passa o laudo pela revisão
+  dos agentes de domínio e só então corrige, sempre com um teste que falha antes e passa depois.
+- **Skill `domains/debugging`** — o método de diagnóstico por trás do `new-bugfix` (reprodução,
+  hipótese e refutação, `git bisect`, classes comuns de defeito, teste de regressão), reaproveitável
+  pelos agentes de implementação.
+- **Skills `domains/glpi-12`** — desenvolvimento e migração de plugins para o **GLPI 12**, no mesmo
+  formato das árvores `glpi-10` e `glpi-11` (sub-skills `ajax-handlers`, `form-templates`,
+  `plugin-creation`, `vue`). Conteúdo derivado do GLPI 12.0.0 RC — será revalidado contra a versão
+  final (ver `PENDENCIAS.md` na raiz).
+- Catálogos de recursos e guias de migração do **PHP 8.4 e 8.5**, das novidades do **Python 3.14**,
+  ferramental Python (uv/ruff/mypy) e um material de **segurança de aplicações que usam LLM**.
+
+### Alterado
+
+- **`languages/python`** — atualizada para o **Python 3.14** (estava presa ao 3.11): novidades de
+  tipos, t-strings, asyncio e free-threading; orientações que ficaram incorretas com as versões
+  novas foram corrigidas. Dois arquivos de referência renomeados.
+- **`languages/php`** — deixou de ser fixa no PHP 8.3 e passou a cobrir a faixa **8.3–8.5**,
+  detectando a versão-alvo do projeto antes de gerar código.
+- **`languages/vue`** — atualizada para o **Vue 3.5** (`defineModel`, reactive props destructure,
+  novos utilitários de composição, lazy hydration); nota de horizonte sobre o Vue 3.6 (Vapor Mode),
+  ainda em RC e marcada como "não usar em produção".
+- **`domains/glpi-10/vue`, `glpi-11/vue`, `glpi-12/vue`** — cada uma passou a registrar a versão do
+  Vue que o respectivo core GLPI entrega e o que muda por causa disso (GLPI 10 embarca o próprio
+  Vue; GLPI 11 e 12 usam o do core, com componentes SFC compilados pelo webpack do plugin).
+- **`domains/security`** e skills relacionadas (`devsecops`, `api-rest`, `devops-base`) —
+  atualizadas para o **OWASP Top 10:2025** e para requisitos correntes de senha, rate limiting e
+  cadeia de suprimentos. Conteúdo remapeado para a nova taxonomia, não removido.
+- **`agents/backend-dev`** — passa a distinguir as três versões de GLPI e a carregar apenas a árvore
+  da versão detectada.
+
+### Corrigido
+
+- **`domains/security`** — dois erros factuais de conformidade: prazo de retenção de logs no Marco
+  Civil (Art. 15 exige 6 meses, não 1 ano) e o número do requisito de retenção do PCI-DSS v4.0.1
+  (Req. 10.5.1, não 10.7).
+- **`languages/vue`, `languages/python`** — snippets com imports faltando e constraints inexistentes.
+- **`domains/glpi-11/vue`** — `output.publicPath` no exemplo de webpack contradizia a referência da
+  própria skill (corrigido para `/plugins/meuplugin/build/vue/`); ponteiro para `languages/vue`
+  passou a delimitar o que não vem do core (Pinia, Vue Router).
+
+### Projeto
+
+- `plugin.json` — versão `0.7.0`.
+- `CLAUDE.md` — contexto técnico das mudanças (baselines de linguagem, versões do Vue por core GLPI,
+  convenção de nome das sub-skills GLPI); novas assimetrias de `domains/debugging`; novos gatilhos
+  de split futuro (`php-migration`, `python-concurrency`, `ai-security`, `testing`).
+- `README.md` (raiz e do plugin) — catálogo e versão atualizados com `glpi-12`, `debugging` e
+  `new-bugfix`.
+- `.gitignore` — passa a ignorar `settings.local.json`.
+- `.claude-plugin/marketplace.json` — descrição do plugin alinhada ao manifesto.
+- `PENDENCIAS.md` (novo, na raiz) — revalidar `glpi-12` contra o GLPI 12.0.0 GA; promover a nota de
+  Vue 3.6 quando estabilizar.
+
 ## [0.6.1] - 2026-08-24
 
 ### Fix
@@ -275,6 +339,8 @@ Segunda rodada de otimização de tokens: aplicação integral da regra de códi
 - Documentação do projeto (`CLAUDE.md`) com estrutura, agentes e decisões de design
 - Precedência de carregamento de skills: GLPI > Languages > Domains
 
+[0.7.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.0
+[0.6.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.6.1
 [0.6.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.6.0
 [0.5.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.5.0
 [0.4.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.4.0

@@ -8,29 +8,38 @@ Autenticação/JWT/Rate Limiting permanecem no corpo do `SKILL.md` por serem de 
 - Escapar output HTML em todo contexto de renderização (atributos, texto, URLs)
 - Configurar Content Security Policy (CSP) restritiva:
   - Proibir `unsafe-inline` e `unsafe-eval`
-  - Usar nonces criptográficos ou hashes para scripts inline legítimos
-  - Bloquear `object-src 'none'` e `base-uri 'self'`
+  - Usar nonce criptográfico por requisição (preferível a hash) para scripts inline legítimos
+  - Combinar com `'strict-dynamic'`: scripts carregados por um script confiável herdam a confiança, sem precisar de nonce próprio
+  - Bloquear `object-src 'none'` e `base-uri 'none'`
 
 ```http
 Content-Security-Policy:
   default-src 'self';
-  script-src 'self' 'nonce-{base64_random_per_request}';
+  script-src 'self' 'nonce-{base64_random_per_request}' 'strict-dynamic';
   style-src 'self' 'nonce-{base64_random_per_request}';
   img-src 'self' data: https:;
   object-src 'none';
-  base-uri 'self';
+  base-uri 'none';
   form-action 'self';
-  frame-ancestors 'none'
+  frame-ancestors 'none';
+  report-to csp-endpoint
 ```
 
-- Usar `Content-Security-Policy-Report-Only` em fase de rollout para detectar violações sem bloquear:
+- `frame-ancestors` é o controle primário contra clickjacking e torna `X-Frame-Options` obsoleto
+  nos navegadores que o suportam; manter `X-Frame-Options: DENY` apenas para clientes legados
+- Reportar violações com `report-to` + o header `Reporting-Endpoints` (CSP Level 3); manter
+  `report-uri` apenas como fallback para navegadores antigos:
 
 ```http
-Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'nonce-{random}'; report-uri /csp-report
+Reporting-Endpoints: csp-endpoint="https://example.com/csp-report"
+Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'nonce-{random}' 'strict-dynamic'; report-to csp-endpoint; report-uri /csp-report
 ```
 
+- Usar `Content-Security-Policy-Report-Only` em fase de rollout para detectar violações sem bloquear
 - Migrar para `Content-Security-Policy` (bloqueio real) após estabilizar as violações
 - Monitorar os relatórios de violação como indicador de tentativas de XSS
+- Em aplicações que manipulam DOM dinamicamente, considerar Trusted Types
+  (`require-trusted-types-for 'script'`) para eliminar sinks de DOM XSS
 
 ## Proteção contra CSRF
 
@@ -69,6 +78,20 @@ safe_name = f"{uuid.uuid4().hex}{ext}"
 
 > Ver implementação completa de `validate_upload` e `save_upload` em [`file-upload-security.py`](file-upload-security.py).
 
+## Cookies e Sessão
+
+- Cookies de sessão e de autenticação: `HttpOnly` + `Secure` + `SameSite=Strict` (ou `Lax` quando
+  houver navegação cross-site legítima de entrada)
+- Usar o prefixo `__Host-` no nome do cookie: o navegador só aceita se vier com `Secure`, `Path=/` e
+  **sem** `Domain` — impede sobrescrita a partir de subdomínio ou de conexão insegura
+- `Partitioned` (CHIPS) para cookies usados em contexto de terceiros, alinhado ao fim dos cookies de terceiros
+- Definir expiração explícita; rotacionar o identificador de sessão após login e após elevação de privilégio
+- `Clear-Site-Data: "cookies", "storage"` na resposta de logout para limpar o estado do cliente
+
+```http
+Set-Cookie: __Host-session=<id>; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600
+```
+
 ## Configuração de CORS
 
 - Nunca usar `Access-Control-Allow-Origin: *` em APIs autenticadas
@@ -96,15 +119,26 @@ detect-secrets audit .secrets.baseline
 
 ## Gerenciamento de Dependências e Supply Chain
 
+Corresponde ao **A03:2025 — Software Supply Chain Failures**. Escopo desta seção: a aplicação e suas
+dependências. A segurança do pipeline (SAST/SCA na CI, SBOM assinado, cosign/Sigstore, SLSA,
+pinning de actions) fica em `domains/devsecops/SKILL.md`.
+
 - Manter `lock files` atualizados e verificar integridade via checksums
 - Escanear dependências em cada build via ferramentas de SCA:
-  - JavaScript: `npm audit`, Snyk
+  - JavaScript: `npm audit`, `npm audit signatures` (verifica proveniência), OSV-Scanner, Snyk
   - Python: `pip-audit`, Safety
   - PHP: `composer audit`
   - Java: OWASP Dependency-Check
-- Gerar e manter SBOM (Software Bill of Materials) para rastreabilidade
-- Definir processo de triage com SLAs por severidade de CVE
-- Revisar permissões solicitadas por pacotes de terceiros (especialmente scripts de instalação)
+  - Multi-ecossistema: OSV-Scanner, OpenSSF Scorecard (higiene do projeto upstream)
+- Obter pacotes apenas de registries oficiais por canal seguro; preferir pacotes publicados com
+  proveniência (npm provenance / trusted publishing, PyPI trusted publishing)
+- Fixar dependências por versão exata e, quando possível, por digest/hash — não por range móvel
+- Gerar e manter SBOM (Software Bill of Materials) em CycloneDX ou SPDX para rastreabilidade
+- Tratar dependências não mantidas ou sem caminho de atualização como dívida de segurança ativa
+- Definir processo de triage com SLAs por severidade de CVE (usar CVSS v4.0 quando disponível)
+- Revisar permissões e scripts de instalação de pacotes de terceiros; desabilitar scripts de
+  postinstall não essenciais (`npm ci --ignore-scripts`)
+- Aplicar atualizações de forma escalonada/canário — evitar propagar um pacote comprometido para toda a frota
 
 ## Dados Sensíveis e Privacidade
 
