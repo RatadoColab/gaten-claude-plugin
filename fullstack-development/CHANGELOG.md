@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [0.7.1] - 2026-10-01
+
 ### Adicionado
 
 - **Alertas novos em `domains/glpi-12`** sobre mudanças que o GLPI não documenta: buscas
@@ -354,6 +356,7 @@ Segunda rodada de otimização de tokens: aplicação integral da regra de códi
 - Documentação do projeto (`CLAUDE.md`) com estrutura, agentes e decisões de design
 - Precedência de carregamento de skills: GLPI > Languages > Domains
 
+[0.7.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.1
 [0.7.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.0
 [0.6.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.6.1
 [0.6.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.6.0
