@@ -164,7 +164,7 @@ Nunca expor `$e->getMessage()` em produção.
 
 No GLPI 12 **não há token de CSRF por requisição**. O `CheckCsrfListener` valida os headers `Sec-Fetch-Site`/`Origin` (protegidos, enviados automaticamente pelo navegador) antes da rota, para todo método com corpo. Para o autor do plugin:
 
-- **Remover** `_glpi_csrf_token` de formulários e `X-Glpi-Csrf-Token` de chamadas `fetch`/`$.ajax`.
+- **Remover** `_glpi_csrf_token` de formulários e `X-Glpi-Csrf-Token` de chamadas `fetch`/`$.ajax`; **manter** `X-Requested-With: XMLHttpRequest` (o core ainda o usa para detectar AJAX).
 - **Não** chamar `csrf_token()` (Twig), `fields.csrfField()`, `getAjaxCsrfToken()` (JS) — depreciados.
 - Nenhum código adicional para POSTs same-origin: passam a validação automaticamente.
 - Não implementar verificação de CSRF manual no handler/Controller.

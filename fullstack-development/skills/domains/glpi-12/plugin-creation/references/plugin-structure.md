@@ -92,8 +92,9 @@ function plugin_version_meuplugin(): array
  */
 function plugin_meuplugin_check_prerequisites(): bool
 {
-    if (version_compare(GLPI_VERSION, '12.0.0', 'lt')) {
-        echo 'Este plugin requer GLPI 12.0.0 ou superior.';
+    // '12.0' (não '12.0.0'): GLPI_VERSION crua é '12.0.0-rc3' no RC e '12.0.0-rc3' < '12.0.0'
+    if (version_compare(GLPI_VERSION, '12.0', 'lt') || version_compare(GLPI_VERSION, '12.1', 'ge')) {
+        echo 'Este plugin requer GLPI 12.0.x.';
         return false;
     }
     return true;
@@ -269,8 +270,7 @@ use Session;
  */
 class MeuItem extends CommonDBTM
 {
-    /** @var string */
-    static $rightname = 'plugin_meuplugin_meuitem';
+    public static string $rightname = 'plugin_meuplugin_meuitem';   // tipada: sem tipo = erro fatal no 12
 
     public static function getTypeName($nb = 0): string
     {

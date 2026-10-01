@@ -7,7 +7,7 @@ description: This skill should be loaded when the target is a GLPI 12 plugin. GL
 
 > **Versão-alvo:** esta skill cobre exclusivamente GLPI 12.0.x. Se o projeto tiver indícios de GLPI 11 (`csrf_token()` no Twig, campos `_glpi_csrf_token`, `Plugin::getWebDir(`), carregar `domains/glpi-11/SKILL.md`; indícios de GLPI 10 (`include('../../../inc/includes.php')`, `$PLUGIN_HOOKS['csrf_compliant']`, `$DB->queryOrDie(`) carregam `domains/glpi-10/SKILL.md`. Sem indício algum, perguntar ao usuário qual versão antes de gerar código. Exceção: tarefa de migração 11→12 carrega esta skill como autoritativa do destino (ver `references/migration-11-to-12.md`).
 >
-> **Base derivada de RC:** o conteúdo foi extraído do código-fonte do GLPI 12.0.0 RC. Os padrões de arquitetura (Firewall, Controllers, hooks, `public/`, PSR-4) são estáveis; assinaturas exatas e a lista final de remoções devem ser revalidadas contra o 12.0.0 GA (previsto para 2026-10-06).
+> **Base derivada de RC:** o conteúdo foi extraído do código-fonte do GLPI 12.0.0 RC. Os padrões de arquitetura (Firewall, Controllers, hooks, `public/`, PSR-4) são estáveis; assinaturas exatas e a lista final de remoções devem ser revalidadas contra o 12.0.0 GA (previsto para 2026-10-06). Conferido contra o **12.0.0-rc3** em 2026-09-30: onde o código do core divergir do `CHANGELOG.md`, vale o código (casos em `references/migration-11-to-12.md`). As assinaturas de `getTabNameForItem`, `showForm`, `prepareInputFor*`, `rawSearchOptions` etc. seguem iguais às do 11.0.10.
 
 ## Herança do GLPI 11
 
@@ -30,6 +30,8 @@ description: This skill should be loaded when the target is a GLPI 12 plugin. GL
 
 `plugin_<nome>_boot()` inalterado — executa antes da sessão carregar; usar para `Glpi\Http\SessionManager::registerPluginStatelessPath()`, nunca para lógica que dependa de `$_SESSION`.
 
+**Cuidado com RC:** o core normaliza `GLPI_VERSION` (`12.0.0-rc3` → `12.0.0`) só ao checar `requirements.glpi`, então `min '12.0.0'` funciona no RC. Já `version_compare(GLPI_VERSION, '12.0.0', 'lt')` escrito no plugin usa a versão **crua** e bloqueia o RC (`12.0.0-rc3` < `12.0.0`). Em `plugin_<nome>_check_prerequisites()` usar `version_compare(GLPI_VERSION, '12.0', 'lt') || version_compare(GLPI_VERSION, '12.1', 'ge')`.
+
 ## CommonDBTM — Deltas de Ruptura
 
 Hierarquia (`CommonDBTM`, `CommonDropdown`, `CommonDBChild`, `CommonDBRelation`, `CommonGLPI`) inalterada. Novas rupturas a observar ao portar do 11:
@@ -43,6 +45,18 @@ Hierarquia (`CommonDBTM`, `CommonDropdown`, `CommonDBChild`, `CommonDBRelation`,
 | `Timer` | Classe removida |
 | `KnowbaseItem_Comment`, `KnowbaseItem_Revision` | Agora `final` |
 
+**Propriedades das classes-base têm tipo nativo (erro fatal se redeclaradas sem tipo)** — no 12.0.0-rc3 as propriedades de `CommonGLPI`, `CommonDBTM`, `CommonDropdown`, `CommonTreeDropdown`, `CommonDBChild`, `CommonDBRelation` e `Location` ganharam tipo, e a subclasse que as redeclara sem tipo dá `Fatal error: Type of X::$y must be ...` ao carregar a classe (derruba a tela/aba para todos; se ocorrer em classe carregada no `plugin_init`, derruba o GLPI inteiro). Ausente do CHANGELOG. Declarar sempre com o mesmo tipo (visibilidade explícita é recomendada por estilo):
+
+```php
+public bool $dohistory = true;
+public static string $rightname = 'plugin_meuplugin_meuitem';
+public static string $itemtype = Pai::class;       // CommonDBChild
+public static string $items_id = 'pais_id';        // CommonDBChild
+public static ?string $itemtype_1 = Pai::class;    // CommonDBRelation (idem items_id_1, itemtype_2, items_id_2)
+```
+
+Lista completa de propriedades/tipos, regex de varredura e teste de carga em **`references/architecture.md`** ("Propriedades tipadas das classes-base"). Sem modo dual: o tipo declarado no filho quebra no GLPI 11 (pai sem tipo). O erro fatal vem da **ausência de tipo**, não da visibilidade.
+
 `CommonGLPI::$type` e `CommonDBTM::$fkfield` (já removidos no 11) permanecem ausentes. Catálogo completo em **`references/architecture.md`**.
 
 ## Sistema de Permissões
@@ -55,19 +69,19 @@ Ações sensíveis podem exigir que o usuário confirme a identidade mesmo já l
 
 ```php
 // Marcar um itemtype de plugin como exigindo re-autenticação
-public static function isUserReauthenticationNeeded(): bool
+protected static function itemTypeRequiresReauthentication(): bool
 {
     return true; // padrão herdado: false
 }
 ```
 
-Regras para plugins: **nunca** implementar prompt de senha próprio — sobrescrever `CommonGLPI::isUserReauthenticationNeeded()` no itemtype e deixar o core cuidar do fluxo; em Controller, chamar `CommonGLPI::checkReAuthenticationOrRedirect()`; ao chamar `can()`/`canGlobal()` manualmente, ler `$reauth_needed` por referência para distinguir "sem permissão" de "só falta re-autenticar". Detalhamento em **`references/architecture.md`**.
+Regras para plugins: **nunca** implementar prompt de senha próprio — sobrescrever `itemTypeRequiresReauthentication()` (`protected static`) no itemtype e deixar o core cuidar do fluxo — **`isUserReauthenticationNeeded()` e `checkReAuthenticationOrRedirect()` são `final` no RC3**, sobrescrevê-los é erro fatal; em Controller, chamar `checkReAuthenticationOrRedirect()` pela própria classe do itemtype (`MeuItem::…`), nunca pela `CommonGLPI` (a base devolveria o padrão `false`); ao chamar `can()`/`canGlobal()` manualmente, ler `$reauth_needed` por referência para distinguir "sem permissão" de "só falta re-autenticar". Detalhamento em **`references/architecture.md`**.
 
 ## Controllers, Rotas Legadas e Banco de Dados
 
 **Inalterados em relação ao 11.** Controllers em `src/Controller/` com `#[Route]` (prefixo `/plugins/meuplugin` automático), `front/`/`ajax/` legados sem `include('../../../inc/includes.php')`, `Firewall::addPluginStrategyForLegacyScripts()` com as mesmas estratégias, `#[Glpi\Security\Attribute\SecurityStrategy(...)]` para controllers. `$DB->query()`/`queryOrDie()` proibidos; usar `$DB->request()` (array único) e `$DB->doQuery()` para DDL/DML. `AbstractController` ganhou `validateInputHasExactKeys(array $input, array $keys)` para validação de payload. Exemplos completos em **`references/architecture.md`** e `ajax-handlers/SKILL.md`.
 
-**Delta de query builder:** os aliases de raiz `QueryExpression`, `QueryParam`, `QuerySubQuery`, `QueryUnion` foram **removidos** (no 11 apenas moveram) — só `Glpi\DBAL\*` funciona. Assinaturas de `countElementsInTable()`, `countDistinctElementsInTable()`, `getAllDataFromTable()` mudaram; toda a `DbUtils` passou a ter tipos estritos. `ORDER BY` com lista separada por vírgula está depreciado — usar array.
+**Delta de query builder:** os aliases de raiz `QueryExpression`, `QueryParam`, `QuerySubQuery`, `QueryUnion` foram **removidos** (no 11 apenas moveram) — só `Glpi\DBAL\*` funciona. Assinaturas de `countElementsInTable()`, `countDistinctElementsInTable()`, `getAllDataFromTable()` mudaram; toda a `DbUtils` passou a ter tipos estritos. `ORDER BY` com lista separada por vírgula está depreciado — usar array. Novos em `Glpi\DBAL`: `QueryIdentifier`, `QueryValue`, `QueryElementInterface`. O core executa as consultas como *prepared statements*: `Search::makeTextSearch()` devolve ` LIKE ? ` (valor **não** embutido, no 11 vinha escapado inline) — `addWhere()`/`addHaving()` que concatenam esse retorno em SQL cru sem vincular o valor lançam `StatementException`. Padrão de correção para `addWhere()`/`addHaving()`: **a confirmar no GA** (ver `PENDENCIAS.md`).
 
 ## Hooks GLPI 12
 
@@ -78,6 +92,10 @@ Mecanismo `$PLUGIN_HOOKS` inalterado — usar constantes de `Glpi\Plugin\Hooks`.
 
 Fonte da verdade: `src/Glpi/Plugin/Hooks.php` do core. Tabela completa em **`references/architecture.md`**.
 
+## CronTask — comportamento novo no 12
+
+Ação com 5 falhas seguidas vai para `ERROR` (reativação manual), ação encerrada externamente fica `ABORTED`, reagendamento usa backoff e coluna `next_run`; o runner é `php front/cron.php`. Crons de plugin devem ser idempotentes. Detalhes em **`references/architecture.md`** ("CronTask").
+
 ## Segurança — CSRF por Header (delta principal)
 
 Auto-sanitização de `$_GET`/`$_POST` permanece removida; `htmlescape()`/`jsescape()` obrigatórios em toda saída dinâmica; erro HTTP sempre via exceção `Glpi\Exception\Http\*` em Controller.
@@ -87,10 +105,14 @@ Auto-sanitização de `$_GET`/`$_POST` permanece removida; `htmlescape()`/`jsesc
 - **Remover** todo campo `_glpi_csrf_token` de formulários e todo header `X-Glpi-Csrf-Token` de chamadas AJAX — o navegador envia os headers protegidos automaticamente.
 - **Não** chamar mais `csrf_token()` no Twig, `fields.csrfField()`, nem `getAjaxCsrfToken()` no JS (todos depreciados, removidos no GLPI 13).
 - Nenhuma ação necessária para POSTs same-origin normais: passam a validação sem código adicional.
+- Só `same-origin` e `none` passam; `same-site` e `cross-site` → 403 (detalhes e exceções em `references/architecture.md`).
+- **Manter** `X-Requested-With: XMLHttpRequest` nos `fetch()` — não serve mais para CSRF, mas o core ainda o usa para detectar AJAX (`Toolbox::isAjax()`, formato de erro, sessão expirada). Remover só `_glpi_csrf_token`/`X-Glpi-Csrf-Token`.
+- `csrf_token()` e `Session::getNewCSRFToken()` ainda existem no RC3, mas devolvem `""` e chamam `Toolbox::deprecated()` a cada render — não quebram, enchem o log de depreciação.
+- Proxy reverso que reescreve `Host` faz a validação por `Origin` falhar — preservar o `Host` original.
 
 ## Frontend JavaScript e URLs
 
-**Delta:** `Plugin::getWebDir()` foi **removida** (era depreciada no 11) — usar caminho literal `/plugins/meuplugin/...` (PHP/JS) e `path('/plugins/meuplugin/...')` (Twig). `escapeMarkupText()` depreciada. Libs JS removidas do core: `jquery.fancytree` (usar `Wunderbaum`), `diff-match-patch`, `hotkeys-js`, `jquery-prettytextdiff`, `jquery.rateit`. Libs PHP removidas: `league/csv` (usar `phpoffice/phpspreadsheet`), `guzzlehttp/guzzle` (usar `Glpi\Toolbox\HttpClient`). Vue continua fornecido pelo core via `window._vue` / `window.Vue`, sem mudança — ver `vue/SKILL.md`.
+**Delta:** `Plugin::getWebDir()` foi **removida** (era depreciada no 11) — usar caminho literal `/plugins/meuplugin/...` (PHP/JS) e `path('/plugins/meuplugin/...')` (Twig). `escapeMarkupText()` depreciada. Libs JS removidas do core: `jquery.fancytree` (usar `Wunderbaum`), `jquery.rateit` (usar `components/form/rating.html.twig`), `diff-match-patch`, `hotkeys-js`, `jquery-prettytextdiff`. PHP: `league/csv` → `phpoffice/phpspreadsheet`; `guzzlehttp/guzzle` deixou de ser dependência direta → usar `Glpi\Toolbox\HttpClient`, que **bloqueia rede privada** por padrão (ver `references/architecture.md`, "HTTP client"). `GLPI_PLUGINS_PATH` (JS) segue emitida, depreciada. Vue continua fornecido pelo core via `window._vue` / `window.Vue`, sem mudança — ver `vue/SKILL.md`.
 
 ## Twig Components (novo no 12, opcional)
 
@@ -98,7 +120,7 @@ O core passou a expor componentes Twig reutilizáveis em `templates/twig_compone
 
 ## Inalterados
 
-Internacionalização (`__()`, `_n()`), testes (PHPUnit em `tests/units/`), globais essenciais (`$DB`, `$CFG_GLPI`, `$_SESSION['glpiID']`, `$_SESSION['glpiactive_entity']`, `$PLUGIN_HOOKS`; `$GLPI`/`$LANG` seguem removidas) — tudo como no GLPI 11. Tabela completa em **`references/architecture.md`**.
+Internacionalização (`__()`, `_n()`), testes (PHPUnit em `tests/units/`), globais essenciais (`$DB`, `$CFG_GLPI`, `$_SESSION['glpiID']`, `$_SESSION['glpiactive_entity']`, `$PLUGIN_HOOKS`; `$GLPI`/`$LANG` seguem removidas) — tudo como no GLPI 11. `$CFG_GLPI` agora é `Glpi\Config\ConfigContainer` (`ArrayAccess`): leitura por índice segue válida. Tabela completa em **`references/architecture.md`**.
 
 ## Sub-skills Disponíveis
 
@@ -115,10 +137,11 @@ Carregar conforme a tarefa específica:
 ## Restrições Absolutas em Plugins GLPI 12
 
 - Usar `declare(strict_types=1)` em todo arquivo PHP
-- Nunca implementar autenticação ou sessão própria — usar `Session::checkRight()`; para ações sensíveis, `CommonGLPI::isUserReauthenticationNeeded()` + fluxo do core, nunca prompt próprio
+- Nunca implementar autenticação ou sessão própria — usar `Session::checkRight()`; para ações sensíveis, sobrescrever `itemTypeRequiresReauthentication()` + fluxo do core (`isUserReauthenticationNeeded()` é `final`), nunca prompt próprio
+- Nunca redeclarar sem tipo as propriedades das classes-base (`$rightname`, `$dohistory`, `$itemtype`, `$items_id`, `$itemtype_N`…) — erro fatal; declarar `bool $dohistory`, `static string $rightname` etc.
 - Nunca usar PDO ou `$DB->query()`/`$DB->queryOrDie()` — usar `$DB->request()` (query builder) ou `$DB->doQuery()`
 - Nunca usar `Toolbox::addslashes_deep()` — corrompe dados; sanitização SQL já é automática no query builder
-- Nunca emitir campo `_glpi_csrf_token`, header `X-Glpi-Csrf-Token`, `csrf_token()`, `fields.csrfField()` ou `getAjaxCsrfToken()` — CSRF é validação de header no kernel
+- Nunca emitir campo `_glpi_csrf_token`, header `X-Glpi-Csrf-Token`, `csrf_token()`, `fields.csrfField()` ou `getAjaxCsrfToken()` — CSRF é validação de header no kernel (manter `X-Requested-With`)
 - Nunca usar `Toolbox::callCurl()`/`getURLContent()`/`getGuzzleClient()` — usar `Glpi\Toolbox\HttpClient`
 - Nunca usar `Html::displayNotFoundError()`/`displayRightError()` — lançar `NotFoundHttpException`/`AccessDeniedHttpException`
 - Nunca referenciar `Plugin::getWebDir()` — removida; usar caminho literal `/plugins/meuplugin/...`
