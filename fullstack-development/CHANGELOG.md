@@ -5,6 +5,23 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+## [0.7.1] - 2026-10-01
+
+### Adicionado
+
+- **Alertas novos em `domains/glpi-12`** sobre mudanças que o GLPI não documenta: buscas
+  personalizadas que deixam de funcionar, tarefas agendadas com novo comportamento de falhas,
+  chamadas a serviços da rede interna bloqueadas por padrão e anexos privados que podem ficar públicos.
+
+### Corrigido
+
+- **`domains/glpi-12`** — revisada contra a versão candidata mais recente do GLPI 12, a partir da
+  migração de plugins reais. Corrige orientações que causavam erro fatal ao carregar as classes do
+  plugin, ajusta o modo de confirmação de identidade ("sudo mode") e a proteção contra requisições
+  forjadas, e faz os exemplos de versão aceitarem as versões candidatas do GLPI.
+
 ## [0.7.0] - 2026-09-07
 
 Release focada em duas frentes: atualizar as skills às versões atuais dos ecossistemas
@@ -339,6 +356,7 @@ Segunda rodada de otimização de tokens: aplicação integral da regra de códi
 - Documentação do projeto (`CLAUDE.md`) com estrutura, agentes e decisões de design
 - Precedência de carregamento de skills: GLPI > Languages > Domains
 
+[0.7.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.1
 [0.7.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.0
 [0.6.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.6.1
 [0.6.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.6.0

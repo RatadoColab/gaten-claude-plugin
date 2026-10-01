@@ -1,6 +1,6 @@
 # Arquitetura GLPI 12 — Referência Técnica
 
-> **Base derivada de RC:** este documento foi extraído da comparação direta do código-fonte do GLPI 12.0.0 RC com o 11.0.8. Não há documentação oficial de plugins para o 12. Onde este documento e a doc oficial (escrita para o 11) divergem, ele segue o código-fonte do 12 e a seção *API changes* do `CHANGELOG.md` do RC. Assinaturas exatas devem ser reconferidas contra o 12.0.0 GA (previsto para 2026-10-06).
+> **Base derivada de RC:** este documento foi extraído da comparação direta do código-fonte do GLPI 12.0.0 RC com o 11.0.10. Não há documentação oficial de plugins para o 12. Onde este documento e a doc oficial (escrita para o 11) divergem, ele segue o código-fonte do 12 e a seção *API changes* do `CHANGELOG.md` do RC. Assinaturas exatas devem ser reconferidas contra o 12.0.0 GA (previsto para 2026-10-06).
 >
 > **Escopo:** cobre os **deltas** em relação ao GLPI 11. Para padrões que não mudaram (query builder, Firewall, Controllers, `public/`, PSR-4, ciclo de vida de `CommonDBTM`), `domains/glpi-11/references/architecture.md` continua válido.
 
@@ -65,11 +65,7 @@ namespace GlpiPlugin\Meuplugin;
 
 class MeuItem extends \CommonDBTM
 {
-    /** @var string */
-    static $rightname = 'plugin_meuplugin_meuitem';
-
-    /** @var string */
-    static $table = 'glpi_plugin_meuplugin_meuitem';
+    public static string $rightname = 'plugin_meuplugin_meuitem';   // tipada: sem tipo = erro fatal no 12
 
     public static function getTypeName($nb = 0): string
     {
@@ -110,6 +106,18 @@ As rupturas do 11 (`CommonGLPI::$type`, `CommonDBTM::$fkfield`, `CommonDropdown:
 
 **Base de conhecimento:** categorias viraram artigos. Tabela `glpi_knowbaseitems_knowbaseitemcategories` → `glpi_knowbaseitems_knowbaseitems` (colunas `knowbaseitems_id` filho, `knowbaseitems_id_parent` pai). Coluna `knowbaseitemcategories_id` de `ITILCategory`/`TaskCategory` → `knowbaseitems_id`. `KnowbaseItem::getForCategory()` → `getChildrenArticles()`.
 
+### Propriedades tipadas das classes-base (erro fatal se redeclaradas sem tipo)
+
+Ausente do `CHANGELOG.md` do GLPI. No 12.0.0-rc3 a subclasse que redeclara sem tipo uma propriedade tipada da classe-base dá `Fatal error: Type of X::$y must be ...` ao carregar a classe.
+
+Tipos conferidos em `src/`: `CommonGLPI` — `static string $rightname`, `string $taborientation`, `bool $showdebug/$displaylist/$get_item_to_display_tab`; `CommonDBTM` — `bool $dohistory/$auto_message_on_action/$no_form_page/$get_item_to_display_tab`, `array $fields/$updates/$oldvalues/$history_blacklist`, `false|array $input`, `static bool $notable`, `static array $forward_entity_to`, `bool $usenotepad`, `?int $right`; `CommonDropdown`/`CommonTreeDropdown`/`Location` — `bool $dohistory/$can_be_translated/$must_be_replace/$display_dropdowntitle`; `CommonDBChild` — `static string $itemtype/$items_id`, `static bool $mustBeAttached/$logs_for_parent`, `static int $checkParentRights/$log_history_*`; `CommonDBRelation` — `static ?string $itemtype_N/$items_id_N`, `static bool $take_entity_N/$logs_for_item_N/$mustBeAttached_N/$checkAlwaysBothItems/$check_entity_coherency`, `static int $checkItem_N_Rights/$log_history_N_*`. Não há modo dual: o tipo declarado no filho quebra no GLPI 11 (pai sem tipo). Varrer (triagem, não prova) com aspas simples — em aspas duplas o `\$` vira âncora e o `grep` nunca casa:
+
+```bash
+grep -rnE '^\s*((public|protected|private|static|var)\s+)+\$(rightname|taborientation|showdebug|displaylist|get_item_to_display_tab|dohistory|auto_message_on_action|no_form_page|fields|updates|oldvalues|history_blacklist|input|notable|forward_entity_to|usenotepad|right|can_be_translated|must_be_replace|display_dropdowntitle|itemtype|items_id|mustBeAttached|logs_for_parent|checkParentRights|log_history_\w+|(itemtype|items_id|take_entity|logs_for_item|mustBeAttached)_[12]|checkAlwaysBothItems|check_entity_coherency|checkItem_[12]_Rights)\b' src/
+```
+
+O erro fatal vem da **ausência de tipo**; a visibilidade explícita (`public`) é só recomendação de estilo — `static string $rightname` sem `public` é PHP válido. A verificação definitiva é um teste unit que carregue as classes-modelo do plugin (`ReflectionProperty`) — o `grep` pode deixar passar propriedades fora da lista.
+
 ### Re-autenticação — `Glpi\Security\ReAuth\*` (novo no 12)
 
 Subsistema de "sudo mode": exige confirmação de identidade para ações sensíveis mesmo com sessão ativa.
@@ -119,11 +127,12 @@ Subsistema de "sudo mode": exige confirmação de identidade para ações sensí
 | `ReAuthManager` (singleton, `getInstance()`) | `isReAuthenticated()`, `checkReAuthenticationOrRedirect()`, `verify(Request)`, `authenticate()`, `revoke()`, `registerStrategy()`, `atLeastOneItemTypesRequiresReauthentication(array)` |
 | `PasswordReAuthStrategy`, `TOTPReAuthStrategy`, `LdapReAuthStrategy`, `InPlaceReAuthStrategy`, `FallbackReAuthStrategy` | Estratégias de verificação; `registerStrategy()` permite adicionar |
 | `ReAuthReplayListener` (RequestListener) | Reexecuta a requisição original após confirmação bem-sucedida |
-| `CommonGLPI::isUserReauthenticationNeeded(): bool` | **Ponto de extensão do plugin** — sobrescrever por itemtype; padrão `false` |
-| `CommonGLPI::checkReAuthenticationOrRedirect(): true` | Chamar em Controller/aba antes de expor dados sensíveis |
+| `CommonGLPI::itemTypeRequiresReauthentication(): bool` (`protected static`) | **Ponto de extensão do plugin** — sobrescrever por itemtype; padrão `false` |
+| `CommonGLPI::isUserReauthenticationNeeded(): bool` | **`final`** — não sobrescrever; combina o requisito do itemtype com o estado da sessão (sempre `false` em API/CLI) |
+| `CommonGLPI::checkReAuthenticationOrRedirect(): true` | **`final`** — chamar em Controller/aba antes de expor dados sensíveis |
 | `can()` / `canGlobal()` `&$reauth_needed` | `true` = permissão OK, falta apenas re-autenticar |
 
-Regra para plugins: nunca implementar prompt próprio; sobrescrever `isUserReauthenticationNeeded()` e delegar o fluxo ao core.
+Regra para plugins: nunca implementar prompt próprio; chamar `checkReAuthenticationOrRedirect()` pela classe do itemtype (`MeuItem::…`), nunca pela `CommonGLPI` (a base devolveria o padrão `false`); sobrescrever `itemTypeRequiresReauthentication()` (`isUserReauthenticationNeeded()` é `final` no RC3) e delegar o fluxo ao core.
 
 ### Hooks de ciclo de vida
 
@@ -413,6 +422,12 @@ Estratégias: `STRATEGY_NO_CHECK`, `STRATEGY_AUTHENTICATED` (padrão), `STRATEGY
 
 ---
 
+## CronTask — comportamento novo no 12
+
+Ação que falha 5 vezes seguidas vai para o status `ERROR` (exige intervenção manual: editar a ação para "Programada"; `glpi:task:unlock` só destrava `RUNNING`); ação encerrada externamente fica `ABORTED` e é reagendada de imediato; o reagendamento após falha usa backoff (1 min dobrando até 30 min). O agendamento usa a coluna nova `next_run` (vem `NULL` após o upgrade → toda ação roda na 1ª execução). `CronTask::getStateName()` não mapeia `ERROR`/`ABORTED` (aparecem como `???` no RC3). O runner é `php front/cron.php [--force] [nome]` — não existe `glpi:cron`/`glpi:task:run`. Crons de plugin devem ser idempotentes e não estourar o tempo.
+
+---
+
 ## Segurança
 
 Auto-sanitização de `$_GET`/`$_POST`/`$_REQUEST` permanece **removida** — dado bruto. Cast explícito em IDs obrigatório. Proteção SQL automática no query builder. `htmlescape()`/`jsescape()` em toda saída dinâmica. `Toolbox::addslashes_deep()`/`stripslashes_deep()` **removidos** no 12; `Glpi\Toolbox\Sanitizer` **removida**. Erros HTTP via exceção `Glpi\Exception\Http\*`, nunca `exit()`/`die()`/`http_response_code()` em Controller. `Html::displayNotFoundError()`/`displayRightError()` **removidos** — lançar `NotFoundHttpException`/`AccessDeniedHttpException`.
@@ -423,9 +438,9 @@ Token por requisição eliminado. `CheckCsrfListener` (`src/Glpi/Kernel/Listener
 
 1. Recursos stateless e sub-requests: isentos.
 2. Métodos sem corpo (`GET`, `HEAD`, `OPTIONS`, `TRACE`): sem checagem.
-3. Demais: header `Sec-Fetch-Site` (enviado por todos os navegadores desde 2023, não spoofável) deve indicar `same-origin`/`same-site`/`none`; fallback para `Origin` vs `Host` em navegadores antigos. Falha → `AccessDeniedHttpException`.
+3. Demais: header `Sec-Fetch-Site` (enviado por todos os navegadores desde 2023, não spoofável) deve indicar `same-origin` ou `none` (`same-site` e `cross-site` são **rejeitados**); fallback para `Origin` vs `Host` em navegadores antigos. Falha → `AccessDeniedHttpException`.
 
-Para o plugin: **remover** `_glpi_csrf_token` (campos), `X-Glpi-Csrf-Token` (headers AJAX), `csrf_token()` (Twig), `fields.csrfField()` (macro), `getAjaxCsrfToken()` (JS). Depreciados também: `Session::getNewCSRFToken()`, `validateCSRF()`, `checkCSRF()`, `cleanCSRFTokens()`. POSTs same-origin passam sem código adicional.
+Para o plugin: **remover** `_glpi_csrf_token` (campos), `X-Glpi-Csrf-Token` (headers AJAX), `csrf_token()` (Twig), `fields.csrfField()` (macro), `getAjaxCsrfToken()` (JS). Depreciados também: `Session::getNewCSRFToken()`, `validateCSRF()`, `checkCSRF()`, `cleanCSRFTokens()`. POSTs same-origin passam sem código adicional. Sem `Sec-Fetch-Site` e sem `Origin` (cliente não-browser) **não há checagem**; `front/` e `ajax/` legados passam pelo mesmo listener. Manter `X-Requested-With` (o core ainda o usa em `Toolbox::isAjax()`); `csrf_token()`/`getNewCSRFToken()` ainda existem mas devolvem `""` com `Toolbox::deprecated()`; proxy que reescreve `Host` quebra a validação por `Origin`.
 
 ### HTTP client
 
@@ -440,6 +455,8 @@ $data = json_decode($response->getContent(), true);
 ```
 
 Métodos: `request(string $method, string $uri, array $options)`, `get()`, `post()`, `stream()`. Retorna `Symfony\Contracts\HttpClient\ResponseInterface`.
+
+O `HttpClient` **bloqueia rede privada** fora de `GLPI_SERVERSIDE_URL_ALLOWED_PRIVATE_NETWORKS_CONTEXTS` (constante da instalação, em `config/local_define.php`; o plugin não consegue se auto-registrar), ao contrário do `Toolbox::callCurl()` do 11 — integração com serviço interno exige ajuste de ambiente. `guzzlehttp/guzzle` deixou de ser dependência direta do core (só transitiva).
 
 ---
 

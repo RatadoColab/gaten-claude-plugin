@@ -75,7 +75,7 @@ Implementar as funções referenciadas nos hooks:
 ### 3. Criar a classe em `src/<Entidade>.php`
 
 Namespace `GlpiPlugin\Nomedoplugin\`; a classe estende `\CommonDBTM` (ou `\CommonDropdown`, `\CommonDBChild`, `\CommonDBRelation` conforme o tipo) e define:
-- `static $rightname` — chave de permissão
+- `public static string $rightname` — chave de permissão (**tipada**: redeclarar `static $rightname` sem tipo é erro fatal no 12; vale para `$dohistory`, `$itemtype`, `$items_id`, `$itemtype_N` etc. — ver `../SKILL.md`)
 - `getTypeName()` — nome exibido na interface
 - `getMenuContent()` — entrada no menu lateral (se houver página dedicada)
 - `getTabNameForItem()` + `displayTabContentForItem()` — para exibir aba em outros itens GLPI
