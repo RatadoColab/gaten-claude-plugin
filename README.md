@@ -10,7 +10,7 @@ Este repositório centraliza plugins reutilizáveis para o [Claude Code](https:/
 
 | Plugin | Versão | Descrição |
 |--------|--------|-----------|
-| [`fullstack-development`](./fullstack-development/) | 0.7.1 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
+| [`fullstack-development`](./fullstack-development/) | 0.7.2 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
 
 ## Como usar
 
@@ -62,7 +62,7 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 - DevOps/CI-CD: `ci-cd`, `containers`, `podman`, `kubernetes`, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`
 - `glpi-10` — plugins GLPI 10.0.x, com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`
 - `glpi-11` — plugins GLPI 11, com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`
-- `glpi-12` — plugins GLPI 12, com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`; derivado do 12.0.0 RC — revalidar contra o GA. As três árvores GLPI são carregadas de forma mutuamente exclusiva conforme a versão-alvo detectada
+- `glpi-12` — plugins GLPI 12, com sub-skills: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue`. As três árvores GLPI são carregadas de forma mutuamente exclusiva conforme a versão-alvo detectada
 - Mobile: `android-architecture`, `jetpack-compose`, `flutter`
 
 **Linguagens:**
