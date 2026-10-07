@@ -20,7 +20,7 @@ description: >
 >
 > **Único delta 11 → 12 nesta skill:** chamadas `fetch` a partir do Vue não incluem mais o campo `_glpi_csrf_token` no corpo (nem o header `X-Glpi-Csrf-Token`, quando usado) — a proteção CSRF passou a ser validação de header no kernel. Todo o resto (build webpack, `externals`, `output.publicPath`, montagem via `window.Vue`, ponte hidden input) é idêntico ao GLPI 11.
 >
-> **Vue do core:** 3.5.x — verificado em GLPI 12.0.0-rc1 (**3.5.42**), exposto com namespace completo em `window._vue`; as APIs de reatividade, componentes e composição de Vue 3.5 de `languages/vue` estão disponíveis. Pinia e Vue Router **não** vêm do core — usar o padrão multi-`reactive()` da seção 5. Conferir a versão numa instalação: `grep -oE 'vue v3\.[0-9]+\.[0-9]+' <glpi>/public/build/vue/app.js` (ou `window._vue.version` no console). Reconferir contra o GLPI 12.0.0 GA (ver `PENDENCIAS.md` na raiz).
+> **Vue do core:** 3.5.x — verificado em GLPI 12.0.0 GA (**3.5.43**), exposto com namespace completo em `window._vue`; as APIs de reatividade, componentes e composição de Vue 3.5 de `languages/vue` estão disponíveis. Pinia e Vue Router **não** vêm do core — usar o padrão multi-`reactive()` da seção 5. Conferir a versão numa instalação: `grep -oE 'vue v3\.[0-9]+\.[0-9]+' <glpi>/public/build/vue/app.js` (ou `window._vue.version` no console).
 
 O GLPI 11 adicionou suporte nativo a Vue no core: a aplicação principal já carrega Vue 3 e o expõe globalmente em dois pontos distintos, que não devem ser confundidos:
 

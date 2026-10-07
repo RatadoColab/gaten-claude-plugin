@@ -92,8 +92,7 @@ function plugin_version_meuplugin(): array
  */
 function plugin_meuplugin_check_prerequisites(): bool
 {
-    // '12.0' (não '12.0.0'): GLPI_VERSION crua é '12.0.0-rc3' no RC e '12.0.0-rc3' < '12.0.0'
-    if (version_compare(GLPI_VERSION, '12.0', 'lt') || version_compare(GLPI_VERSION, '12.1', 'ge')) {
+    if (version_compare(GLPI_VERSION, '12.0.0', 'lt') || version_compare(GLPI_VERSION, '12.1.0', 'ge')) {
         echo 'Este plugin requer GLPI 12.0.x.';
         return false;
     }

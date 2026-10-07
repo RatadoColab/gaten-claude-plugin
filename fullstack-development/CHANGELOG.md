@@ -7,6 +7,21 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [0.7.2] - 2026-10-07
+
+### Alterado
+
+- **`domains/glpi-12`** — revisada e confirmada contra a versão oficial 12.0.0 do GLPI. Os avisos de
+  "versão candidata" foram removidos e as orientações que estavam pendentes foram fechadas
+  (por exemplo, como escrever filtros de busca personalizados sem erro). A versão do Vue embarcada no
+  GLPI 12 e as ferramentas de migração automática disponíveis também foram conferidas.
+
+### Adicionado
+
+- **Novidades do GLPI 12.0.0 oficial em `domains/glpi-12`:** configuração de proxies reversos com
+  faixas de IP (CIDR), nova forma de confirmação de identidade via CAS, regras que só funcionam quando
+  abertas pelo seu tipo correto e página de navegação em árvore que passa a exigir login.
+
 ## [0.7.1] - 2026-10-01
 
 ### Adicionado
@@ -356,6 +371,7 @@ Segunda rodada de otimização de tokens: aplicação integral da regra de códi
 - Documentação do projeto (`CLAUDE.md`) com estrutura, agentes e decisões de design
 - Precedência de carregamento de skills: GLPI > Languages > Domains
 
+[0.7.2]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.2
 [0.7.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.1
 [0.7.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.0
 [0.6.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.6.1

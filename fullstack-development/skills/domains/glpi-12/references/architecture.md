@@ -1,6 +1,6 @@
 # Arquitetura GLPI 12 — Referência Técnica
 
-> **Base derivada de RC:** este documento foi extraído da comparação direta do código-fonte do GLPI 12.0.0 RC com o 11.0.10. Não há documentação oficial de plugins para o 12. Onde este documento e a doc oficial (escrita para o 11) divergem, ele segue o código-fonte do 12 e a seção *API changes* do `CHANGELOG.md` do RC. Assinaturas exatas devem ser reconferidas contra o 12.0.0 GA (previsto para 2026-10-06).
+> **Conferido contra o GLPI 12.0.0 GA (2026-10-07):** este documento foi extraído da comparação direta do código-fonte do GLPI 12.0.0 com o 11.0.x. Não há documentação oficial de plugins para o 12. Onde este documento e a doc oficial (escrita para o 11) divergem, ele segue o código-fonte do 12 e a seção *API changes* do `CHANGELOG.md`.
 >
 > **Escopo:** cobre os **deltas** em relação ao GLPI 11. Para padrões que não mudaram (query builder, Firewall, Controllers, `public/`, PSR-4, ciclo de vida de `CommonDBTM`), `domains/glpi-11/references/architecture.md` continua válido.
 
@@ -108,7 +108,17 @@ As rupturas do 11 (`CommonGLPI::$type`, `CommonDBTM::$fkfield`, `CommonDropdown:
 
 ### Propriedades tipadas das classes-base (erro fatal se redeclaradas sem tipo)
 
-Ausente do `CHANGELOG.md` do GLPI. No 12.0.0-rc3 a subclasse que redeclara sem tipo uma propriedade tipada da classe-base dá `Fatal error: Type of X::$y must be ...` ao carregar a classe.
+Ausente do `CHANGELOG.md` do GLPI. No 12.0.0 a subclasse que redeclara sem tipo uma propriedade tipada da classe-base dá `Fatal error: Type of X::$y must be ...` ao carregar a classe.
+
+Exemplos de redeclaração correta:
+
+```php
+public bool $dohistory = true;
+public static string $rightname = 'plugin_meuplugin_meuitem';
+public static string $itemtype = Pai::class;       // CommonDBChild
+public static string $items_id = 'pais_id';        // CommonDBChild
+public static ?string $itemtype_1 = Pai::class;    // CommonDBRelation (idem items_id_1, itemtype_2, items_id_2)
+```
 
 Tipos conferidos em `src/`: `CommonGLPI` — `static string $rightname`, `string $taborientation`, `bool $showdebug/$displaylist/$get_item_to_display_tab`; `CommonDBTM` — `bool $dohistory/$auto_message_on_action/$no_form_page/$get_item_to_display_tab`, `array $fields/$updates/$oldvalues/$history_blacklist`, `false|array $input`, `static bool $notable`, `static array $forward_entity_to`, `bool $usenotepad`, `?int $right`; `CommonDropdown`/`CommonTreeDropdown`/`Location` — `bool $dohistory/$can_be_translated/$must_be_replace/$display_dropdowntitle`; `CommonDBChild` — `static string $itemtype/$items_id`, `static bool $mustBeAttached/$logs_for_parent`, `static int $checkParentRights/$log_history_*`; `CommonDBRelation` — `static ?string $itemtype_N/$items_id_N`, `static bool $take_entity_N/$logs_for_item_N/$mustBeAttached_N/$checkAlwaysBothItems/$check_entity_coherency`, `static int $checkItem_N_Rights/$log_history_N_*`. Não há modo dual: o tipo declarado no filho quebra no GLPI 11 (pai sem tipo). Varrer (triagem, não prova) com aspas simples — em aspas duplas o `\$` vira âncora e o `grep` nunca casa:
 
@@ -125,14 +135,14 @@ Subsistema de "sudo mode": exige confirmação de identidade para ações sensí
 | Elemento | Papel |
 |---|---|
 | `ReAuthManager` (singleton, `getInstance()`) | `isReAuthenticated()`, `checkReAuthenticationOrRedirect()`, `verify(Request)`, `authenticate()`, `revoke()`, `registerStrategy()`, `atLeastOneItemTypesRequiresReauthentication(array)` |
-| `PasswordReAuthStrategy`, `TOTPReAuthStrategy`, `LdapReAuthStrategy`, `InPlaceReAuthStrategy`, `FallbackReAuthStrategy` | Estratégias de verificação; `registerStrategy()` permite adicionar |
+| `PasswordReAuthStrategy`, `TOTPReAuthStrategy`, `LdapReAuthStrategy`, `CasReAuthStrategy` (novo no GA), `InPlaceReAuthStrategy`, `FallbackReAuthStrategy` | Estratégias de verificação; `registerStrategy()` permite adicionar. `ReAuthManager::isSelectedStrategy(class-string)` informa se a estratégia é a escolhida para o usuário — endpoint dedicado a uma estratégia deve checá-la (estar disponível não basta) |
 | `ReAuthReplayListener` (RequestListener) | Reexecuta a requisição original após confirmação bem-sucedida |
 | `CommonGLPI::itemTypeRequiresReauthentication(): bool` (`protected static`) | **Ponto de extensão do plugin** — sobrescrever por itemtype; padrão `false` |
 | `CommonGLPI::isUserReauthenticationNeeded(): bool` | **`final`** — não sobrescrever; combina o requisito do itemtype com o estado da sessão (sempre `false` em API/CLI) |
 | `CommonGLPI::checkReAuthenticationOrRedirect(): true` | **`final`** — chamar em Controller/aba antes de expor dados sensíveis |
 | `can()` / `canGlobal()` `&$reauth_needed` | `true` = permissão OK, falta apenas re-autenticar |
 
-Regra para plugins: nunca implementar prompt próprio; chamar `checkReAuthenticationOrRedirect()` pela classe do itemtype (`MeuItem::…`), nunca pela `CommonGLPI` (a base devolveria o padrão `false`); sobrescrever `itemTypeRequiresReauthentication()` (`isUserReauthenticationNeeded()` é `final` no RC3) e delegar o fluxo ao core.
+Regra para plugins: nunca implementar prompt próprio; chamar `checkReAuthenticationOrRedirect()` pela classe do itemtype (`MeuItem::…`), nunca pela `CommonGLPI` (a base devolveria o padrão `false`); sobrescrever `itemTypeRequiresReauthentication()` (`isUserReauthenticationNeeded()` é `final` no 12.0.0) e delegar o fluxo ao core.
 
 ### Hooks de ciclo de vida
 
@@ -424,7 +434,7 @@ Estratégias: `STRATEGY_NO_CHECK`, `STRATEGY_AUTHENTICATED` (padrão), `STRATEGY
 
 ## CronTask — comportamento novo no 12
 
-Ação que falha 5 vezes seguidas vai para o status `ERROR` (exige intervenção manual: editar a ação para "Programada"; `glpi:task:unlock` só destrava `RUNNING`); ação encerrada externamente fica `ABORTED` e é reagendada de imediato; o reagendamento após falha usa backoff (1 min dobrando até 30 min). O agendamento usa a coluna nova `next_run` (vem `NULL` após o upgrade → toda ação roda na 1ª execução). `CronTask::getStateName()` não mapeia `ERROR`/`ABORTED` (aparecem como `???` no RC3). O runner é `php front/cron.php [--force] [nome]` — não existe `glpi:cron`/`glpi:task:run`. Crons de plugin devem ser idempotentes e não estourar o tempo.
+Ação que falha 5 vezes seguidas vai para o status `ERROR` (exige intervenção manual: editar a ação para "Programada"; `glpi:task:unlock` só destrava `RUNNING`); ação encerrada externamente fica `ABORTED` e é reagendada de imediato; o reagendamento após falha usa backoff (1 min dobrando até 30 min). O agendamento usa a coluna nova `next_run` (vem `NULL` após o upgrade → toda ação roda na 1ª execução). `CronTask::getStateName()` não mapeia `ERROR`/`ABORTED` (aparecem como `???` no 12.0.0). O runner é `php front/cron.php [--force] [nome]` — não existe `glpi:cron`/`glpi:task:run`. Crons de plugin devem ser idempotentes e não estourar o tempo.
 
 ---
 
