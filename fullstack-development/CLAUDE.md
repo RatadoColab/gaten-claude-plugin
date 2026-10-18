@@ -11,8 +11,8 @@ cc --plugin-dir .
 # Verificar agentes carregados
 /agents
 
-# Testar gatilho de agente (ex.: devops-cicd)
-# "Crie o pipeline de CI/CD para esta aplicação"
+# Testar agente (só por pedido explícito, ex.: devops-cicd)
+# "Use o agente devops-cicd para criar o pipeline de CI/CD desta aplicação"
 
 # Testar commands disponíveis
 /fullstack-development:review-spec
@@ -26,10 +26,14 @@ cc --plugin-dir .
 .claude-plugin/plugin.json     ← manifesto (nome: fullstack-development)
 agents/                        ← 5 agentes: spec-dev, backend-dev, frontend-dev, devops-cicd, mobile-dev
 skills/
+  fullstack-router/            ← única skill registrada (nível único); índice das demais 51
   base/                        ← 1 skill base por agente (inclui mobile-base)
   domains/                     ← 23 skills de domínio (glpi-10, glpi-11 e glpi-12 têm 4 sub-skills cada; mobile tem 3)
   languages/                   ← 11 skills de linguagem
 commands/                      ← 4 slash commands
+hooks/                         ← SessionStart (detecta stack), PreToolUse/Read (libera leitura de skills); prompt-skills.sh é opcional e não registrado
+scripts/validate-router.sh     ← confere a tabela do router contra os SKILL.md em disco
+evals/                         ← casos de `claude plugin eval` para medir o disparo do router
 ```
 
 ## Versão e Release
@@ -37,17 +41,23 @@ commands/                      ← 4 slash commands
 - Versão do plugin em `.claude-plugin/plugin.json`; cada release bumpa a versão e adiciona uma entrada em `CHANGELOG.md` (formato Keep a Changelog) + link de release no rodapé.
 - **Versionamento centralizado no `plugin.json`** — os `SKILL.md` **não** carregam campo `version:` no frontmatter (apenas `name` + `description`). Decisão tomada para simplificar releases e eliminar o drift de versões entre skills.
 - Auditar tamanho dos corpos: `find skills -name SKILL.md -exec wc -w {} \;` (alvo ~1.500–2.000 palavras; ver política de progressive disclosure em Decisões de Design).
+- Após adicionar, remover ou renomear uma skill: atualizar a tabela de `skills/fullstack-router/SKILL.md` e rodar `bash scripts/validate-router.sh` (deve acusar 0 divergências; a tabela é fonte duplicada e deriva se não for conferida).
+- Medir o disparo do router: `claude plugin eval . --runs 3 -j 4 --ablation none --no-publish --trust-plugin` (os resultados ficam em `evals/results/`, ignorado pelo git).
 - Validar ponteiros após editar skills: todo `references/*` citado em SKILL.md deve existir (atenção: sub-skills GLPI usam a forma `../references/` para apontar para `domains/glpi-10/references/`, `domains/glpi-11/references/` ou `domains/glpi-12/references/`, conforme a árvore).
 
 ## Agentes e Gatilhos
 
-| Agente | Gatilhos típicos | Color |
-|--------|-----------------|-------|
-| `spec-dev` | "revise esta spec", "valide a especificação" | blue |
-| `backend-dev` | "desenvolva o backend", "implemente a API", "crie o endpoint" | green |
-| `frontend-dev` | "desenvolva o frontend", "crie o componente", "implemente o formulário" | cyan |
-| `devops-cicd` | "crie o pipeline", "configure o CI/CD", "configure o Azure DevOps", "escreva o Dockerfile/Containerfile", "crie a unidade Quadlet (Podman)", "crie o manifest Kubernetes", "faça deploy no OpenShift", "provisione a infraestrutura" | yellow |
-| `mobile-dev` | "desenvolva o app Android", "crie a tela em Compose", "implemente a ViewModel", "configure o Gradle", "revise o código Kotlin", "crie o app Flutter", "implemente o widget Flutter", "configure o estado no Flutter" | magenta |
+Planejamento e implementação rodam na conversa principal. Os agentes só entram **por pedido explícito** do usuário; a `description` de todos é uma linha curta, sem blocos `<example>`, para não induzir o auto-disparo.
+
+| Agente | Quando usar | Modelo | Tools | Color |
+|--------|-------------|--------|-------|-------|
+| `spec-dev` | Revisão independente opcional de spec/laudo (sugerida por `/new-feature` e `/new-bugfix`) ou pedido explícito; somente leitura | `sonnet` | Read, Grep, Glob, WebSearch | blue |
+| `backend-dev` | Somente se o usuário pedir: "use o agente backend-dev" | `inherit` | Read, Write, Edit, Bash, Grep, Glob | green |
+| `frontend-dev` | Somente se o usuário pedir: "use o agente frontend-dev" | `inherit` | Read, Write, Edit, Bash, Grep, Glob | cyan |
+| `devops-cicd` | Somente se o usuário pedir: "use o agente devops-cicd" | `inherit` | Read, Write, Edit, Bash, Grep, Glob | yellow |
+| `mobile-dev` | Somente se o usuário pedir: "use o agente mobile-dev" | `inherit` | Read, Write, Edit, Bash, Grep, Glob | magenta |
+
+Todo prompt de delegação traz a stack detectada, os caminhos exatos das skills, o escopo e o formato de saída esperado; os agentes usam essas skills e não redetectam a stack. O retorno é resumo e lista de arquivos, sem reproduzir código ou spec.
 
 ## Organização das Skills
 
@@ -56,9 +66,11 @@ commands/                      ← 4 slash commands
   - `glpi-10`, `glpi-11` e `glpi-12` têm sub-skills aninhadas em `skills/domains/glpi-10/`, `skills/domains/glpi-11/` e `skills/domains/glpi-12/`, respectivamente: `ajax-handlers`, `form-templates`, `plugin-creation`, `vue` em cada uma — três árvores paralelas completas, carregadas de forma mutuamente exclusiva conforme a versão-alvo detectada
 - **Linguagem** (`skills/languages/`): `python`, `php`, `javascript`, `nodejs`, `golang`, `vue`, `twig`, `html`, `kotlin`, `gradle`, `dart`
 
-## Padrão de Carregamento de Skills pelos Agentes
+## Padrão de Carregamento de Skills
 
-Cada agente instrui explicitamente quais skills carregar via `${CLAUDE_PLUGIN_ROOT}`:
+**Conversa principal e comandos:** apenas `fullstack-router` é registrada (descrição curta, ~130 tokens por turno). Ela traz a detecção de stack/versão, a precedência e a tabela `skill | quando carregar | caminho` das 51 skills; o modelo lê os `SKILL.md` aplicáveis com `Read`, sob demanda. O hook `SessionStart` (`startup|resume|clear|compact`) detecta a stack por arquivos do projeto e injeta uma linha factual com a stack e as skills aplicáveis — reinjetada após compactação, já que arquivos lidos por `Read` não são reanexados pelo auto-compact. O hook `PreToolUse` com matcher `Read` aprova somente leituras de `.md` dentro de `skills/` do próprio plugin, evitando prompt de permissão para um diretório fora do projeto. Os comandos `new-feature` e `new-bugfix` leem o router por caminho (não têm `Skill` em `allowed-tools`).
+
+**Agentes:** cada agente instrui explicitamente quais skills carregar via `${CLAUDE_PLUGIN_ROOT}`, a menos que o prompt de delegação já traga a stack e os caminhos das skills:
 
 ```
 ${CLAUDE_PLUGIN_ROOT}/skills/base/<agente>-base/SKILL.md        ← sempre
@@ -147,6 +159,12 @@ Versão-alvo de cada skill que acompanha um ecossistema externo. Atualizadas na 
 
 - Skills organizadas em subdirs (`base/`, `domains/`, `languages/`) para separação clara por responsabilidade
 - Commands em `commands/` (formato legado, mas intencional para slash commands diretos)
+- **A estrutura aninhada (`base/`, `domains/`, `languages/`) não é registrada como skills — de propósito.** O Claude Code varre `skills/<nome>/SKILL.md` num único nível; registrar as 51 custaria ~8 mil tokens de descrições em todo turno. Por isso só o router fica no nível único e as demais são carregadas por caminho. Não achatar a estrutura nem preencher `skills` no `plugin.json`.
+- **Hooks em bash puro, sem `jq`:** os hooks usam bash/grep/sed/find e só aproveitam `jq` quando existe (opcional), para funcionar em Linux, macOS e Git Bash (Windows) sem dependências. O texto injetado é factual (não imperativo) — a documentação alerta que imperativo pode ser tratado como prompt injection.
+- **`UserPromptSubmit` (`hooks/prompt-skills.sh`) não está registrado:** em 2026-10-17, com o hook ativo, o modelo não passou a ler mais skills nos prompts de teste (ver `PENDENCIAS.md`). O script fica como opção; para ativar, acrescentar o evento em `hooks/hooks.json`.
+- **Agentes só por pedido explícito:** especificação, plano e implementação ocorrem na conversa principal, com as skills carregadas uma única vez. A revisão independente é opcional, feita por um único `spec-dev` (somente leitura, `sonnet`) que cobre todas as trilhas ativas com checklist por trilha; compensa em specs grandes, com 3 ou mais trilhas, ou em temas críticos (autenticação, pagamento, dados sensíveis), onde o contexto limpo vale o custo. Não existe opção documentada para desabilitar agentes por completo; a `description` curta reduz o auto-disparo, não o elimina.
+- **Descartados:** `skills:` no frontmatter de agentes (injetaria o corpo completo das skills), `maxTurns` em revisores (pode truncar a revisão sem aviso) e limitar a revisão a arquivos citados (cria lacunas em revisões de segurança). O teto de saída dos agentes vale para prosa e duplicação, nunca para o número de achados.
+- **`PreToolUse` em `Write|Edit` foi avaliado e descartado:** chega depois de o conteúdo ser gerado, não ajuda o planejamento e exige estado.
 - Skills com conteúdo mínimo — intencionalmente para expansão posterior
 - `javascript` cobre a sintaxe da linguagem (backend e frontend); `nodejs` cobre exclusivamente o runtime — ver assimetria dedicada abaixo
 
@@ -163,7 +181,4 @@ Para conter o consumo de tokens (o corpo do SKILL.md é sempre carregado quando 
 - André Proto <andre.proto@gmail.com>
 - Aparecido Hermogenes Leite <soulrunna@gmail.com>
 
-## Próximos Passos Sugeridos
-
-- Considerar hooks para validação automática de specs antes de commits
-- `agents/frontend-dev.md` não referencia nenhuma sub-skill GLPI hoje — `form-templates` e `vue` das três árvores (`glpi-10`, `glpi-11`, `glpi-12`) não estão ligadas a agente algum (gap pré-existente, fora do escopo das mudanças que criaram as árvores)
+Pendências abertas: ver `PENDENCIAS.md` na raiz do repositório.

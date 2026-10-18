@@ -7,6 +7,34 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Carregamento econômico de skills:** a conversa principal agora enxerga uma única skill de índice, que
+  indica quais skills ler conforme a tarefa e a stack do projeto. As demais skills continuam sendo lidas
+  sob demanda, sem custo fixo por mensagem.
+- **Detecção automática da stack ao abrir a sessão:** o plugin identifica linguagens, frameworks, versões
+  (PHP, GLPI) e ferramentas de DevOps do projeto e informa quais skills se aplicam. A informação é
+  renovada após a compactação da conversa.
+- **Leitura das skills sem pedido de permissão:** o plugin libera sozinho a leitura dos seus próprios
+  arquivos de skills.
+- **Comandos de nova funcionalidade e de correção de bug** passam a consultar o índice de skills em vez de
+  listas fixas.
+- **Verificação do índice:** um script confere se o índice cobre todas as skills existentes.
+- **Casos de teste de disparo** para medir com que frequência o índice é consultado.
+
+### Alterado
+
+- **Planejamento mais econômico:** a especificação, o plano e a implementação de novas funcionalidades e
+  correções de bug acontecem na própria conversa, sem recomeçar o contexto a cada etapa.
+- **Revisão independente de spec e de laudo, opcional:** um único revisor que apenas lê os arquivos
+  analisa todas as áreas envolvidas e devolve gaps, riscos e alterações sugeridas, sem repetir o texto.
+  É recomendada em specs grandes ou em temas críticos, e nunca obrigatória.
+- **Agentes especialistas só por pedido explícito:** os agentes de backend, frontend, mobile e DevOps
+  são usados apenas quando você pedir pelo nome, e as descrições ficaram bem mais curtas.
+- **Escolha na aprovação do plano:** em planos grandes, você decide entre implementar na conversa ou
+  delegar a um agente especialista.
+- **Revisão de especificações mais focada:** a revisão entrega gaps e sugestões, sem reescrever a spec.
+
 ## [0.7.2] - 2026-10-07
 
 ### Alterado

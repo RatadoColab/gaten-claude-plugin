@@ -1,12 +1,12 @@
 ---
-description: Inicia o desenvolvimento de uma nova feature fullstack, identificando a stack em uso e acionando os agentes backend-dev, frontend-dev (web) e/ou mobile-dev (Android/Flutter) — e, somente quando a demanda incluir solicitações explícitas de DevOps/infra, também o devops-cicd — com as skills relevantes para cada contexto.
+description: Inicia o desenvolvimento de uma nova feature fullstack com fluxo spec-first, conduzido na conversa principal — identifica a stack, especifica a feature (Backend, Frontend web, Mobile e/ou DevOps/Infraestrutura), oferece uma revisão independente opcional pelo spec-dev, consolida o plano para aprovação e só então implementa.
 argument-hint: <nome-da-feature>
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
 # new-feature
 
-Guiar o desenvolvimento de uma nova feature com fluxo spec-first: gera especificação estruturada, submete à revisão paralela de domínio e consolida um plano final para aprovação antes de qualquer implementação.
+Guiar o desenvolvimento de uma nova feature com fluxo spec-first: especifica a feature, oferece revisão independente opcional e consolida um plano final para aprovação antes de qualquer implementação. Todas as fases rodam na conversa principal, com as skills carregadas uma única vez.
 
 ## Processo
 
@@ -36,23 +36,20 @@ Avaliar a demanda do usuário em busca de **solicitações explícitas** de DevO
 - observabilidade / monitoramento / métricas / logs / alertas / SLO
 - segurança de pipeline / DevSecOps / scans / secrets no pipeline
 
-**Regra "se, e apenas se":** se nenhum sinal explícito estiver presente, **não** criar seção DevOps e **não** acionar o `devops-cicd` — seguir o fluxo backend/frontend inalterado. Implicações indiretas de infra (sem pedido explícito) **não** acionam a trilha.
+**Regra "se, e apenas se":** se nenhum sinal explícito estiver presente, **não** criar seção DevOps e **não** carregar skills DevOps — seguir o fluxo backend/frontend inalterado. Implicações indiretas de infra (sem pedido explícito) **não** acionam a trilha.
 
 ### Fase 1 — Identificação de stack
 
-1. Identificar a stack do projeto (linguagens, frameworks, estrutura de diretórios) e aplicar as detecções de escopo Mobile e DevOps
-2. Ler `${CLAUDE_PLUGIN_ROOT}/skills/base/backend-base/SKILL.md`
-3. **Se trilha Mobile acionada:**
-   - Ler `${CLAUDE_PLUGIN_ROOT}/skills/base/mobile-base/SKILL.md`
-   - **Android nativo:** carregar `${CLAUDE_PLUGIN_ROOT}/skills/languages/kotlin/SKILL.md`, `${CLAUDE_PLUGIN_ROOT}/skills/domains/android-architecture/SKILL.md` e, quando houver UI Compose, `${CLAUDE_PLUGIN_ROOT}/skills/domains/jetpack-compose/SKILL.md`; carregar `${CLAUDE_PLUGIN_ROOT}/skills/languages/gradle/SKILL.md` se tocar build/dependências — **Compose e Flutter são mutuamente exclusivos: nunca carregar ambos**
-   - **Flutter:** carregar `${CLAUDE_PLUGIN_ROOT}/skills/languages/dart/SKILL.md` e `${CLAUDE_PLUGIN_ROOT}/skills/domains/flutter/SKILL.md`; carregar `${CLAUDE_PLUGIN_ROOT}/skills/languages/gradle/SKILL.md` se tocar build Android nativo do projeto Flutter
-4. **Se trilha Frontend web acionada** (presença de `.vue`/`.html`/`.twig`, componentes web, páginas, CSS, ou pedido explícito de UI web):
-   - Ler `${CLAUDE_PLUGIN_ROOT}/skills/base/frontend-base/SKILL.md`
-5. Com base na stack identificada, carregar skills de linguagem pertinentes adicionais (ex.: `php`, `python`, `javascript`+`nodejs`, `golang`, `vue`)
+1. Identificar a stack do projeto (linguagens, frameworks, estrutura de diretórios) e aplicar as detecções de escopo Mobile e DevOps. Se o contexto da sessão já trouxer a linha de stack detectada, usá-la como ponto de partida
+2. Ler `${CLAUDE_PLUGIN_ROOT}/skills/fullstack-router/SKILL.md` — índice com a tabela de skills e caminhos, as regras de detecção de stack/versão e a precedência de carregamento
+3. Carregar, pelos caminhos do índice, a skill base de cada trilha ativa: `backend-base` (sempre), `mobile-base` (se trilha Mobile acionada), `frontend-base` (se trilha Frontend web acionada — presença de `.vue`/`.html`/`.twig`, componentes web, páginas, CSS, ou pedido explícito de UI web) e `devops-base` (se trilha DevOps acionada)
+4. **Se trilha Mobile acionada:** carregar as skills da stack (Android nativo ou Flutter) e `gradle` se tocar build, conforme o índice — **Compose e Flutter são mutuamente exclusivos: nunca carregar ambos**
+5. **Se trilha DevOps acionada:** carregar as skills de domínio DevOps conforme os sinais detectados (`ci-cd`, `containers`, `podman` **ou** `kubernetes` — mutuamente exclusivos —, `openshift`, `azure-devops`, `iac`, `observability`, `devsecops`)
+6. Com base na stack identificada, carregar as skills de linguagem e de domínio pertinentes adicionais, conforme o índice. Em plugin GLPI, determinar a versão-alvo e carregar **apenas uma** das três árvores; sem indício em nenhuma direção, **perguntar** ao usuário antes de gerar código — nunca assumir um default
 
-### Fase 2 — Especificação da feature (spec-dev)
+### Fase 2 — Especificação da feature
 
-6. Usar o agente `spec-dev` para criar a especificação a partir da demanda:
+7. Especificar a feature a partir da demanda:
    - Se o usuário já tiver uma spec, validá-la e melhorá-la em vez de criar do zero
    - Sempre incluir seção **Backend**
    - **Se trilha Mobile acionada:** incluir seção **Mobile** (em vez de, ou além de, **Frontend** web) cobrindo: arquitetura de telas e navegação, gerenciamento de estado, integração com o backend (endpoints, DTOs, tratamento de erros/timeouts), estados de borda (loading/erro/vazio/sucesso) e arquivos/módulos esperados
@@ -61,52 +58,35 @@ Avaliar a demanda do usuário em busca de **solicitações explícitas** de DevO
    - Incluir em todas as seções: objetivo, critérios de aceite, restrições, fluxo de dados e arquivos esperados
    - Salvar a spec em `.claude/specs/<nome-da-feature>.md`
 
-### Fase 3 — Revisão paralela de domínio
+### Fase 3 — Revisão independente (opcional)
 
-7. Acionar **em paralelo** os agentes de domínio das trilhas ativas, cada um revisando apenas sua seção:
-   - `backend-dev` — instrução: **"Revise apenas a seção Backend da spec em `.claude/specs/<nome>.md`. Aponte lacunas, riscos técnicos e ajustes necessários. NÃO escreva código — retorne somente o relatório de revisão e a seção Backend corrigida."**
-   - `frontend-dev` **(quando trilha Frontend web ativa)** — instrução: **"Revise apenas a seção Frontend da spec em `.claude/specs/<nome>.md`. Aponte lacunas, riscos de UX/integração e ajustes necessários. NÃO escreva código — retorne somente o relatório de revisão e a seção Frontend corrigida."**
-   - `mobile-dev` **(quando trilha Mobile ativa)** — instrução: **"Revise apenas a seção Mobile da spec em `.claude/specs/<nome>.md`. Aponte lacunas de arquitetura (MVVM/MVI, camadas data/domain/ui), gerenciamento de estado, consumo do backend (DTOs, erros, timeouts) e estados de borda (loading/erro/vazio). NÃO escreva código — retorne somente o relatório de revisão e a seção Mobile corrigida."**
-   - `devops-cicd` **(apenas quando a seção DevOps/Infraestrutura existir)** — instrução: **"Revise apenas a seção DevOps/Infraestrutura da spec em `.claude/specs/<nome>.md`, limitando-se a CI/CD, containers, infraestrutura/IaC, deploy/rollback, observabilidade e segurança de pipeline. NÃO opine sobre regra de negócio do backend, modelagem de dados de aplicação nem UI/UX. NÃO escreva código — retorne somente o relatório de revisão e a seção DevOps corrigida."**
-   - Cada agente deve carregar suas skills de domínio conforme a stack identificada na Fase 1:
-     - `devops-cicd` carrega `devops-base` sempre e `ci-cd`/`containers`/`podman`/`kubernetes`/`openshift`/`azure-devops`/`iac`/`observability`/`devsecops` conforme os sinais detectados
-     - `mobile-dev` carrega `mobile-base` sempre e as skills pertinentes à stack (Android ou Flutter) identificada na Fase 1
-
-   Formato esperado de cada relatório de revisão:
-   ```markdown
-   ## Revisão [Backend|Frontend|Mobile|DevOps/Infraestrutura] — <nome-da-feature>
-
-   ### Gaps identificados
-   - [gap]: descrição
-
-   ### Riscos
-   - [risco]: descrição e mitigação sugerida
-
-   ### Seção [Backend|Frontend|Mobile|DevOps/Infraestrutura] corrigida
-   [texto revisado da seção]
-   ```
+8. Sugerir ao usuário uma revisão independente pelo agente `spec-dev` (somente leitura, contexto limpo) quando a spec tiver 3 ou mais trilhas, envolver autenticação/autorização, pagamento, dados sensíveis ou migração de dados, ou quando o usuário pedir. Em specs pequenas, seguir direto para a Fase 4. A revisão nunca é obrigatória
+9. Se o usuário aceitar, acionar **um único** `spec-dev` com um prompt contendo:
+   - **Stack detectada** (linha do contexto da sessão ou resultado da Fase 1)
+   - **Caminhos exatos das skills** de cada trilha ativa, para o agente não redetectar a stack
+   - **Escopo:** trilhas ativas e caminho da spec em `.claude/specs/<nome>.md`
+   - **Formato de saída:** gaps por trilha (do mais crítico ao menos crítico), riscos com mitigação e lista de alterações propostas (o quê, onde, por quê), sem repetir a spec — nenhum achado omitido por tamanho
+10. Avaliar o relatório, aplicar as alterações aceitas na spec e gravá-la novamente
 
 ### Fase 4 — Plano final e aprovação
 
-8. Consolidar spec original + feedbacks dos agentes acionados em um **Plano Final** contendo:
-   - Spec revisada unificada (todas as seções existentes: Backend, Frontend, Mobile e/ou DevOps/Infraestrutura conforme ativas)
-   - Lista de arquivos a criar/modificar separados por escopo (backend / frontend / mobile / devops)
-   - Pontos de atenção levantados pelos agentes
-   - Estimativa de impacto em arquivos existentes
-9. Apresentar o Plano Final ao usuário e **aguardar aprovação explícita** antes de continuar
+11. Consolidar a spec e, quando houver, o relatório da revisão em um **Plano Final** contendo:
+    - Spec unificada (todas as seções ativas: Backend, Frontend, Mobile e/ou DevOps/Infraestrutura)
+    - Lista de arquivos a criar/modificar separados por escopo (backend / frontend / mobile / devops)
+    - Pontos de atenção levantados pela revisão, se houve
+    - Estimativa de impacto em arquivos existentes
+12. Apresentar o Plano Final ao usuário e **aguardar aprovação explícita** antes de continuar. Quando o plano for grande (várias trilhas ou muitos arquivos), oferecer a escolha entre **implementar na conversa** ou **delegar ao agente da trilha** (`backend-dev`, `frontend-dev`, `mobile-dev` ou `devops-cicd`), informando que a delegação custa mais tokens e que a implementação na conversa aumenta o contexto e pode levar à compactação
 
 ### Fase 5 — Implementação (somente após aprovação)
 
-10. Para cada parte aprovada:
-    - Carregar skills de domínio conforme o contexto da feature
-    - Implementar seguindo o Plano Final aprovado
-11. Ao final, listar arquivos criados/modificados e pontos de atenção para testes
+13. Implementar o Plano Final aprovado na conversa principal, com as skills já carregadas na Fase 1. Se o usuário escolher delegar, usar um prompt com stack detectada, caminhos exatos das skills, escopo (trilha e seção da spec) e formato de saída (resumo e lista de arquivos alterados)
+14. Ao final, listar arquivos criados/modificados e pontos de atenção para testes
 
 ## Dicas de Uso
 
 ```
 /fullstack-development:new-feature autenticacao-usuario
 /fullstack-development:new-feature modulo-relatorios
-/fullstack-development:new-feature tela-listagem-produtos      # aciona mobile-dev se projeto Android/Flutter
-/fullstack-development:new-feature sincronizacao-offline-app   # fullstack: backend + mobile-dev
+/fullstack-development:new-feature tela-listagem-produtos      # trilha Mobile se projeto Android/Flutter
+/fullstack-development:new-feature sincronizacao-offline-app   # fullstack: trilhas Backend + Mobile
 ```

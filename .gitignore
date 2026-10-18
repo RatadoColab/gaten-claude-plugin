@@ -1,3 +1,6 @@
 .claude/*.local.md
 *.local.md
 **/settings.local.json
+fullstack-development/evals/results/
+*.swp
+*.swo
