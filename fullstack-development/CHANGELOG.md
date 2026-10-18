@@ -21,6 +21,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   listas fixas.
 - **Verificação do índice:** um script confere se o índice cobre todas as skills existentes.
 - **Casos de teste de disparo** para medir com que frequência o índice é consultado.
+- **Auditoria de segurança independente, sob pedido:** um novo revisor analisa o código da release com
+  contexto limpo, segue o caminho dos dados mesmo fora das mudanças recentes, usa os verificadores de
+  segurança que já estiverem instalados e entrega achados com cenário de ataque e sugestão de correção.
 
 ### Alterado
 
@@ -34,6 +37,10 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Escolha na aprovação do plano:** em planos grandes, você decide entre implementar na conversa ou
   delegar a um agente especialista.
 - **Revisão de especificações mais focada:** a revisão entrega gaps e sugestões, sem reescrever a spec.
+- **Revisão de código virou revisão de release:** o comando de revisão passa a se chamar `release-review`
+  e é feito para rodar uma única vez antes de cada lançamento, cobrindo tudo o que mudou desde a última
+  versão. Ele confere o código com as boas práticas do plugin, a coerência entre as camadas e a
+  prontidão da release, e ao final sugere a auditoria de segurança.
 
 ## [0.7.2] - 2026-10-07
 

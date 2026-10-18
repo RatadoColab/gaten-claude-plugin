@@ -57,7 +57,18 @@ para retomada sem reinvestigação, dono e critério de "pronto".
   `security`. Nota 0,00: `review-vue`. O gargalo passou a ser a leitura das skills após a
   consulta ao router, não só o disparo; vale checar se `max_turns: 6` e as ferramentas permitidas
   no eval limitam a leitura (rodar com `--keep-temp` e inspecionar o `trace.jsonl`). O bug Flutter
-  deixou a lista de falhas da medição anterior. Relatório local em
+  deixou a lista de falhas da medição anterior.
+- **Diagnóstico dos casos parciais (2026-10-18):** rodados `router-pipeline`, `router-security`,
+  `router-form-glpi` e `router-review-vue` com `--keep-temp` (1 execução cada, traces lidos como
+  dados). Em todos o projeto do eval está vazio e o modelo agiu corretamente: nos três primeiros
+  chamou o router, procurou arquivos com `Glob` e perguntou stack, caminho do código ou versão do
+  GLPI em vez de ler skills (no GLPI, conforme o contrato de não assumir versão); no `review-vue`
+  buscou `**/*.vue`, não achou componente nem código no prompt e pediu o código, sem chamar o
+  router. Conclusão: a nota baixa vem do desenho dos casos, não do router, e o disparo real está
+  subestimado nesses quatro. Próximo passo: tornar os prompts autossuficientes (colar um trecho de
+  código no próprio prompt: componente Vue, módulo de login, etc.) ou usar fixtures por caso
+  (formato de "scaffold scripts" do `claude plugin eval` ainda não verificado) e repetir a medição.
+  Relatório local em
   `fullstack-development/evals/results/2026-10-18T20-28-39-210Z/report.html` (ignorado pelo git).
 - **Ação:** reavaliar com o uso real do GATEN (taxa de disparo percebida). Se continuar baixa,
   testar (a) texto do hook em forma mais diretiva, avaliando o risco de ser tratado como prompt
@@ -105,19 +116,3 @@ para retomada sem reinvestigação, dono e critério de "pronto".
   A infraestrutura de hooks do plugin passou a existir com o router (`hooks/hooks.json`).
 - **Ação:** definir o que seria validado e em qual evento.
 - **Critério de pronto:** hook implementado ou ideia descartada com justificativa.
-
----
-
-## Avaliar agente revisor independente de código/segurança
-
-- **Registrado em:** 2026-10-17
-- **Dono:** André Proto
-- **Contexto:** Hoje não existe agente revisor independente de código/segurança com contexto limpo. O
-  `/code-review` roda inline, com o viés de quem leu toda a conversa. Discutir um agente revisor
-  **somente leitura**, usado apenas por pedido explícito, para auditorias de segurança em que o contexto
-  limpo compense o custo. Considerar: ferramentas só de leitura, **sem** `maxTurns` e **sem** limitar a
-  leitura a arquivos citados (risco de lacunas), modelo `inherit` para segurança, checklist baseado nas
-  skills `security`/`devsecops`.
-- **Ação:** decidir se o agente será criado ou descartado.
-- **Critério de pronto:** decisão registrada (criar ou descartar o agente) e, se criado, descrição de uso
-  explícito e teste contra um caso real de vulnerabilidade conhecida.

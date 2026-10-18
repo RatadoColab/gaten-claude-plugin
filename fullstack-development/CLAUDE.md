@@ -17,14 +17,17 @@ cc --plugin-dir .
 # Testar commands disponíveis
 /fullstack-development:review-spec
 /fullstack-development:new-feature
-/fullstack-development:code-review
+/fullstack-development:release-review
+
+# Testar o revisor de segurança (só por pedido explícito)
+# "Use o agente security-reviewer para auditar a release v0.7.2..HEAD"
 ```
 
 ## Estrutura do Plugin
 
 ```
 .claude-plugin/plugin.json     ← manifesto (nome: fullstack-development)
-agents/                        ← 5 agentes: spec-dev, backend-dev, frontend-dev, devops-cicd, mobile-dev
+agents/                        ← 6 agentes: spec-dev, security-reviewer, backend-dev, frontend-dev, devops-cicd, mobile-dev
 skills/
   fullstack-router/            ← única skill registrada (nível único); índice das demais 51
   base/                        ← 1 skill base por agente (inclui mobile-base)
@@ -52,6 +55,7 @@ Planejamento e implementação rodam na conversa principal. Os agentes só entra
 | Agente | Quando usar | Modelo | Tools | Color |
 |--------|-------------|--------|-------|-------|
 | `spec-dev` | Revisão independente opcional de spec/laudo (sugerida por `/new-feature` e `/new-bugfix`) ou pedido explícito; somente leitura | `sonnet` | Read, Grep, Glob, WebSearch | blue |
+| `security-reviewer` | Auditoria de segurança independente da release (sugerida ao final de `/release-review`) ou pedido explícito; não deve gravar arquivos (restrição por instrução); `Bash` para git de leitura e scanners já instalados | `inherit` | Read, Grep, Glob, Bash, WebSearch, WebFetch | red |
 | `backend-dev` | Somente se o usuário pedir: "use o agente backend-dev" | `inherit` | Read, Write, Edit, Bash, Grep, Glob | green |
 | `frontend-dev` | Somente se o usuário pedir: "use o agente frontend-dev" | `inherit` | Read, Write, Edit, Bash, Grep, Glob | cyan |
 | `devops-cicd` | Somente se o usuário pedir: "use o agente devops-cicd" | `inherit` | Read, Write, Edit, Bash, Grep, Glob | yellow |
@@ -163,6 +167,7 @@ Versão-alvo de cada skill que acompanha um ecossistema externo. Atualizadas na 
 - **Hooks em bash puro, sem `jq`:** os hooks usam bash/grep/sed/find e só aproveitam `jq` quando existe (opcional), para funcionar em Linux, macOS e Git Bash (Windows) sem dependências. O texto injetado é factual (não imperativo) — a documentação alerta que imperativo pode ser tratado como prompt injection.
 - **`UserPromptSubmit` (`hooks/prompt-skills.sh`) não está registrado:** em 2026-10-17, com o hook ativo, o modelo não passou a ler mais skills nos prompts de teste (ver `PENDENCIAS.md`). O script fica como opção; para ativar, acrescentar o evento em `hooks/hooks.json`.
 - **Agentes só por pedido explícito:** especificação, plano e implementação ocorrem na conversa principal, com as skills carregadas uma única vez. A revisão independente é opcional, feita por um único `spec-dev` (somente leitura, `sonnet`) que cobre todas as trilhas ativas com checklist por trilha; compensa em specs grandes, com 3 ou mais trilhas, ou em temas críticos (autenticação, pagamento, dados sensíveis), onde o contexto limpo vale o custo. Não existe opção documentada para desabilitar agentes por completo; a `description` curta reduz o auto-disparo, não o elimina.
+- **Revisão de código × segurança:** `/release-review` é revisão **pré-release** (uma vez por release, sobre o intervalo desde a última tag), complementar ao `/code-review` nativo — foca em conformidade com as skills, coerência entre camadas e prontidão de release, e encerra sugerindo o `security-reviewer`. O revisor independente é **só de segurança**: um revisor de código genérico seria redundante com o nativo (diff, `--fix`, `ultra`).
 - **Descartados:** `skills:` no frontmatter de agentes (injetaria o corpo completo das skills), `maxTurns` em revisores (pode truncar a revisão sem aviso) e limitar a revisão a arquivos citados (cria lacunas em revisões de segurança). O teto de saída dos agentes vale para prosa e duplicação, nunca para o número de achados.
 - **`PreToolUse` em `Write|Edit` foi avaliado e descartado:** chega depois de o conteúdo ser gerado, não ajuda o planejamento e exige estado.
 - Skills com conteúdo mínimo — intencionalmente para expansão posterior

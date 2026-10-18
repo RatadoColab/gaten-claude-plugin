@@ -12,7 +12,7 @@ Guiar a correção de um bug com fluxo diagnóstico-first: reproduz a falha, iso
 
 ### Detecção de escopo (antes da Fase 1)
 
-Aplicar os mesmos sinais já usados em `new-feature` e `code-review` — não criar heurística nova:
+Aplicar os mesmos sinais já usados em `new-feature` e `release-review` — não criar heurística nova:
 
 - **Mobile:** `pubspec.yaml`, `AndroidManifest.xml`, arquivos `.kt`/`.dart`, `@Composable`, imports `androidx.*`, `flutter/material.dart` — Compose e Flutter são **mutuamente exclusivos: nunca ambos**
 - **Frontend web:** `.vue`/`.html`/`.twig`, componentes, páginas, CSS
