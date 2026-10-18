@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [0.8.0] - 2026-10-18
+
 ### Adicionado
 
 - **Carregamento econômico de skills:** a conversa principal agora enxerga uma única skill de índice, que
@@ -406,6 +408,7 @@ Segunda rodada de otimização de tokens: aplicação integral da regra de códi
 - Documentação do projeto (`CLAUDE.md`) com estrutura, agentes e decisões de design
 - Precedência de carregamento de skills: GLPI > Languages > Domains
 
+[0.8.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.8.0
 [0.7.2]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.2
 [0.7.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.1
 [0.7.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.0
