@@ -1,6 +1,6 @@
 # fullstack-development
 
-> Versão 0.7.2
+> Versão 0.8.0
 
 Plugin Claude Code modular para desenvolvimento fullstack e mobile. Fornece agentes especializados em especificação, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter), com skills organizadas por domínio e linguagem de programação.
 
@@ -13,6 +13,13 @@ Plugin Claude Code modular para desenvolvimento fullstack e mobile. Fornece agen
 | `frontend-dev` | Desenvolvimento frontend com foco em componentes, formulários e UX |
 | `devops-cicd` | DevOps, CI/CD, containerização, infraestrutura como código e observabilidade |
 | `mobile-dev` | Desenvolvimento mobile Android nativo (Kotlin/Compose) e Flutter (Dart) |
+| `security-reviewer` | Auditoria de segurança independente da release, com cenário de ataque e sugestão de correção |
+
+Os agentes só entram em ação quando você pedir pelo nome; no dia a dia, o trabalho acontece na própria conversa.
+
+## Como as skills são carregadas
+
+A conversa enxerga um único índice (`fullstack-router`), que indica quais skills ler conforme a tarefa e a stack do projeto. Ao abrir a sessão, o plugin identifica linguagens, frameworks e ferramentas do projeto e informa quais skills se aplicam. As demais skills são lidas somente quando necessárias.
 
 ## Skills
 
@@ -71,7 +78,7 @@ Carregadas conforme a stack identificada:
 | `/fullstack-development:review-spec <arquivo>` | Revisão completa de especificação |
 | `/fullstack-development:new-feature <nome>` | Iniciar desenvolvimento de nova feature |
 | `/fullstack-development:new-bugfix <id>` | Corrigir um bug com fluxo diagnóstico-first (reprodução → causa raiz → revisão de domínio → correção com teste de regressão) |
-| `/fullstack-development:code-review [path]` | Revisão de código fullstack |
+| `/fullstack-development:release-review [intervalo \| ref \| caminho]` | Revisão pré-release, feita uma vez por versão sobre tudo o que será lançado |
 
 ## Instalação
 

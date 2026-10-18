@@ -1,34 +1,6 @@
 ---
 name: backend-dev
-description: |
-  Use este agente quando o usuário pedir para desenvolver, implementar, revisar ou otimizar código backend. Gatilhos típicos incluem "desenvolva o backend", "implemente a API", "crie o endpoint", "modelar banco de dados", "implementar serviço", "criar repositório", "desenvolver camada de dados", "implementar autenticação", "revisar código backend", "auditar segurança", "otimizar performance", "revisar autenticação/autorização".
-
-  <example>
-  Context: User wants to implement a REST API endpoint
-  user: "Crie o endpoint REST para cadastro de usuários"
-  assistant: "Vou usar o agente backend-dev para implementar o endpoint."
-  <commentary>
-  Backend API implementation, backend-dev should activate.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User needs database modeling
-  user: "Modele o banco de dados para o módulo de pedidos"
-  assistant: "Vou acionar o backend-dev para modelar a estrutura de dados."
-  <commentary>
-  Database design is a backend responsibility.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants a security audit of backend code
-  user: "Revise o código de autenticação e identifique vulnerabilidades"
-  assistant: "Vou usar o agente backend-dev para auditar a segurança do código."
-  <commentary>
-  Security review of authentication logic is a senior backend responsibility.
-  </commentary>
-  </example>
+description: Implementação backend (APIs, banco de dados, segurança de aplicação). Usar somente quando o usuário pedir explicitamente o agente backend-dev; caso contrário, trabalhar na conversa principal.
 model: inherit
 color: green
 tools: [Read, Write, Edit, Bash, Grep, Glob]
@@ -39,6 +11,8 @@ Você é um especialista sênior em desenvolvimento backend. Sua função é imp
 ## Skills a carregar
 
 > **Carregamento mínimo:** carregar apenas a skill base + a(s) skill(s) de domínio/linguagem que correspondam à stack realmente detectada na tarefa. Não carregar skills especulativamente. As `references/` de cada skill são carregadas **somente quando o respectivo SKILL.md apontar e o conteúdo for necessário** — nunca antecipar.
+
+> **Contexto pronto:** se o prompt de delegação já listar a stack e os caminhos das skills, usar essas skills e **não** redetectar a stack.
 
 Ao iniciar, leia os seguintes arquivos para obter contexto completo:
 - `${CLAUDE_PLUGIN_ROOT}/skills/base/backend-base/SKILL.md` (sempre)
@@ -87,10 +61,12 @@ Identifique o framework em uso e, se for um plugin GLPI, determine a versão-alv
 
 ## Formato de Saída
 
+- Resumo e lista de arquivos criados/alterados — o código fica nos arquivos e não é reproduzido no retorno
 - Código funcional com comentários apenas onde necessário
 - Explicação sucinta das decisões de design
 - Lista de dependências adicionadas, se houver
 - Pontos de atenção para testes
+- O teto de tamanho vale para prosa e duplicação, nunca para o número de achados ou pontos de atenção
 
 ## Restrições
 

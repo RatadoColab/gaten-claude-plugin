@@ -7,7 +7,7 @@ description: This skill should be used when reviewing, evaluating, or improving 
 
 ## Visão Geral
 
-Fornece os princípios fundamentais para avaliação e criação de especificações destinadas ao desenvolvimento guiado por LLMs.
+Aplique estes princípios na avaliação e na criação de especificações destinadas ao desenvolvimento guiado por LLMs.
 
 ## Princípios Fundamentais
 
@@ -21,7 +21,7 @@ Fornece os princípios fundamentais para avaliação e criação de especificaç
 
 ## Framework de Qualidade — SCOPE
 
-Avalie toda spec contra os cinco critérios abaixo. Cada um é obrigatório para que um agente execute a tarefa com precisão. O checklist operacional item a item de cada critério vive em `domains/spec-review/SKILL.md`.
+Avalie toda spec contra os cinco critérios abaixo. Cada um é obrigatório para que um agente execute a tarefa com precisão. O checklist operacional item a item de cada critério vive em `${CLAUDE_PLUGIN_ROOT}/skills/domains/spec-review/SKILL.md`.
 
 ### S — System Context
 Linguagem/framework, estrutura relevante do projeto e dependências externas. Sinal de ausência: a spec poderia ser implementada em qualquer stack sem adaptação.
@@ -46,12 +46,7 @@ Ao menos 1 exemplo de input/output, 1 caso de erro ou fluxo alternativo e compor
 
 ## Critérios Adicionais
 
-Além do SCOPE, toda spec deve ser avaliada em:
-
-- **Atomicidade:** A spec descreve uma única feature coesa, ou mistura múltiplas responsabilidades?
-- **Testabilidade:** É possível escrever um teste automatizado baseado apenas na spec?
-- **Ausência de contradições:** Há instruções conflitantes entre si ou com o `CLAUDE.md`?
-- **Clareza de linguagem:** Há termos ambíguos que o agente poderia interpretar de formas diferentes?
+Além do SCOPE, avalie atomicidade, testabilidade, ausência de contradições e clareza de linguagem. O checklist de cada um vive em `${CLAUDE_PLUGIN_ROOT}/skills/domains/spec-review/SKILL.md`.
 
 ---
 
@@ -88,4 +83,4 @@ Cenário: [nome do cenário]
 
 ## Referências
 
-- Ver `domains/spec-review/SKILL.md` para protocolo detalhado de revisão e formato de saída
+- Ver `${CLAUDE_PLUGIN_ROOT}/skills/domains/spec-review/SKILL.md` para protocolo detalhado de revisão e formato de saída

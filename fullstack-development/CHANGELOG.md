@@ -7,6 +7,43 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [0.8.0] - 2026-10-18
+
+### Adicionado
+
+- **Carregamento econômico de skills:** a conversa principal agora enxerga uma única skill de índice, que
+  indica quais skills ler conforme a tarefa e a stack do projeto. As demais skills continuam sendo lidas
+  sob demanda, sem custo fixo por mensagem.
+- **Detecção automática da stack ao abrir a sessão:** o plugin identifica linguagens, frameworks, versões
+  (PHP, GLPI) e ferramentas de DevOps do projeto e informa quais skills se aplicam. A informação é
+  renovada após a compactação da conversa.
+- **Leitura das skills sem pedido de permissão:** o plugin libera sozinho a leitura dos seus próprios
+  arquivos de skills.
+- **Comandos de nova funcionalidade e de correção de bug** passam a consultar o índice de skills em vez de
+  listas fixas.
+- **Verificação do índice:** um script confere se o índice cobre todas as skills existentes.
+- **Casos de teste de disparo** para medir com que frequência o índice é consultado.
+- **Auditoria de segurança independente, sob pedido:** um novo revisor analisa o código da release com
+  contexto limpo, segue o caminho dos dados mesmo fora das mudanças recentes, usa os verificadores de
+  segurança que já estiverem instalados e entrega achados com cenário de ataque e sugestão de correção.
+
+### Alterado
+
+- **Planejamento mais econômico:** a especificação, o plano e a implementação de novas funcionalidades e
+  correções de bug acontecem na própria conversa, sem recomeçar o contexto a cada etapa.
+- **Revisão independente de spec e de laudo, opcional:** um único revisor que apenas lê os arquivos
+  analisa todas as áreas envolvidas e devolve gaps, riscos e alterações sugeridas, sem repetir o texto.
+  É recomendada em specs grandes ou em temas críticos, e nunca obrigatória.
+- **Agentes especialistas só por pedido explícito:** os agentes de backend, frontend, mobile e DevOps
+  são usados apenas quando você pedir pelo nome, e as descrições ficaram bem mais curtas.
+- **Escolha na aprovação do plano:** em planos grandes, você decide entre implementar na conversa ou
+  delegar a um agente especialista.
+- **Revisão de especificações mais focada:** a revisão entrega gaps e sugestões, sem reescrever a spec.
+- **Revisão de código virou revisão de release:** o comando de revisão passa a se chamar `release-review`
+  e é feito para rodar uma única vez antes de cada lançamento, cobrindo tudo o que mudou desde a última
+  versão. Ele confere o código com as boas práticas do plugin, a coerência entre as camadas e a
+  prontidão da release, e ao final sugere a auditoria de segurança.
+
 ## [0.7.2] - 2026-10-07
 
 ### Alterado
@@ -371,6 +408,7 @@ Segunda rodada de otimização de tokens: aplicação integral da regra de códi
 - Documentação do projeto (`CLAUDE.md`) com estrutura, agentes e decisões de design
 - Precedência de carregamento de skills: GLPI > Languages > Domains
 
+[0.8.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.8.0
 [0.7.2]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.2
 [0.7.1]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.1
 [0.7.0]: https://github.com/RatadoColab/gaten-claude-plugin/releases/tag/v0.7.0

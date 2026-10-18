@@ -10,7 +10,7 @@ Este repositório centraliza plugins reutilizáveis para o [Claude Code](https:/
 
 | Plugin | Versão | Descrição |
 |--------|--------|-----------|
-| [`fullstack-development`](./fullstack-development/) | 0.7.2 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
+| [`fullstack-development`](./fullstack-development/) | 0.8.0 | Desenvolvimento fullstack e mobile com agentes especializados em spec, backend, frontend, DevOps/CI-CD e mobile (Android/Flutter) |
 
 ## Como usar
 
@@ -42,6 +42,9 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 | `frontend-dev` | cyan | "desenvolva o frontend", "crie o componente", "implemente o formulário" |
 | `devops-cicd` | yellow | "crie o pipeline", "configure o CI/CD", "configure o Azure DevOps", "escreva o Dockerfile/Containerfile", "crie a unidade Quadlet (Podman)", "crie o manifest Kubernetes", "faça deploy no OpenShift", "provisione a infraestrutura" |
 | `mobile-dev` | magenta | "desenvolva o app Android", "crie a tela em Compose", "implemente a ViewModel", "configure o Gradle", "crie o app Flutter", "implemente o widget Flutter" |
+| `security-reviewer` | red | "audite a segurança da release" |
+
+Os agentes só são usados quando pedidos pelo nome; o fluxo normal acontece na conversa principal.
 
 ### Slash commands
 
@@ -49,10 +52,12 @@ Plugin modular para desenvolvimento fullstack com agentes especializados por ár
 /fullstack-development:review-spec    — revisão completa de especificação de feature
 /fullstack-development:new-feature    — iniciar desenvolvimento de nova feature
 /fullstack-development:new-bugfix     — corrigir um bug: reprodução → causa raiz → revisão de domínio → correção com teste de regressão
-/fullstack-development:code-review    — revisão de código fullstack
+/fullstack-development:release-review — revisão pré-release, uma vez por versão
 ```
 
 ### Skills incluídas
+
+**Índice:** `fullstack-router` — única skill visível na conversa; indica quais skills ler conforme a tarefa e a stack detectada na abertura da sessão
 
 **Base** (carregadas automaticamente por cada agente):
 - `spec-base`, `backend-base`, `frontend-base`, `devops-base`, `mobile-base`
@@ -82,9 +87,13 @@ gaten-claude-plugin/
 ├── fullstack-development/        ← plugin fullstack
 │   ├── .claude-plugin/
 │   │   └── plugin.json           ← manifesto do plugin
-│   ├── agents/                   ← spec-dev, backend-dev, frontend-dev, devops-cicd, mobile-dev
-│   ├── commands/                 ← review-spec, new-feature, new-bugfix, code-review
+│   ├── agents/                   ← spec-dev, backend-dev, frontend-dev, devops-cicd, mobile-dev, security-reviewer
+│   ├── commands/                 ← review-spec, new-feature, new-bugfix, release-review
+│   ├── hooks/                    ← detecção de stack e liberação de leitura das skills
+│   ├── scripts/                  ← verificação do índice de skills
+│   ├── evals/                    ← casos de teste de disparo do índice
 │   ├── skills/                  ← cada skill: SKILL.md + references/ (detalhes sob demanda)
+│   │   ├── fullstack-router/     ← índice de skills
 │   │   ├── base/                 ← skills base por agente
 │   │   ├── domains/              ← skills de domínio (inclui glpi-10/, glpi-11/ e glpi-12/)
 │   │   └── languages/            ← skills por linguagem
