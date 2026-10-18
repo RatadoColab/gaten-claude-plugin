@@ -1,5 +1,5 @@
 ---
-description: Realiza revisão de código com consciência fullstack, detectando o tipo do código (backend/frontend/mobile/devops), carregando o agente e skills pertinentes, e avaliando qualidade, segurança e coerência com o contrato da API.
+description: Realiza revisão de código com consciência fullstack, detectando o tipo do código (backend/frontend/mobile/devops), carregando as skills pertinentes, e avaliando qualidade, segurança e coerência com o contrato da API.
 argument-hint: [caminho-do-arquivo-ou-diretório]
 allowed-tools: [Read, Grep, Glob]
 ---

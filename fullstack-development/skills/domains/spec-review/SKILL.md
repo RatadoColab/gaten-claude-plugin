@@ -1,13 +1,13 @@
 ---
 name: spec-review
-description: This skill should be used when performing a structured review of a feature specification, evaluating completeness, clarity, and suitability for AI-driven development. Covers review protocol, quality checklist, output format, and scoring criteria.
+description: This skill should be used when performing a structured review of a feature specification, evaluating completeness, clarity, and suitability for AI-driven development. Covers review protocol and quality checklist.
 ---
 
 # Spec Review — Protocolo de Revisão de Especificações
 
 ## Visão Geral
 
-Protocolo estruturado para revisão de especificações de features destinadas ao desenvolvimento por LLMs.
+Revise especificações de features destinadas ao desenvolvimento por LLMs seguindo o protocolo abaixo. Para laudo de bug, aplique apenas os critérios C, E e os Critérios Adicionais.
 
 ---
 
@@ -63,52 +63,16 @@ Se não houver `CLAUDE.md` ou ele não descrever o stack:
 
 ---
 
-## Formato de Saída Obrigatório
+## Resultado da Revisão
 
-Sempre responda exatamente nesta estrutura:
+Este é o formato único de saída; commands e agentes apontam para cá. A revisão entrega:
 
-```markdown
-# Revisão da Especificação
+- **Sumário** curto do estado da spec, com status SCOPE (✅ presente · ⚠️ parcial ou vago · ❌ ausente) por critério
+- **Gaps**, do mais crítico ao menos crítico (por trilha, quando houver mais de uma), cada um com o impacto na implementação
+- **Riscos** com mitigação sugerida
+- **Sugestões** acionáveis ligadas a cada gap (o quê, onde, por quê)
 
-## Sumário
-[2–3 frases descrevendo o estado geral da spec: o que está bom e o que precisa de atenção]
-
-## Score de Qualidade
-| Critério              | Status        | Observação                        |
-|-----------------------|---------------|-----------------------------------|
-| System Context (S)    | ✅ / ⚠️ / ❌  | [observação curta]                |
-| Core Objective (C)    | ✅ / ⚠️ / ❌  | [observação curta]                |
-| Output Contract (O)   | ✅ / ⚠️ / ❌  | [observação curta]                |
-| Constraints (P)       | ✅ / ⚠️ / ❌  | [observação curta]                |
-| Examples (E)          | ✅ / ⚠️ / ❌  | [observação curta]                |
-| Atomicidade           | ✅ / ⚠️ / ❌  | [observação curta]                |
-| Testabilidade         | ✅ / ⚠️ / ❌  | [observação curta]                |
-
-Legenda: ✅ Presente e adequado · ⚠️ Parcial ou vago · ❌ Ausente
-
-## Avaliação Numérica
-- **System Context:** _/10
-- **Core Objective:** _/10
-- **Output Contract:** _/10
-- **Constraints:** _/10
-- **Examples:** _/10
-- **Nota geral:** _/10
-
-## Gaps Identificados
-[Lista numerada dos problemas, do mais crítico ao menos crítico.
-Para cada gap: descreva o problema e por que impacta a implementação.]
-
-## Sugestões de Melhoria
-[Lista de sugestões concretas e acionáveis, vinculadas aos gaps acima.]
-
----
-
-# Spec Reescrita
-
-[Versão melhorada da especificação original, incorporando todas as sugestões.
-Mantenha o estilo e a voz do autor. Adicione apenas o que está faltando —
-não reescreva o que já estava correto sem necessidade.]
-```
+A revisão não reescreve nem repete a spec, e nenhum gap é omitido por concisão.
 
 ---
 
@@ -117,7 +81,7 @@ não reescreva o que já estava correto sem necessidade.]
 1. **Leia o `CLAUDE.md` antes de avaliar.** Ele é a fonte de verdade sobre contexto global.
 2. **Não invente contexto.** Se algo não está na spec nem no `CLAUDE.md`, aponte como gap.
 3. **Seja específico nos gaps.** "Falta definir o comportamento quando a lista estiver vazia" é melhor que "falta detalhe".
-4. **Na spec reescrita, preserve a intenção original.** Você está melhorando, não redesenhando.
+4. **Nas sugestões, preserve a intenção original.** Melhorar, não redesenhar.
 5. **Use o idioma do autor.** Português quando o usuário escrever em português; inglês quando escrever em inglês.
 6. **Não adicione requisitos não-funcionais** (performance, segurança, escalabilidade) a menos que o usuário os tenha mencionado.
-7. **Seja direto.** O usuário quer feedback útil, não elogios.
+7. **Seja direto.** O usuário quer feedback útil: sem elogios genéricos.
